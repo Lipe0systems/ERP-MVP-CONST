@@ -53,6 +53,16 @@ def decode_supabase_token(token: str) -> dict[str, Any]:
         )
         return payload
     except JWTError as exc:
+        # DIAGNÓSTICO TEMPORÁRIO — remover depois de identificar a causa do 401.
+        # Mostra o algoritmo/kid do token recebido (sem verificar assinatura)
+        # e a mensagem exata do erro, para aparecer nos logs do Render.
+        try:
+            header = jwt.get_unverified_header(token)
+        except Exception as header_exc:  # noqa: BLE001
+            header = {"erro_ao_ler_header": str(header_exc)}
+        print(f"[DEBUG-AUTH] header do token recebido: {header}")
+        print(f"[DEBUG-AUTH] erro de validação: {exc}")
+
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token inválido ou expirado",
