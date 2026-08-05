@@ -195,7 +195,9 @@ export default function ComprasPage() {
         onOpenChange={(open) => !open && setCompraRemovendo(null)}
         descricao={compraRemovendo?.produto}
         isPending={remover.isPending}
-        onConfirm={() => compraRemovendo && remover.mutateAsync(compraRemovendo.id)}
+        onConfirm={() => {
+          if (compraRemovendo) return remover.mutateAsync(compraRemovendo.id);
+        }}
       />
     </div>
   );
