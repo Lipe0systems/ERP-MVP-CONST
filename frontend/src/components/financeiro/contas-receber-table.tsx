@@ -179,7 +179,9 @@ export function ContasReceberTable() {
         onOpenChange={(open) => !open && setContaRemovendo(null)}
         descricao={contaRemovendo?.descricao}
         isPending={remover.isPending}
-        onConfirm={() => contaRemovendo && remover.mutateAsync(contaRemovendo.id)}
+        onConfirm={() => {
+          if (contaRemovendo) return remover.mutateAsync(contaRemovendo.id);
+        }}
       />
     </div>
   );
