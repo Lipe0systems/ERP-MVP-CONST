@@ -1,13 +1,23 @@
 """
-Validação de tokens JWT emitidos pelo Supabase Auth.
+Validação de tokens de autenticação emitidos pelo Supabase Auth.
 Camada: Core (infraestrutura transversal)
+
+Em vez de decodificar e validar o JWT localmente com uma chave (abordagem
+HS256/ES256 que depende de manter uma chave de assinatura sincronizada — e
+que na prática se mostrou sensível a erros de configuração na tela de JWT
+Signing Keys do Supabase), o token é validado diretamente contra o servidor
+de autenticação do Supabase (GET /auth/v1/user). É a abordagem que a própria
+documentação do Supabase recomenda para quem não quer lidar com
+gerenciamento de chaves de assinatura, e funciona com qualquer algoritmo que
+o Supabase decida usar (HS256, ES256, RS256...) sem exigir nenhuma mudança
+neste arquivo.
 """
 from typing import Any
 from uuid import UUID
 
+import httpx
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
 
 from app.core.config import get_settings
 
@@ -43,41 +53,44 @@ class CurrentUser:
         self.raw = raw
 
 
-def decode_supabase_token(token: str) -> dict[str, Any]:
+def _verificar_token_no_supabase(token: str) -> dict[str, Any]:
+    """
+    Pede para o próprio Supabase Auth confirmar que o token é válido e
+    devolver os dados do usuário, em vez de validar a assinatura localmente.
+    """
     try:
-        payload = jwt.decode(
-            token,
-            settings.SUPABASE_JWT_SECRET,
-            algorithms=["HS256"],
-            audience="authenticated",
+        response = httpx.get(
+            f"{settings.SUPABASE_URL}/auth/v1/user",
+            headers={
+                "Authorization": f"Bearer {token}",
+                "apikey": settings.SUPABASE_ANON_KEY,
+            },
+            timeout=10.0,
         )
-        return payload
-    except JWTError as exc:
-        # DIAGNÓSTICO TEMPORÁRIO — remover depois de identificar a causa do 401.
-        # Mostra o algoritmo/kid do token recebido (sem verificar assinatura)
-        # e a mensagem exata do erro, para aparecer nos logs do Render.
-        try:
-            header = jwt.get_unverified_header(token)
-        except Exception as header_exc:  # noqa: BLE001
-            header = {"erro_ao_ler_header": str(header_exc)}
-        print(f"[DEBUG-AUTH] header do token recebido: {header}")
-        print(f"[DEBUG-AUTH] erro de validação: {exc}")
+    except httpx.HTTPError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Não foi possível validar o token de autenticação.",
+        ) from exc
 
+    if response.status_code != 200:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token inválido ou expirado",
-        ) from exc
+        )
+
+    return response.json()
 
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ) -> CurrentUser:
-    payload = decode_supabase_token(credentials.credentials)
+    payload = _verificar_token_no_supabase(credentials.credentials)
     user_metadata = payload.get("user_metadata", {}) or {}
     empresa_id = user_metadata.get("empresa_id") or payload.get("app_metadata", {}).get("empresa_id")
 
     return CurrentUser(
-        id=payload["sub"],
+        id=payload["id"],
         email=payload.get("email"),
         empresa_id=empresa_id,
         raw=payload,
