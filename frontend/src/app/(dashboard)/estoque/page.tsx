@@ -155,7 +155,9 @@ export default function EstoquePage() {
         onOpenChange={(open) => !open && setItemRemovendo(null)}
         descricao={itemRemovendo?.produto}
         isPending={remover.isPending}
-        onConfirm={() => itemRemovendo && remover.mutateAsync(itemRemovendo.id)}
+        onConfirm={() => {
+          if (itemRemovendo) return remover.mutateAsync(itemRemovendo.id);
+        }}
       />
     </div>
   );
