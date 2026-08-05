@@ -53,20 +53,24 @@ class CurrentUser:
         self.raw = raw
 
 
-def _verificar_token_no_supabase(token: str) -> dict[str, Any]:
+async def _verificar_token_no_supabase(token: str) -> dict[str, Any]:
     """
     Pede para o próprio Supabase Auth confirmar que o token é válido e
     devolver os dados do usuário, em vez de validar a assinatura localmente.
+    Assíncrono de propósito: o dashboard e as telas disparam várias chamadas
+    autenticadas em paralelo, e uma chamada de rede síncrona aqui prenderia
+    threads do worker (o Render roda com WEB_CONCURRENCY=1), podendo causar
+    lentidão ou timeout sob concorrência.
     """
     try:
-        response = httpx.get(
-            f"{settings.SUPABASE_URL}/auth/v1/user",
-            headers={
-                "Authorization": f"Bearer {token}",
-                "apikey": settings.SUPABASE_ANON_KEY,
-            },
-            timeout=10.0,
-        )
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(
+                f"{settings.SUPABASE_URL}/auth/v1/user",
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "apikey": settings.SUPABASE_ANON_KEY,
+                },
+            )
     except httpx.HTTPError as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -82,10 +86,10 @@ def _verificar_token_no_supabase(token: str) -> dict[str, Any]:
     return response.json()
 
 
-def get_current_user(
+async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ) -> CurrentUser:
-    payload = _verificar_token_no_supabase(credentials.credentials)
+    payload = await _verificar_token_no_supabase(credentials.credentials)
     user_metadata = payload.get("user_metadata", {}) or {}
     empresa_id = user_metadata.get("empresa_id") or payload.get("app_metadata", {}).get("empresa_id")
 
