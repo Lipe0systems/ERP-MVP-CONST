@@ -4,7 +4,7 @@ Camada: Presentation.
 """
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.application.use_cases.orcamento_use_cases import OrcamentoUseCases
@@ -154,3 +154,38 @@ def remover_orcamento(
     use_cases: OrcamentoUseCases = Depends(_get_use_cases),
 ):
     use_cases.remover(empresa_id, orcamento_id)
+
+
+@router.get("/{orcamento_id}/pdf")
+def gerar_pdf(
+    orcamento_id: UUID,
+    empresa_id: UUID = Depends(get_empresa_id),
+    use_cases: OrcamentoUseCases = Depends(_get_use_cases),
+    db: Session = Depends(get_db),
+):
+    """Gera e retorna o PDF do orçamento para download."""
+    from fastapi.responses import Response
+
+    from app.application.services.pdf_orcamento import gerar_pdf_orcamento
+    from app.infrastructure.repositories.cliente_repository import SqlAlchemyClienteRepository
+
+    orc = use_cases.obter(empresa_id, orcamento_id)
+    cliente_repo = SqlAlchemyClienteRepository(db)
+    cliente = cliente_repo.get_by_id(empresa_id, orc.cliente_id)
+
+    if cliente is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Cliente do orçamento não encontrado.",
+        )
+
+    pdf_bytes = gerar_pdf_orcamento(orc, cliente)
+
+    filename = f"orcamento_{orc.numero:04d}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+        },
+    )

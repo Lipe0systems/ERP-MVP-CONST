@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   Check,
+  FileDown,
   FileText,
   MoreHorizontal,
   Plus,
@@ -38,6 +39,8 @@ import {
 } from "@/hooks/use-orcamentos";
 import { useClientes } from "@/hooks/use-clientes";
 import { formatMoeda, formatData } from "@/lib/format";
+import { baixarPdfOrcamento } from "@/lib/api/orcamentos";
+import { toast } from "sonner";
 import type { OrcamentoListItem, StatusOrcamento } from "@/types";
 
 const PAGE_SIZE = 10;
@@ -239,7 +242,21 @@ export default function OrcamentosPage() {
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     )}
-                    {/* WhatsApp — disponível em todos os status */}
+                    {/* PDF + WhatsApp — disponíveis em todos os status */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title="Baixar PDF"
+                      onClick={async () => {
+                        try {
+                          await baixarPdfOrcamento(orc.id);
+                        } catch {
+                          toast.error("Erro ao gerar o PDF.");
+                        }
+                      }}
+                    >
+                      <FileDown className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"

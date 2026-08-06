@@ -50,3 +50,30 @@ export function cancelarOrcamento(id: string) {
 export function removerOrcamento(id: string) {
   return apiFetch<void>(`/orcamentos/${id}`, { method: "DELETE" });
 }
+
+export async function baixarPdfOrcamento(id: string): Promise<void> {
+  // Usa fetch direto (não apiFetch) porque a resposta é um blob, não JSON
+  const { createClient } = await import("@/lib/supabase/client");
+  const supabase = createClient();
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const response = await fetch(`${apiUrl}/orcamentos/${id}/pdf`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) {
+    throw new Error("Erro ao gerar PDF");
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = response.headers.get("Content-Disposition")?.match(/filename="(.+)"/)?.[1] ?? "orcamento.pdf";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
