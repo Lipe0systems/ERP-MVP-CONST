@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DeleteConfirmDialog } from "@/components/delete-confirm-dialog";
 import { DiarioFormDialog } from "@/components/diario-obra/diario-form-dialog";
 import { ClimaBadge } from "@/components/diario-obra/clima-icon";
+import { EmptyState } from "@/components/empty-state";
 import { Pagination } from "@/components/pagination";
 import { useObras } from "@/hooks/use-obras";
 import { useRegistrosDiario, useRemoverRegistroDiario } from "@/hooks/use-diario-obra";
@@ -100,19 +101,13 @@ export default function DiarioObraPage() {
           ))}
         </div>
       ) : emptyState ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-          <BookText className="mb-3 h-8 w-8 text-muted-foreground" />
-          <p className="font-medium">Nenhum registro encontrado</p>
-          <p className="mb-4 text-sm text-muted-foreground">
-            {obraId ? "Tente selecionar outra obra." : "Comece registrando o primeiro dia de atividades."}
-          </p>
-          {!obraId && (
-            <Button onClick={handleNovo} variant="outline">
-              <Plus className="mr-2 h-4 w-4" />
-              Novo registro
-            </Button>
-          )}
-        </div>
+        <EmptyState
+          icon={BookText}
+          title="Nenhum registro encontrado"
+          description={obraId ? "Tente selecionar outra obra." : "Comece registrando o primeiro dia de atividades."}
+          actionLabel={obraId ? undefined : "Novo registro"}
+          onAction={obraId ? undefined : handleNovo}
+        />
       ) : (
         <>
           <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 ${isFetching ? "opacity-60 transition-opacity" : ""}`}>

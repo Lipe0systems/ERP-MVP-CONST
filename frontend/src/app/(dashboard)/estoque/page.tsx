@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination } from "@/components/pagination";
+import { EmptyState } from "@/components/empty-state";
 import { DeleteConfirmDialog } from "@/components/delete-confirm-dialog";
 import { EstoqueFormDialog } from "@/components/estoque/estoque-form-dialog";
 import { useEstoque, useRemoverItemEstoque } from "@/hooks/use-estoque";
@@ -81,19 +82,13 @@ export default function EstoquePage() {
           ))}
         </div>
       ) : emptyState ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-          <Boxes className="mb-3 h-8 w-8 text-muted-foreground" />
-          <p className="font-medium">Nenhum item de estoque encontrado</p>
-          <p className="mb-4 text-sm text-muted-foreground">
-            {search ? "Tente ajustar sua busca." : "Comece cadastrando o primeiro item."}
-          </p>
-          {!search && (
-            <Button onClick={handleNovo} variant="outline">
-              <Plus className="mr-2 h-4 w-4" />
-              Novo item
-            </Button>
-          )}
-        </div>
+        <EmptyState
+          icon={Boxes}
+          title="Nenhum item de estoque encontrado"
+          description={search ? "Tente ajustar sua busca." : "Comece cadastrando o primeiro item."}
+          actionLabel={search ? undefined : "Novo item"}
+          onAction={search ? undefined : handleNovo}
+        />
       ) : (
         <>
           <Table>

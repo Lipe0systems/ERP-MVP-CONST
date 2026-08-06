@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { EmptyState } from "@/components/empty-state";
 import { Pagination } from "@/components/pagination";
 import { DeleteConfirmDialog } from "@/components/delete-confirm-dialog";
 import { CompraFormDialog } from "@/components/compras/compra-form-dialog";
@@ -111,19 +112,13 @@ export default function ComprasPage() {
           ))}
         </div>
       ) : emptyState ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-          <Package className="mb-3 h-8 w-8 text-muted-foreground" />
-          <p className="font-medium">Nenhuma compra encontrada</p>
-          <p className="mb-4 text-sm text-muted-foreground">
-            {search || status !== "todos" ? "Tente ajustar os filtros." : "Comece cadastrando uma compra."}
-          </p>
-          {!search && status === "todos" && (
-            <Button onClick={handleNovo} variant="outline">
-              <Plus className="mr-2 h-4 w-4" />
-              Nova compra
-            </Button>
-          )}
-        </div>
+        <EmptyState
+          icon={Package}
+          title="Nenhuma compra encontrada"
+          description={search || status !== "todos" ? "Tente ajustar os filtros." : "Comece cadastrando uma compra."}
+          actionLabel={!search && status === "todos" ? "Nova compra" : undefined}
+          onAction={!search && status === "todos" ? handleNovo : undefined}
+        />
       ) : (
         <>
           <Table>

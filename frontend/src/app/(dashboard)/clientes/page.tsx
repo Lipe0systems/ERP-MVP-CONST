@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pagination } from "@/components/pagination";
+import { EmptyState } from "@/components/empty-state";
 import { ClienteFormDialog } from "@/components/clientes/cliente-form-dialog";
 import { DeleteClienteDialog } from "@/components/clientes/delete-cliente-dialog";
 import { useClientes } from "@/hooks/use-clientes";
@@ -88,19 +89,13 @@ export default function ClientesPage() {
           ))}
         </div>
       ) : emptyState ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-          <Users className="mb-3 h-8 w-8 text-muted-foreground" />
-          <p className="font-medium">Nenhum cliente encontrado</p>
-          <p className="mb-4 text-sm text-muted-foreground">
-            {search ? "Tente ajustar sua busca." : "Comece cadastrando o primeiro cliente."}
-          </p>
-          {!search && (
-            <Button onClick={handleNovo} variant="outline">
-              <Plus className="mr-2 h-4 w-4" />
-              Novo cliente
-            </Button>
-          )}
-        </div>
+        <EmptyState
+          icon={Users}
+          title="Nenhum cliente encontrado"
+          description={search ? "Tente ajustar sua busca." : "Comece cadastrando o primeiro cliente."}
+          actionLabel={search ? undefined : "Novo cliente"}
+          onAction={search ? undefined : handleNovo}
+        />
       ) : (
         <>
           <Table>

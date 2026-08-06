@@ -26,6 +26,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/empty-state";
 import { Pagination } from "@/components/pagination";
 import { DeleteConfirmDialog } from "@/components/delete-confirm-dialog";
 import { OrcamentoFormDialog } from "@/components/orcamentos/orcamento-form-dialog";
@@ -140,11 +141,11 @@ export default function OrcamentosPage() {
             <TableRow>
               <TableHead scope="col">Nº</TableHead>
               <TableHead scope="col">Cliente</TableHead>
-              <TableHead scope="col">Obra</TableHead>
+              <TableHead scope="col" className="hidden sm:table-cell">Obra</TableHead>
               <TableHead scope="col">Status</TableHead>
               <TableHead scope="col" className="text-right">Valor</TableHead>
-              <TableHead scope="col">Itens</TableHead>
-              <TableHead scope="col">Data</TableHead>
+              <TableHead scope="col" className="hidden md:table-cell">Itens</TableHead>
+              <TableHead scope="col" className="hidden md:table-cell">Data</TableHead>
               <TableHead scope="col" className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -160,9 +161,14 @@ export default function OrcamentosPage() {
 
             {emptyState && (
               <TableRow>
-                <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">
-                  <FileText className="mx-auto mb-2 h-8 w-8 opacity-40" />
-                  Nenhum orçamento encontrado.
+                <TableCell colSpan={8} className="p-0">
+                  <EmptyState
+                    icon={FileText}
+                    title="Nenhum orçamento encontrado"
+                    description={search || statusFiltro !== "todos" ? "Tente ajustar os filtros." : "Comece criando o primeiro orçamento."}
+                    actionLabel={!search && statusFiltro === "todos" ? "Novo Orçamento" : undefined}
+                    onAction={!search && statusFiltro === "todos" ? handleNovo : undefined}
+                  />
                 </TableCell>
               </TableRow>
             )}
@@ -171,15 +177,15 @@ export default function OrcamentosPage() {
               <TableRow key={orc.id}>
                 <TableCell className="font-medium">#{orc.numero}</TableCell>
                 <TableCell>{orc.cliente_nome}</TableCell>
-                <TableCell>{orc.obra_nome ?? "—"}</TableCell>
+                <TableCell className="hidden sm:table-cell">{orc.obra_nome ?? "—"}</TableCell>
                 <TableCell>
                   <OrcamentoStatusBadge status={orc.status as StatusOrcamento} />
                 </TableCell>
                 <TableCell className="text-right font-medium">
                   {formatMoeda(orc.valor_total)}
                 </TableCell>
-                <TableCell>{orc.qtd_itens}</TableCell>
-                <TableCell>{formatData(orc.criado_em)}</TableCell>
+                <TableCell className="hidden md:table-cell">{orc.qtd_itens}</TableCell>
+                <TableCell className="hidden md:table-cell">{formatData(orc.criado_em)}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
                     {/* Ações condicionais ao status */}

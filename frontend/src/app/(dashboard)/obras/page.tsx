@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { EmptyState } from "@/components/empty-state";
 import { Pagination } from "@/components/pagination";
 import { ObraFormDialog } from "@/components/obras/obra-form-dialog";
 import { DeleteObraDialog } from "@/components/obras/delete-obra-dialog";
@@ -124,7 +125,7 @@ export default function ObrasPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Obra</TableHead>
-                <TableHead>Cliente</TableHead>
+                <TableHead className="hidden sm:table-cell">Cliente</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="hidden md:table-cell">Início</TableHead>
                 <TableHead className="hidden md:table-cell">Previsão</TableHead>
