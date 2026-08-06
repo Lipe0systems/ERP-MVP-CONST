@@ -3,7 +3,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
-  title: "ERP Construtoras",
+  title: "Construtec",
   description: "ERP SaaS multiempresa para construtoras",
 };
 

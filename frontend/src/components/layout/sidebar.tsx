@@ -60,7 +60,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       <div className="border-t p-3 text-xs text-muted-foreground">
-        MVP V1 · ERP Construtoras
+        MVP V1 · Construtec
       </div>
     </>
   );
@@ -75,7 +75,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Building2 className="h-4 w-4" />
           </div>
-          <span className="font-semibold">ERP Construtoras</span>
+          <span className="font-semibold">Construtec</span>
         </div>
         <SidebarContent />
       </aside>
@@ -94,7 +94,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <Building2 className="h-4 w-4" />
                 </div>
-                <span className="font-semibold">ERP Construtoras</span>
+                <span className="font-semibold">Construtec</span>
               </div>
               <Button variant="ghost" size="icon" onClick={onCloseMobile} aria-label="Fechar menu">
                 <X className="h-4 w-4" />

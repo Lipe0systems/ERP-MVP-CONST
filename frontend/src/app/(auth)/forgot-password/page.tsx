@@ -1,15 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { KeyRound, Loader2 } from "lucide-react";
+import { ArrowLeft, KeyRound, Loader2, Mail } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 
 const schema = z.object({ email: z.string().email("E-mail inválido") });
@@ -35,35 +32,64 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader className="items-center text-center">
-        <div className="mb-2 flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-          <KeyRound className="h-6 w-6" />
-        </div>
-        <CardTitle className="text-xl font-semibold text-foreground">Recuperar senha</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Informe seu e-mail para receber o link de redefinição
+    <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.03] p-8 backdrop-blur-sm sm:p-10">
+      <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-500">
+        <KeyRound className="h-6 w-6 text-[#0b0f19]" />
+      </div>
+
+      <h1 className="text-2xl font-bold text-white">Recuperar senha</h1>
+      <p className="mb-7 mt-1 text-sm text-white/50">
+        Informe seu e-mail para receber o link de redefinição
+      </p>
+
+      {sent ? (
+        <p className="text-sm text-white/60">
+          Se o e-mail existir em nossa base, você receberá um link de redefinição em instantes.
         </p>
-      </CardHeader>
-      <CardContent>
-        {sent ? (
-          <p className="text-sm text-center text-muted-foreground">
-            Se o e-mail existir em nossa base, você receberá um link de redefinição em instantes.
-          </p>
-        ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
-              <Input id="email" type="email" placeholder="voce@empresa.com" {...register("email")} />
-              {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+      ) : (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-sm text-white/70">
+              E-mail
+            </label>
+            <div className="relative">
+              <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+              <input
+                id="email"
+                type="email"
+                placeholder="seu@email.com"
+                autoComplete="email"
+                aria-invalid={Boolean(errors.email)}
+                aria-describedby={errors.email ? "email-error" : undefined}
+                {...register("email")}
+                className="w-full rounded-lg border border-white/10 bg-white/5 py-2.5 pl-10 pr-3 text-sm text-white placeholder:text-white/30 focus:border-amber-400/50 focus:outline-none focus:ring-1 focus:ring-amber-400/50"
+              />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Enviar link
-            </Button>
-          </form>
-        )}
-      </CardContent>
-    </Card>
+            {errors.email && (
+              <p id="email-error" className="text-xs text-red-400">
+                {errors.email.message}
+              </p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 py-2.5 text-sm font-semibold text-[#0b0f19] transition-opacity hover:opacity-90 disabled:opacity-60"
+          >
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            Enviar link
+          </button>
+        </form>
+      )}
+
+      <Link
+        href="/login"
+        className="mt-6 flex items-center justify-center gap-1.5 text-sm text-white/50 hover:text-white/80"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" />
+        Voltar para o login
+      </Link>
+    </div>
   );
 }
