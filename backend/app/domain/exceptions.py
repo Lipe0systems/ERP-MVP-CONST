@@ -22,3 +22,11 @@ class DuplicateValueError(Exception):
     de qualquer uma commitar — sem este tratamento, a segunda geraria um
     IntegrityError não tratado (HTTP 500) em vez de um 409 amigável.
     """
+
+
+class EstoqueInsuficienteError(Exception):
+    """
+    Levantada quando a aprovação de um orçamento tenta dar baixa numa
+    quantidade maior do que a disponível em estoque. Traduzida pela
+    Presentation em HTTP 422.
+    """

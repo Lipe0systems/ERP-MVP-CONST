@@ -11,6 +11,7 @@ import {
   ShoppingCart,
   Boxes,
   NotebookPen,
+  FileText,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -23,6 +24,7 @@ const navItems = [
   { href: "/financeiro", label: "Financeiro", icon: Wallet },
   { href: "/compras", label: "Compras", icon: ShoppingCart },
   { href: "/estoque", label: "Estoque", icon: Boxes },
+  { href: "/orcamentos", label: "Orçamentos", icon: FileText },
   { href: "/diario-obra", label: "Diário de Obra", icon: NotebookPen },
 ];
 

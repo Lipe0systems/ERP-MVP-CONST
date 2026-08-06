@@ -208,3 +208,71 @@ export interface PaginatedResponse<T> {
   page: number;
   page_size: number;
 }
+
+// === Orçamentos ===
+
+export const STATUS_ORCAMENTO = ["rascunho", "aprovado", "recusado", "cancelado"] as const;
+export type StatusOrcamento = (typeof STATUS_ORCAMENTO)[number];
+
+export const STATUS_ORCAMENTO_LABEL: Record<StatusOrcamento, string> = {
+  rascunho: "Rascunho",
+  aprovado: "Aprovado",
+  recusado: "Recusado",
+  cancelado: "Cancelado",
+};
+
+export interface OrcamentoItem {
+  id: string;
+  descricao: string;
+  quantidade: number;
+  valor_unitario: number;
+  valor_total: number;
+  unidade?: string | null;
+  estoque_id?: string | null;
+}
+
+export interface OrcamentoItemInput {
+  descricao: string;
+  quantidade: number;
+  valor_unitario: number;
+  unidade?: string | null;
+  estoque_id?: string | null;
+}
+
+export interface Orcamento {
+  id: string;
+  numero: number;
+  cliente_id: string;
+  obra_id?: string | null;
+  status: StatusOrcamento;
+  validade?: string | null;
+  observacoes?: string | null;
+  conta_receber_id?: string | null;
+  itens: OrcamentoItem[];
+  valor_total: number;
+  criado_em: string;
+}
+
+export interface OrcamentoInput {
+  cliente_id: string;
+  obra_id?: string | null;
+  validade?: string | null;
+  observacoes?: string | null;
+  itens: OrcamentoItemInput[];
+}
+
+export interface OrcamentoListItem {
+  id: string;
+  numero: number;
+  cliente_id: string;
+  cliente_nome: string;
+  obra_id?: string | null;
+  obra_nome?: string | null;
+  status: StatusOrcamento;
+  validade?: string | null;
+  valor_total: number;
+  qtd_itens: number;
+  conta_receber_id?: string | null;
+  observacoes?: string | null;
+  criado_em: string;
+}

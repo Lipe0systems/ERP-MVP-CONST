@@ -1,0 +1,156 @@
+"""
+Endpoints REST do módulo Orçamentos.
+Camada: Presentation.
+"""
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.orm import Session
+
+from app.application.use_cases.orcamento_use_cases import OrcamentoUseCases
+from app.core.security import get_empresa_id
+from app.domain.entities.orcamento import StatusOrcamento
+from app.infrastructure.database.session import get_db
+from app.infrastructure.repositories.cliente_repository import SqlAlchemyClienteRepository
+from app.infrastructure.repositories.conta_receber_repository import SqlAlchemyContaReceberRepository
+from app.infrastructure.repositories.estoque_repository import SqlAlchemyEstoqueRepository
+from app.infrastructure.repositories.obra_repository import SqlAlchemyObraRepository
+from app.infrastructure.repositories.orcamento_repository import SqlAlchemyOrcamentoRepository
+from app.presentation.schemas.orcamento import (
+    OrcamentoCreateIn,
+    OrcamentoListOut,
+    OrcamentoOut,
+    OrcamentoItemOut,
+    OrcamentoUpdateIn,
+)
+
+router = APIRouter(prefix="/orcamentos", tags=["Orçamentos"])
+
+
+def _get_use_cases(db: Session = Depends(get_db)) -> OrcamentoUseCases:
+    return OrcamentoUseCases(
+        repository=SqlAlchemyOrcamentoRepository(db),
+        cliente_repository=SqlAlchemyClienteRepository(db),
+        obra_repository=SqlAlchemyObraRepository(db),
+        estoque_repository=SqlAlchemyEstoqueRepository(db),
+        conta_receber_repository=SqlAlchemyContaReceberRepository(db),
+    )
+
+
+def _entity_to_out(orc) -> OrcamentoOut:
+    return OrcamentoOut(
+        id=orc.id,
+        numero=orc.numero,
+        cliente_id=orc.cliente_id,
+        obra_id=orc.obra_id,
+        status=orc.status,
+        validade=orc.validade,
+        observacoes=orc.observacoes,
+        conta_receber_id=orc.conta_receber_id,
+        criado_em=orc.criado_em,
+        itens=[
+            OrcamentoItemOut(
+                id=i.id,
+                descricao=i.descricao,
+                quantidade=i.quantidade,
+                valor_unitario=i.valor_unitario,
+                unidade=i.unidade,
+                estoque_id=i.estoque_id,
+            )
+            for i in orc.itens
+        ],
+    )
+
+
+@router.get("", response_model=OrcamentoListOut)
+def listar_orcamentos(
+    empresa_id: UUID = Depends(get_empresa_id),
+    use_cases: OrcamentoUseCases = Depends(_get_use_cases),
+    search: str | None = None,
+    status: StatusOrcamento | None = None,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1, le=100),
+):
+    items, total = use_cases.listar(empresa_id, search, status, page, page_size)
+    return OrcamentoListOut(items=items, total=total, page=page, page_size=page_size)
+
+
+@router.get("/{orcamento_id}", response_model=OrcamentoOut)
+def obter_orcamento(
+    orcamento_id: UUID,
+    empresa_id: UUID = Depends(get_empresa_id),
+    use_cases: OrcamentoUseCases = Depends(_get_use_cases),
+):
+    return _entity_to_out(use_cases.obter(empresa_id, orcamento_id))
+
+
+@router.post("", response_model=OrcamentoOut, status_code=201)
+def criar_orcamento(
+    body: OrcamentoCreateIn,
+    empresa_id: UUID = Depends(get_empresa_id),
+    use_cases: OrcamentoUseCases = Depends(_get_use_cases),
+):
+    orc = use_cases.criar(
+        empresa_id=empresa_id,
+        cliente_id=body.cliente_id,
+        obra_id=body.obra_id,
+        validade=body.validade,
+        observacoes=body.observacoes,
+        itens=[item.model_dump() for item in body.itens],
+    )
+    return _entity_to_out(orc)
+
+
+@router.put("/{orcamento_id}", response_model=OrcamentoOut)
+def atualizar_orcamento(
+    orcamento_id: UUID,
+    body: OrcamentoUpdateIn,
+    empresa_id: UUID = Depends(get_empresa_id),
+    use_cases: OrcamentoUseCases = Depends(_get_use_cases),
+):
+    orc = use_cases.atualizar(
+        empresa_id=empresa_id,
+        orcamento_id=orcamento_id,
+        cliente_id=body.cliente_id,
+        obra_id=body.obra_id,
+        validade=body.validade,
+        observacoes=body.observacoes,
+        itens=[item.model_dump() for item in body.itens],
+    )
+    return _entity_to_out(orc)
+
+
+@router.post("/{orcamento_id}/aprovar", response_model=OrcamentoOut)
+def aprovar_orcamento(
+    orcamento_id: UUID,
+    empresa_id: UUID = Depends(get_empresa_id),
+    use_cases: OrcamentoUseCases = Depends(_get_use_cases),
+):
+    return _entity_to_out(use_cases.aprovar(empresa_id, orcamento_id))
+
+
+@router.post("/{orcamento_id}/recusar", response_model=OrcamentoOut)
+def recusar_orcamento(
+    orcamento_id: UUID,
+    empresa_id: UUID = Depends(get_empresa_id),
+    use_cases: OrcamentoUseCases = Depends(_get_use_cases),
+):
+    return _entity_to_out(use_cases.recusar(empresa_id, orcamento_id))
+
+
+@router.post("/{orcamento_id}/cancelar", response_model=OrcamentoOut)
+def cancelar_orcamento(
+    orcamento_id: UUID,
+    empresa_id: UUID = Depends(get_empresa_id),
+    use_cases: OrcamentoUseCases = Depends(_get_use_cases),
+):
+    return _entity_to_out(use_cases.cancelar(empresa_id, orcamento_id))
+
+
+@router.delete("/{orcamento_id}", status_code=204)
+def remover_orcamento(
+    orcamento_id: UUID,
+    empresa_id: UUID = Depends(get_empresa_id),
+    use_cases: OrcamentoUseCases = Depends(_get_use_cases),
+):
+    use_cases.remover(empresa_id, orcamento_id)
