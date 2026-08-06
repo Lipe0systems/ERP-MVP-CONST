@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -10,7 +11,6 @@ import {
   ShoppingCart,
   Boxes,
   NotebookPen,
-  Building2,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -72,9 +72,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
       {/* Sidebar fixa — visível apenas em telas md+ */}
       <aside className="hidden w-64 shrink-0 flex-col border-r bg-card md:flex">
         <div className="flex h-16 items-center gap-2 border-b px-6">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Building2 className="h-4 w-4" />
-          </div>
+          <Image src="/images/logo-icone.png" alt="" width={32} height={32} className="h-8 w-8 object-contain" />
           <span className="font-semibold">Construtec</span>
         </div>
         <SidebarContent />
@@ -91,9 +89,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
           <aside className="absolute inset-y-0 left-0 flex w-64 flex-col border-r bg-card">
             <div className="flex h-16 items-center justify-between gap-2 border-b px-6">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  <Building2 className="h-4 w-4" />
-                </div>
+                <Image src="/images/logo-icone.png" alt="" width={32} height={32} className="h-8 w-8 object-contain" />
                 <span className="font-semibold">Construtec</span>
               </div>
               <Button variant="ghost" size="icon" onClick={onCloseMobile} aria-label="Fechar menu">

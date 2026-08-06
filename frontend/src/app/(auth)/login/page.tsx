@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Building2, Eye, EyeOff, Loader2, Lock, LogIn, Mail } from "lucide-react";
+import { Eye, EyeOff, Loader2, Lock, LogIn, Mail } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 
@@ -54,9 +55,7 @@ export default function LoginPage() {
     <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.03] p-8 backdrop-blur-sm sm:p-10">
       {/* Marca */}
       <div className="mb-8 flex items-center gap-3">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-500">
-          <Building2 className="h-6 w-6 text-[#0b0f19]" />
-        </div>
+        <Image src="/images/logo-icone.png" alt="" width={48} height={48} className="h-12 w-12 shrink-0 object-contain" />
         <div>
           <p className="text-lg font-bold leading-tight text-white">Construtec</p>
           <p className="text-xs text-white/50">ERP para Construtoras</p>
