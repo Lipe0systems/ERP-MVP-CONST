@@ -8,17 +8,16 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         {children}
       </div>
 
-      {/* Painel de imagem — some em telas pequenas. object-position focado na
-          parte de cima/meio (guindaste, prédio e texto), que é o conteúdo
-          principal da imagem — evita cortar bem no centro morto da foto. */}
+      {/* Painel de imagem — some em telas pequenas. Imagem paisagem (1536x1024),
+          próxima da proporção do painel — o corte de "cover" é lateral e leve. */}
       <div className="relative hidden md:block md:w-1/2 lg:w-3/5">
         <Image
           src="/images/login-hero.png"
-          alt="Construção em andamento ao pôr do sol, com guindaste — Construtec, gestão completa para construtoras"
+          alt="Dois engenheiros observando uma obra em andamento ao pôr do sol, com guindaste e skyline da cidade — Construtec, gestão completa para construtoras"
           fill
           priority
           sizes="(min-width: 1024px) 60vw, 50vw"
-          className="object-cover object-[center_20%]"
+          className="object-cover"
         />
       </div>
     </div>
