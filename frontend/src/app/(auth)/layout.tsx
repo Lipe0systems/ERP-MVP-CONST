@@ -8,16 +8,19 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         {children}
       </div>
 
-      {/* Painel de imagem — some em telas pequenas. Imagem paisagem (1536x1024),
-          próxima da proporção do painel — o corte de "cover" é lateral e leve. */}
+      {/* Painel de imagem — some em telas pequenas. Essa versão da imagem já traz
+          o texto de apresentação embutido, todo do lado esquerdo — por isso o
+          corte de "cover" fica ancorado à esquerda (object-left), garantindo
+          que o texto nunca seja cortado; o que se perde é sempre do lado
+          direito (céu/guindaste), que é seguro de recortar. */}
       <div className="relative hidden md:block md:w-1/2 lg:w-3/5">
         <Image
           src="/images/login-hero.png"
-          alt="Dois engenheiros observando uma obra em andamento ao pôr do sol, com guindaste e skyline da cidade — Construtec, gestão completa para construtoras"
+          alt="Gestão completa para construir o futuro — o ERP feito para construtoras que buscam eficiência, organização e resultados: visão completa do negócio, obras/orçamentos/finanças integrados, multiempresa e multiusuário, segurança e confiabilidade. Ao fundo, obra em andamento ao pôr do sol com guindaste e skyline da cidade."
           fill
           priority
           sizes="(min-width: 1024px) 60vw, 50vw"
-          className="object-cover"
+          className="object-cover object-left"
         />
       </div>
     </div>
