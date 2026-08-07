@@ -385,3 +385,31 @@ export interface LancamentoBancarioInput {
   categoria?: string | null;
   referencia?: string | null;
 }
+
+// === Documentos (V3-F4) ===
+
+export interface Documento {
+  id: string;
+  nome: string;
+  arquivo_url: string;
+  arquivo_nome: string;
+  arquivo_tipo: string;
+  arquivo_tamanho: number;
+  cliente_id?: string | null;
+  obra_id?: string | null;
+  orcamento_id?: string | null;
+  descricao?: string | null;
+  criado_em: string;
+}
+
+export interface DocumentoInput {
+  nome: string;
+  arquivo_url: string;
+  arquivo_nome: string;
+  arquivo_tipo: string;
+  arquivo_tamanho: number;
+  cliente_id?: string | null;
+  obra_id?: string | null;
+  orcamento_id?: string | null;
+  descricao?: string | null;
+}
