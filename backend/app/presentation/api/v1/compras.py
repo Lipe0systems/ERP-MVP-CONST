@@ -12,6 +12,7 @@ from app.core.security import get_empresa_id
 from app.domain.entities.compra import StatusCompra
 from app.infrastructure.database.session import get_db
 from app.infrastructure.repositories.compra_repository import SqlAlchemyCompraRepository
+from app.infrastructure.repositories.estoque_repository import SqlAlchemyEstoqueRepository
 from app.infrastructure.repositories.obra_repository import SqlAlchemyObraRepository
 from app.presentation.schemas.compra import CompraCreate, CompraListOut, CompraOut, CompraUpdate
 
@@ -22,6 +23,7 @@ def _get_use_cases(db: Session = Depends(get_db)) -> CompraUseCases:
     return CompraUseCases(
         repository=SqlAlchemyCompraRepository(db),
         obra_repository=SqlAlchemyObraRepository(db),
+        estoque_repository=SqlAlchemyEstoqueRepository(db),
     )
 
 
@@ -96,3 +98,17 @@ def remover_compra(
     use_cases: CompraUseCases = Depends(_get_use_cases),
 ):
     use_cases.remover(empresa_id, compra_id)
+
+
+@router.post("/{compra_id}/receber", response_model=CompraOut)
+def receber_compra(
+    compra_id: UUID,
+    empresa_id: UUID = Depends(get_empresa_id),
+    use_cases: CompraUseCases = Depends(_get_use_cases),
+):
+    """
+    Marca a compra como recebida e dá entrada automática no estoque.
+    Se o produto já existir no estoque, soma a quantidade e recalcula o
+    valor médio ponderado. Se não existir, cria um novo item.
+    """
+    return use_cases.receber(empresa_id, compra_id)

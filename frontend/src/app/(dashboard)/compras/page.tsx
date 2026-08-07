@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Package, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { Package, PackageCheck, Pencil, Plus, Search, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import { Pagination } from "@/components/pagination";
 import { DeleteConfirmDialog } from "@/components/delete-confirm-dialog";
 import { CompraFormDialog } from "@/components/compras/compra-form-dialog";
 import { StatusCompraBadge } from "@/components/compras/status-compra-badge";
-import { useCompras, useRemoverCompra } from "@/hooks/use-compras";
+import { useCompras, useReceberCompra, useRemoverCompra } from "@/hooks/use-compras";
 import { useDebounce } from "@/hooks/use-debounce";
 import { formatData, formatMoeda } from "@/lib/format";
 import { STATUS_COMPRA, type CompraListItem, type StatusCompra } from "@/types";
@@ -37,6 +37,7 @@ export default function ComprasPage() {
 
   const search = useDebounce(searchInput, 400);
   const remover = useRemoverCompra();
+  const receber = useReceberCompra();
 
   const { data, isLoading, isError, isFetching } = useCompras({
     search,
@@ -156,6 +157,18 @@ export default function ComprasPage() {
                   <TableCell className="text-right">{formatMoeda(compra.valor_total)}</TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-1">
+                      {(compra.status === "pendente" || compra.status === "aprovada") && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Receber — dá entrada automática no estoque"
+                          onClick={() => receber.mutate(compra.id)}
+                          disabled={receber.isPending}
+                          aria-label={`Receber ${compra.produto} e dar entrada no estoque`}
+                        >
+                          <PackageCheck className="h-4 w-4 text-green-600" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="icon"

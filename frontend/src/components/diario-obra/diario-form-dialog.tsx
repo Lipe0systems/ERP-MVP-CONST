@@ -20,9 +20,10 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { FotoUploader } from "@/components/diario-obra/foto-uploader";
-import { useObras } from "@/hooks/use-obras";
 import { useAtualizarRegistroDiario, useCriarRegistroDiario } from "@/hooks/use-diario-obra";
 import { getLocalISODate } from "@/lib/format";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import { listarObras } from "@/lib/api/obras";
 import { removerFotoDiario } from "@/lib/supabase/storage";
 import { CLIMA_OBRA, CLIMA_OBRA_LABEL, type RegistroDiarioListItem } from "@/types";
 
@@ -48,25 +49,10 @@ export function DiarioFormDialog({ open, onOpenChange, registro }: DiarioFormDia
   const atualizar = useAtualizarRegistroDiario();
   const loading = criar.isPending || atualizar.isPending;
 
-  // Só busca obras com o modal aberto — evita 1 chamada de API extra toda
-  // vez que a tela de Diário de Obra é carregada (lição da revisão da Fase 3).
-  const { data: obrasData, isLoading: loadingObras } = useObras({
-    search: "",
-    status: "todos",
-    page: 1,
-    pageSize: 100,
-    enabled: open,
-  });
-
-  // Mesma proteção contra o bug de dropdown identificado na Fase 4: garante
-  // que a obra do registro em edição sempre apareça, mesmo fora da página.
-  const opcoesObras = useMemo((): { id: string; nome: string }[] => {
-    const lista = obrasData?.items ?? [];
-    if (registro?.obra_id && registro.obra_nome && !lista.some((o) => o.id === registro.obra_id)) {
-      return [{ id: registro.obra_id, nome: registro.obra_nome }, ...lista];
-    }
-    return lista;
-  }, [obrasData, registro]);
+  async function buscarObras(term: string) {
+    const res = await listarObras({ search: term, status: "todos", page: 1, pageSize: 20 });
+    return res.items.map((o) => ({ id: o.id, label: o.nome }));
+  }
 
   const {
     register,
@@ -74,6 +60,7 @@ export function DiarioFormDialog({ open, onOpenChange, registro }: DiarioFormDia
     reset,
     watch,
     control,
+    setValue,
     formState: { errors },
   } = useForm<DiarioFormValues>({
     resolver: zodResolver(diarioSchema),
@@ -141,15 +128,14 @@ export function DiarioFormDialog({ open, onOpenChange, registro }: DiarioFormDia
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="obra_id">Obra *</Label>
-              <Select id="obra_id" disabled={loadingObras} aria-invalid={Boolean(errors.obra_id)} {...register("obra_id")}>
-                <option value="">{loadingObras ? "Carregando..." : "Selecione uma obra"}</option>
-                {opcoesObras.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.nome}
-                  </option>
-                ))}
-              </Select>
+              <Label>Obra *</Label>
+              <SearchableSelect
+                value={watch("obra_id") ?? ""}
+                onChange={(id) => setValue("obra_id", id, { shouldValidate: true })}
+                onSearch={buscarObras}
+                placeholder="Buscar obra..."
+                currentLabel={registro?.obra_nome ?? ""}
+              />
               {errors.obra_id && <p className="text-xs text-destructive">{errors.obra_id.message}</p>}
             </div>
 

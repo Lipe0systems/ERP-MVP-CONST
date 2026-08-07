@@ -20,7 +20,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useFornecedoresDropdown } from "@/hooks/use-fornecedores";
-import { useObras } from "@/hooks/use-obras";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import { listarObras } from "@/lib/api/obras";
 import { useAtualizarContaPagar, useCriarContaPagar } from "@/hooks/use-financeiro";
 import { STATUS_CONTA, type ContaPagarListItem } from "@/types";
 
@@ -78,32 +79,17 @@ export function ContaPagarFormDialog({ open, onOpenChange, conta }: ContaPagarFo
   const { data: fornecedoresData } = useFornecedoresDropdown();
   const fornecedores = fornecedoresData?.items ?? [];
 
-  const { data: obrasData, isLoading: loadingObras } = useObras({
-    search: "",
-    status: "todos",
-    page: 1,
-    pageSize: 100,
-    enabled: open,
-  });
-
-  // Se a conta em edição tiver uma obra fora da primeira página de 100
-  // (base grande), ela ainda aparece como opção — evita que o <select> caia
-  // silenciosamente em "Nenhuma" e desvincule a obra ao salvar sem querer
-  // (mesmo bug de fundo identificado e corrigido em ObraFormDialog na Fase 3,
-  // aqui com um agravante: a perda do vínculo seria silenciosa no submit).
-  const opcoesObras = useMemo((): { id: string; nome: string }[] => {
-    const lista = obrasData?.items ?? [];
-    if (conta?.obra_id && conta.obra_nome && !lista.some((o) => o.id === conta.obra_id)) {
-      return [{ id: conta.obra_id, nome: conta.obra_nome }, ...lista];
-    }
-    return lista;
-  }, [obrasData, conta]);
+  async function buscarObras(term: string) {
+    const res = await listarObras({ search: term, status: "todos", page: 1, pageSize: 20 });
+    return res.items.map((o) => ({ id: o.id, label: o.nome }));
+  }
 
   const {
     register,
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<ContaPagarFormValues>({
     resolver: zodResolver(contaPagarSchema),
@@ -212,15 +198,14 @@ export function ContaPagarFormDialog({ open, onOpenChange, conta }: ContaPagarFo
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="obra_id">Obra</Label>
-              <Select id="obra_id" disabled={loadingObras} {...register("obra_id")}>
-                <option value="">{loadingObras ? "Carregando..." : "Nenhuma"}</option>
-                {opcoesObras.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.nome}
-                  </option>
-                ))}
-              </Select>
+              <Label>Obra</Label>
+              <SearchableSelect
+                value={watch("obra_id") ?? ""}
+                onChange={(id) => setValue("obra_id", id)}
+                onSearch={buscarObras}
+                placeholder="Buscar obra..."
+                currentLabel={conta?.obra_nome ?? ""}
+              />
             </div>
 
             <div className="space-y-2">

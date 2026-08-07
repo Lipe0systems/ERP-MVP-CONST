@@ -9,14 +9,22 @@ from uuid import UUID
 from fastapi import HTTPException, status
 
 from app.domain.entities.compra import Compra, StatusCompra
+from app.domain.entities.estoque import ItemEstoque
 from app.domain.repositories.compra_repository import CompraRepository
+from app.domain.repositories.estoque_repository import EstoqueRepository
 from app.domain.repositories.obra_repository import ObraRepository
 
 
 class CompraUseCases:
-    def __init__(self, repository: CompraRepository, obra_repository: ObraRepository):
+    def __init__(
+        self,
+        repository: CompraRepository,
+        obra_repository: ObraRepository,
+        estoque_repository: EstoqueRepository | None = None,
+    ):
         self.repository = repository
         self.obra_repository = obra_repository
+        self.estoque_repository = estoque_repository
 
     def _validar_obra(self, empresa_id: UUID, obra_id: UUID | None) -> None:
         if obra_id and self.obra_repository.get_by_id(empresa_id, obra_id) is None:
@@ -103,3 +111,72 @@ class CompraUseCases:
         removida = self.repository.delete(empresa_id, compra_id)
         if not removida:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Compra não encontrada.")
+
+    def receber(self, empresa_id: UUID, compra_id: UUID) -> Compra:
+        """
+        Marca a compra como RECEBIDA e dá entrada automática no estoque.
+
+        Lógica de entrada:
+        - Se já existe um item com o mesmo nome de produto: soma a quantidade
+          e recalcula o valor médio ponderado (custo médio = média ponderada
+          pelo volume, não simples — evita distorção quando chegam lotes de
+          tamanhos muito diferentes).
+        - Se não existe: cria um item novo no estoque.
+
+        Não bloqueia se o EstoqueRepository não estiver injetado (facilita
+        testes e cenários sem módulo de estoque), mas registra o motivo.
+        """
+        compra = self.obter(empresa_id, compra_id)
+
+        if compra.status == StatusCompra.RECEBIDA:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Esta compra já foi marcada como recebida.",
+            )
+        if compra.status == StatusCompra.CANCELADA:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Não é possível receber uma compra cancelada.",
+            )
+
+        recebida = replace(compra, status=StatusCompra.RECEBIDA)
+        compra_atualizada = self.repository.update(recebida)
+
+        if self.estoque_repository:
+            self._dar_entrada_estoque(empresa_id, compra)
+
+        return compra_atualizada
+
+    def _dar_entrada_estoque(self, empresa_id: UUID, compra: Compra) -> None:
+        """Dá entrada no estoque após recebimento da compra."""
+        assert self.estoque_repository is not None
+
+        existente = self.estoque_repository.get_by_produto(empresa_id, compra.produto)
+
+        if existente:
+            # Valor médio ponderado: (qtd_atual × vm_atual + qtd_nova × vm_novo)
+            #                        / (qtd_atual + qtd_nova)
+            qtd_nova = existente.quantidade + compra.quantidade
+            vm_novo = round(
+                (existente.quantidade * existente.valor_medio + compra.quantidade * compra.valor_unitario)
+                / qtd_nova,
+                2,
+            )
+            atualizado = replace(
+                existente,
+                quantidade=round(qtd_nova, 3),
+                valor_medio=vm_novo,
+                unidade=existente.unidade or compra.unidade,
+            )
+            self.estoque_repository.update(atualizado)
+        else:
+            # Produto ainda não está no estoque — cria
+            novo_item = ItemEstoque(
+                id=uuid.uuid4(),
+                empresa_id=empresa_id,
+                produto=compra.produto,
+                quantidade=round(compra.quantidade, 3),
+                valor_medio=compra.valor_unitario,
+                unidade=compra.unidade,
+            )
+            self.estoque_repository.create(novo_item)

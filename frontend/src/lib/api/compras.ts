@@ -28,3 +28,7 @@ export function atualizarCompra(id: string, data: CompraInput) {
 export function removerCompra(id: string) {
   return apiFetch<void>(`/compras/${id}`, { method: "DELETE" });
 }
+
+export function receberCompra(id: string) {
+  return apiFetch<import("@/types").Compra>(`/compras/${id}/receber`, { method: "POST" });
+}

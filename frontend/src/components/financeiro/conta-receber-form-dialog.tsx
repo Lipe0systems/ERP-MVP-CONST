@@ -19,9 +19,10 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { useClientes } from "@/hooks/use-clientes";
-import { useObras } from "@/hooks/use-obras";
 import { useAtualizarContaReceber, useCriarContaReceber } from "@/hooks/use-financeiro";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import { listarClientes } from "@/lib/api/clientes";
+import { listarObras } from "@/lib/api/obras";
 import { STATUS_CONTA, type ContaReceberListItem } from "@/types";
 
 const STATUS_LABEL: Record<(typeof STATUS_CONTA)[number], string> = {
@@ -71,47 +72,22 @@ export function ContaReceberFormDialog({ open, onOpenChange, conta }: ContaReceb
   const atualizar = useAtualizarContaReceber();
   const loading = criar.isPending || atualizar.isPending;
 
-  // Só busca clientes/obras com o modal aberto (lição da revisão da Fase 3).
-  const { data: clientesData, isLoading: loadingClientes } = useClientes({
-    search: "",
-    page: 1,
-    pageSize: 100,
-    enabled: open,
-  });
-  const { data: obrasData, isLoading: loadingObras } = useObras({
-    search: "",
-    status: "todos",
-    page: 1,
-    pageSize: 100,
-    enabled: open,
-  });
+  async function buscarClientes(term: string) {
+    const res = await listarClientes({ search: term, page: 1, pageSize: 20 });
+    return res.items.map((c) => ({ id: c.id, label: c.nome }));
+  }
 
-  // Se a conta em edição tiver cliente/obra fora da primeira página de 100
-  // (base grande), eles ainda aparecem como opção — evita que o <select>
-  // caia silenciosamente em "Nenhum(a)" e desvincule o registro ao salvar
-  // sem querer (mesmo bug identificado e corrigido em ObraFormDialog na
-  // Fase 3, aqui com um agravante: a perda do vínculo seria silenciosa).
-  const opcoesClientes = useMemo((): { id: string; nome: string }[] => {
-    const lista = clientesData?.items ?? [];
-    if (conta?.cliente_id && conta.cliente_nome && !lista.some((c) => c.id === conta.cliente_id)) {
-      return [{ id: conta.cliente_id, nome: conta.cliente_nome }, ...lista];
-    }
-    return lista;
-  }, [clientesData, conta]);
-
-  const opcoesObras = useMemo((): { id: string; nome: string }[] => {
-    const lista = obrasData?.items ?? [];
-    if (conta?.obra_id && conta.obra_nome && !lista.some((o) => o.id === conta.obra_id)) {
-      return [{ id: conta.obra_id, nome: conta.obra_nome }, ...lista];
-    }
-    return lista;
-  }, [obrasData, conta]);
+  async function buscarObras(term: string) {
+    const res = await listarObras({ search: term, status: "todos", page: 1, pageSize: 20 });
+    return res.items.map((o) => ({ id: o.id, label: o.nome }));
+  }
 
   const {
     register,
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<ContaReceberFormValues>({
     resolver: zodResolver(contaReceberSchema),
@@ -198,27 +174,25 @@ export function ContaReceberFormDialog({ open, onOpenChange, conta }: ContaReceb
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="cliente_id">Cliente</Label>
-              <Select id="cliente_id" disabled={loadingClientes} {...register("cliente_id")}>
-                <option value="">{loadingClientes ? "Carregando..." : "Nenhum"}</option>
-                {opcoesClientes.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nome}
-                  </option>
-                ))}
-              </Select>
+              <Label>Cliente</Label>
+              <SearchableSelect
+                value={watch("cliente_id") ?? ""}
+                onChange={(id) => setValue("cliente_id", id)}
+                onSearch={buscarClientes}
+                placeholder="Buscar cliente..."
+                currentLabel={conta?.cliente_nome ?? ""}
+              />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="obra_id">Obra</Label>
-              <Select id="obra_id" disabled={loadingObras} {...register("obra_id")}>
-                <option value="">{loadingObras ? "Carregando..." : "Nenhuma"}</option>
-                {opcoesObras.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.nome}
-                  </option>
-                ))}
-              </Select>
+              <Label>Obra</Label>
+              <SearchableSelect
+                value={watch("obra_id") ?? ""}
+                onChange={(id) => setValue("obra_id", id)}
+                onSearch={buscarObras}
+                placeholder="Buscar obra..."
+                currentLabel={conta?.obra_nome ?? ""}
+              />
             </div>
 
             <div className="space-y-2">
