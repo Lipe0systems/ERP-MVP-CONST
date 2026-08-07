@@ -20,6 +20,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useObras } from "@/hooks/use-obras";
+import { useFornecedoresDropdown } from "@/hooks/use-fornecedores";
 import { useAtualizarCompra, useCriarCompra } from "@/hooks/use-compras";
 import { STATUS_COMPRA, type CompraListItem } from "@/types";
 import { formatMoeda, getLocalISODate } from "@/lib/format";
@@ -74,6 +75,9 @@ export function CompraFormDialog({ open, onOpenChange, compra }: CompraFormDialo
 
   // Só busca obras com o modal aberto — evita 1 chamada de API extra toda
   // vez que a tela de Compras é carregada (lição da revisão da Fase 3).
+  const { data: fornecedoresData } = useFornecedoresDropdown();
+  const fornecedores = fornecedoresData?.items ?? [];
+
   const { data: obrasData, isLoading: loadingObras } = useObras({
     search: "",
     status: "todos",
@@ -173,7 +177,18 @@ export function CompraFormDialog({ open, onOpenChange, compra }: CompraFormDialo
 
             <div className="space-y-2">
               <Label htmlFor="fornecedor">Fornecedor *</Label>
-              <Input id="fornecedor" aria-invalid={Boolean(errors.fornecedor)} {...register("fornecedor")} />
+              <Input
+                id="fornecedor"
+                list="fornecedores-list"
+                placeholder="Digite ou selecione..."
+                aria-invalid={Boolean(errors.fornecedor)}
+                {...register("fornecedor")}
+              />
+              <datalist id="fornecedores-list">
+                {fornecedores.map((f) => (
+                  <option key={f.id} value={f.nome} />
+                ))}
+              </datalist>
               {errors.fornecedor && <p className="text-xs text-destructive">{errors.fornecedor.message}</p>}
             </div>
 

@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { useFornecedoresDropdown } from "@/hooks/use-fornecedores";
 import { useObras } from "@/hooks/use-obras";
 import { useAtualizarContaPagar, useCriarContaPagar } from "@/hooks/use-financeiro";
 import { STATUS_CONTA, type ContaPagarListItem } from "@/types";
@@ -74,6 +75,9 @@ export function ContaPagarFormDialog({ open, onOpenChange, conta }: ContaPagarFo
 
   // Só busca obras com o modal aberto — evita 1 chamada de API extra toda
   // vez que a tela de Financeiro é carregada (lição da revisão da Fase 3).
+  const { data: fornecedoresData } = useFornecedoresDropdown();
+  const fornecedores = fornecedoresData?.items ?? [];
+
   const { data: obrasData, isLoading: loadingObras } = useObras({
     search: "",
     status: "todos",
@@ -189,7 +193,17 @@ export function ContaPagarFormDialog({ open, onOpenChange, conta }: ContaPagarFo
 
             <div className="space-y-2">
               <Label htmlFor="fornecedor">Fornecedor</Label>
-              <Input id="fornecedor" {...register("fornecedor")} />
+              <Input
+                id="fornecedor"
+                list="fornecedores-pagar-list"
+                placeholder="Digite ou selecione..."
+                {...register("fornecedor")}
+              />
+              <datalist id="fornecedores-pagar-list">
+                {fornecedores.map((f) => (
+                  <option key={f.id} value={f.nome} />
+                ))}
+              </datalist>
             </div>
 
             <div className="space-y-2">

@@ -4,7 +4,7 @@ Camada: Presentation.
 """
 from fastapi import APIRouter
 
-from app.presentation.api.v1 import auth, clientes, compras, dashboard, diario_obra, estoque, financeiro, obras, orcamentos
+from app.presentation.api.v1 import auth, clientes, compras, dashboard, diario_obra, estoque, financeiro, fornecedores, obras, orcamentos, relatorios
 
 api_router = APIRouter()
 api_router.include_router(auth.router)
@@ -16,3 +16,5 @@ api_router.include_router(compras.router)
 api_router.include_router(estoque.router)
 api_router.include_router(diario_obra.router)
 api_router.include_router(orcamentos.router)
+api_router.include_router(fornecedores.router)
+api_router.include_router(relatorios.router)

@@ -276,3 +276,25 @@ export interface OrcamentoListItem {
   observacoes?: string | null;
   criado_em: string;
 }
+
+// === Fornecedores ===
+
+export interface Fornecedor {
+  id: string;
+  nome: string;
+  documento?: string | null;
+  email?: string | null;
+  telefone?: string | null;
+  endereco?: string | null;
+  observacoes?: string | null;
+  criado_em: string;
+}
+
+export interface FornecedorInput {
+  nome: string;
+  documento?: string | null;
+  email?: string | null;
+  telefone?: string | null;
+  endereco?: string | null;
+  observacoes?: string | null;
+}

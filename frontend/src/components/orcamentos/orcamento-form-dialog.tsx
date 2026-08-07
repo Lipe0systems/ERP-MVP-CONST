@@ -30,8 +30,8 @@ function emptyItem(): ItemRow {
   return {
     _key: crypto.randomUUID(),
     descricao: "",
-    quantidade: 1,
-    valor_unitario: 0,
+    quantidade: "" as any,
+    valor_unitario: "" as any,
     unidade: null,
     estoque_id: null,
   };

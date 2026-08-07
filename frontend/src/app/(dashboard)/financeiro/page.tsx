@@ -1,8 +1,9 @@
 "use client";
 
-import { ArrowDownCircle, ArrowUpCircle, Wallet } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, FileDown, Wallet } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,6 +11,8 @@ import { ContasPagarTable } from "@/components/financeiro/contas-pagar-table";
 import { ContasReceberTable } from "@/components/financeiro/contas-receber-table";
 import { useResumoFinanceiro } from "@/hooks/use-financeiro";
 import { formatMoeda } from "@/lib/format";
+import { baixarRelatorioFinanceiro } from "@/lib/api/relatorios";
+import { toast } from "sonner";
 
 export default function FinanceiroPage() {
   const { data: resumo, isLoading } = useResumoFinanceiro();
@@ -37,9 +40,20 @@ export default function FinanceiroPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Financeiro</h1>
-        <p className="text-sm text-muted-foreground">Contas a pagar, contas a receber e fluxo de caixa</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Financeiro</h1>
+          <p className="text-sm text-muted-foreground">Contas a pagar, contas a receber e fluxo de caixa</p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={async () => {
+            try { await baixarRelatorioFinanceiro(); } catch { toast.error("Erro ao gerar relatório."); }
+          }}
+        >
+          <FileDown className="mr-2 h-4 w-4" />
+          Relatório PDF
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

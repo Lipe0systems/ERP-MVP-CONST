@@ -41,6 +41,7 @@ import {
 import { useClientes } from "@/hooks/use-clientes";
 import { formatMoeda, formatData } from "@/lib/format";
 import { baixarPdfOrcamento } from "@/lib/api/orcamentos";
+import { baixarRelatorioOrcamentos } from "@/lib/api/relatorios";
 import { toast } from "sonner";
 import type { OrcamentoListItem, StatusOrcamento } from "@/types";
 
@@ -98,10 +99,21 @@ export default function OrcamentosPage() {
             Geração, aprovação e acompanhamento de orçamentos
           </p>
         </div>
-        <Button onClick={handleNovo}>
-          <Plus className="mr-2 h-4 w-4" />
-          Novo Orçamento
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={async () => {
+              try { await baixarRelatorioOrcamentos(); } catch { toast.error("Erro ao gerar relatório."); }
+            }}
+          >
+            <FileDown className="mr-2 h-4 w-4" />
+            Relatório PDF
+          </Button>
+          <Button onClick={handleNovo}>
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Orçamento
+          </Button>
+        </div>
       </div>
 
       {/* Filtros */}
