@@ -70,3 +70,21 @@ export function atualizarContaReceber(id: string, data: ContaReceberInput) {
 export function removerContaReceber(id: string) {
   return apiFetch<void>(`/contas-receber/${id}`, { method: "DELETE" });
 }
+
+// --- Ações rápidas (sem abrir modal) -----------------------------------
+
+export function liquidarContaPagar(id: string, campos: ContaPagarInput) {
+  return atualizarContaPagar(id, { ...campos, status: "liquidado", data_pagamento: new Date().toISOString().split("T")[0] });
+}
+
+export function cancelarContaPagar(id: string, campos: ContaPagarInput) {
+  return atualizarContaPagar(id, { ...campos, status: "cancelado" });
+}
+
+export function liquidarContaReceber(id: string, campos: ContaReceberInput) {
+  return atualizarContaReceber(id, { ...campos, status: "liquidado", data_recebimento: new Date().toISOString().split("T")[0] });
+}
+
+export function cancelarContaReceber(id: string, campos: ContaReceberInput) {
+  return atualizarContaReceber(id, { ...campos, status: "cancelado" });
+}

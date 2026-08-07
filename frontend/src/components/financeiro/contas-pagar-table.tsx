@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Plus, Receipt, Search, Trash2 } from "lucide-react";
+import { Pencil, Plus, Receipt, Search, Trash2, CheckCircle, XCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import { Pagination } from "@/components/pagination";
 import { StatusContaBadge } from "@/components/financeiro/status-conta-badge";
 import { ContaPagarFormDialog } from "@/components/financeiro/conta-pagar-form-dialog";
 import { DeleteConfirmDialog } from "@/components/delete-confirm-dialog";
-import { useContasPagar, useRemoverContaPagar } from "@/hooks/use-financeiro";
+import { useContasPagar, useRemoverContaPagar, useLiquidarContaPagar, useCancelarContaPagar } from "@/hooks/use-financeiro";
 import { useDebounce } from "@/hooks/use-debounce";
 import { formatData, formatMoeda } from "@/lib/format";
 import { STATUS_CONTA, type ContaPagarListItem, type StatusConta } from "@/types";
@@ -35,6 +35,8 @@ export function ContasPagarTable() {
 
   const search = useDebounce(searchInput, 400);
   const remover = useRemoverContaPagar();
+  const liquidar = useLiquidarContaPagar();
+  const cancelarRapido = useCancelarContaPagar();
 
   const { data, isLoading, isError, isFetching } = useContasPagar({
     search,
@@ -145,6 +147,30 @@ export function ContasPagarTable() {
                   <TableCell className="text-right">{formatMoeda(conta.valor)}</TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-1">
+                      {conta.status === "pendente" && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Marcar como paga"
+                            onClick={() => liquidar.mutate(conta)}
+                            disabled={liquidar.isPending}
+                            aria-label={`Marcar ${conta.descricao} como paga`}
+                          >
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Cancelar"
+                            onClick={() => cancelarRapido.mutate(conta)}
+                            disabled={cancelarRapido.isPending}
+                            aria-label={`Cancelar ${conta.descricao}`}
+                          >
+                            <XCircle className="h-4 w-4 text-amber-600" />
+                          </Button>
+                        </>
+                      )}
                       <Button
                         variant="ghost"
                         size="icon"

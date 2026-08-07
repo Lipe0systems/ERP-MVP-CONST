@@ -6,16 +6,20 @@ import { toast } from "sonner";
 import {
   atualizarContaPagar,
   atualizarContaReceber,
+  cancelarContaPagar,
+  cancelarContaReceber,
   criarContaPagar,
   criarContaReceber,
   listarContasPagar,
   listarContasReceber,
+  liquidarContaPagar,
+  liquidarContaReceber,
   obterResumoFinanceiro,
   removerContaPagar,
   removerContaReceber,
 } from "@/lib/api/financeiro";
 import { extractErrorMessage } from "@/lib/api/client";
-import type { ContaPagarInput, ContaReceberInput, StatusConta } from "@/types";
+import type { ContaPagarInput, ContaPagarListItem, ContaReceberInput, ContaReceberListItem, StatusConta } from "@/types";
 
 const CONTAS_PAGAR_KEY = "contas-pagar";
 const CONTAS_RECEBER_KEY = "contas-receber";
@@ -128,6 +132,71 @@ export function useRemoverContaReceber() {
       invalidate();
       toast.success("Conta a receber removida com sucesso.");
     },
+    onError: (error) => toast.error(extractErrorMessage(error)),
+  });
+}
+
+// --- Ações rápidas (liquidar / cancelar direto na tabela) --------------
+
+function _toContaPagarInput(c: ContaPagarListItem): ContaPagarInput {
+  return {
+    descricao: c.descricao,
+    valor: c.valor,
+    data_vencimento: c.data_vencimento,
+    fornecedor: c.fornecedor ?? undefined,
+    obra_id: c.obra_id ?? undefined,
+    categoria: c.categoria ?? undefined,
+    data_pagamento: c.data_pagamento ?? undefined,
+    status: c.status,
+    observacoes: c.observacoes ?? undefined,
+  };
+}
+
+function _toContaReceberInput(c: ContaReceberListItem): ContaReceberInput {
+  return {
+    descricao: c.descricao,
+    valor: c.valor,
+    data_vencimento: c.data_vencimento,
+    cliente_id: c.cliente_id ?? undefined,
+    obra_id: c.obra_id ?? undefined,
+    data_recebimento: c.data_recebimento ?? undefined,
+    status: c.status,
+    observacoes: c.observacoes ?? undefined,
+  };
+}
+
+export function useLiquidarContaPagar() {
+  const invalidate = useInvalidateFinanceiro();
+  return useMutation({
+    mutationFn: (conta: ContaPagarListItem) => liquidarContaPagar(conta.id, _toContaPagarInput(conta)),
+    onSuccess: () => { invalidate(); toast.success("Conta marcada como paga."); },
+    onError: (error) => toast.error(extractErrorMessage(error)),
+  });
+}
+
+export function useCancelarContaPagar() {
+  const invalidate = useInvalidateFinanceiro();
+  return useMutation({
+    mutationFn: (conta: ContaPagarListItem) => cancelarContaPagar(conta.id, _toContaPagarInput(conta)),
+    onSuccess: () => { invalidate(); toast.success("Conta a pagar cancelada."); },
+    onError: (error) => toast.error(extractErrorMessage(error)),
+  });
+}
+
+export function useLiquidarContaReceber() {
+  const invalidate = useInvalidateFinanceiro();
+  return useMutation({
+    mutationFn: (conta: ContaReceberListItem) => liquidarContaReceber(conta.id, _toContaReceberInput(conta)),
+    onSuccess: () => { invalidate(); toast.success("Conta marcada como recebida."); },
+    onError: (error) => toast.error(extractErrorMessage(error)),
+  });
+}
+
+export function useCancelarContaReceber() {
+  const invalidate = useInvalidateFinanceiro();
+  return useMutation({
+    mutationFn: (conta: ContaReceberListItem) => cancelarContaReceber(conta.id, _toContaReceberInput(conta)),
+    onSuccess: () => { invalidate(); toast.success("Conta a receber cancelada."); },
     onError: (error) => toast.error(extractErrorMessage(error)),
   });
 }

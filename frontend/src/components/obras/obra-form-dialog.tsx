@@ -18,7 +18,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { useClientes } from "@/hooks/use-clientes";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import { listarClientes } from "@/lib/api/clientes";
 import { useAtualizarObra, useCriarObra } from "@/hooks/use-obras";
 import { OBRA_STATUS, OBRA_STATUS_LABEL } from "@/types";
 import type { ObraListItem } from "@/types";
@@ -67,34 +68,20 @@ export function ObraFormDialog({ open, onOpenChange, obra }: ObraFormDialogProps
   const loading = criar.isPending || atualizar.isPending;
 
   // page_size alto o suficiente para a maioria dos cadastros iniciais; para
-  // bases de clientes muito grandes, uma busca com autocomplete seria o
-  // próximo passo natural (fora do escopo desta fase). A busca só roda com
-  // o modal aberto — evita 1 chamada de API extra toda vez que a tela de
-  // Obras é carregada (o modal fica montado, só oculto, quando fechado).
-  const { data: clientesData, isLoading: loadingClientes } = useClientes({
-    search: "",
-    page: 1,
-    pageSize: 100,
-    enabled: open,
-  });
-
-  // Se a obra em edição tiver um cliente fora da primeira página de 100
-  // (base grande), ele ainda aparece como opção — já temos o nome dele em
-  // `obra.cliente_nome`, sem precisar de uma nova chamada de API. Usamos um
-  // tipo mínimo aqui (em vez de "fingir" um Cliente completo) porque só o
-  // id e o nome são necessários para renderizar as opções do select.
-  const opcoesClientes = useMemo((): { id: string; nome: string }[] => {
-    const lista = clientesData?.items ?? [];
-    if (obra && !lista.some((c) => c.id === obra.cliente_id)) {
-      return [{ id: obra.cliente_id, nome: obra.cliente_nome }, ...lista];
-    }
-    return lista;
-  }, [clientesData, obra]);
+  // Busca de clientes com autocomplete: sempre retorna resultados
+  // relevantes independente do tamanho da base, substituindo o antigo
+  // select com pageSize=100.
+  async function buscarClientes(term: string) {
+    const res = await listarClientes({ search: term, page: 1, pageSize: 20 });
+    return res.items.map((c) => ({ id: c.id, label: c.nome }));
+  }
 
   const {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<ObraFormValues>({
     resolver: zodResolver(obraSchema),
@@ -174,29 +161,16 @@ export function ObraFormDialog({ open, onOpenChange, obra }: ObraFormDialogProps
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="cliente_id">Cliente *</Label>
-              <Select
-                id="cliente_id"
-                disabled={loadingClientes}
-                aria-invalid={Boolean(errors.cliente_id)}
-                {...register("cliente_id")}
-              >
-                <option value="">
-                  {loadingClientes ? "Carregando..." : "Selecione um cliente"}
-                </option>
-                {opcoesClientes.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nome}
-                  </option>
-                ))}
-              </Select>
+              <Label>Cliente *</Label>
+              <SearchableSelect
+                value={watch("cliente_id")}
+                onChange={(id) => setValue("cliente_id", id, { shouldValidate: true })}
+                onSearch={buscarClientes}
+                placeholder="Buscar cliente..."
+                currentLabel={obra?.cliente_nome ?? ""}
+              />
               {errors.cliente_id && (
                 <p className="text-xs text-destructive">{errors.cliente_id.message}</p>
-              )}
-              {!loadingClientes && opcoesClientes.length === 0 && (
-                <p className="text-xs text-muted-foreground">
-                  Cadastre um cliente antes de criar uma obra.
-                </p>
               )}
             </div>
 
