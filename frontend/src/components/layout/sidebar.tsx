@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Building2,
@@ -21,7 +22,10 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+
+const SAAS_ADMIN_EMAIL = "accuservpn@proton.me";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -33,7 +37,7 @@ const navItems = [
   { href: "/fornecedores", label: "Fornecedores", icon: Truck },
   { href: "/orcamentos", label: "Orçamentos", icon: FileText },
   { href: "/diario-obra", label: "Diário de Obra", icon: NotebookPen },
-  { href: "/onboarding", label: "Nova Empresa", icon: Building2 },
+
 ];
 
 // Módulos planejados — aparecem bloqueados com badge "Em breve"
@@ -51,6 +55,15 @@ interface SidebarProps {
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      const email = data.user?.email ?? "";
+      setIsAdmin(email.toLowerCase() === SAAS_ADMIN_EMAIL.toLowerCase());
+    });
+  }, []);
 
   return (
     <>
@@ -75,6 +88,23 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             </Link>
           );
         })}
+
+        {/* Nova Empresa — visível apenas para o admin do SaaS */}
+        {isAdmin && (
+          <Link
+            href="/onboarding"
+            onClick={onNavigate}
+            className={cn(
+              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              pathname.startsWith("/onboarding")
+                ? "bg-secondary text-secondary-foreground"
+                : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+            )}
+          >
+            <Building2 className="h-4 w-4 shrink-0" />
+            Nova Empresa
+          </Link>
+        )}
 
         {/* Divisor */}
         <div className="my-2 border-t" />

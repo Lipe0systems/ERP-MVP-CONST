@@ -1,31 +1,41 @@
 """
-Endpoints de onboarding (criar empresa + primeiro usuário admin).
+Endpoints de onboarding (criar/remover empresa + usuário admin).
 Camada: Presentation.
 
-IMPORTANTE: Este endpoint é protegido — só pode ser chamado por um usuário
-autenticado. No fluxo atual, o dono do sistema faz login com sua conta e usa
-esta rota para criar empresas/clientes. Isso evita que qualquer pessoa na
-internet possa criar contas livremente.
+Acesso restrito ao e-mail do administrador do SaaS (SAAS_ADMIN_EMAIL).
+Qualquer outro usuário recebe 403, mesmo que esteja autenticado.
 """
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.application.use_cases.onboarding_use_cases import criar_empresa_e_admin
-from app.core.security import get_empresa_id
+from app.application.use_cases.onboarding_use_cases import criar_empresa_e_admin, remover_empresa
+from app.core.security import CurrentUser, get_current_user
 from app.infrastructure.database.session import get_db
 from app.presentation.schemas.onboarding import OnboardingCreate, OnboardingOut
 
 router = APIRouter(prefix="/onboarding", tags=["Onboarding"])
+
+# E-mail do único administrador autorizado a criar/remover empresas.
+SAAS_ADMIN_EMAIL = "accuservpn@proton.me"
+
+
+def _exigir_admin_saas(current_user: CurrentUser = Depends(get_current_user)) -> CurrentUser:
+    """Dependency que bloqueia qualquer usuário que não seja o dono do SaaS."""
+    if (current_user.email or "").lower() != SAAS_ADMIN_EMAIL.lower():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acesso restrito ao administrador do sistema.",
+        )
+    return current_user
 
 
 @router.post("", response_model=OnboardingOut, status_code=201)
 def criar_empresa(
     body: OnboardingCreate,
     db: Session = Depends(get_db),
-    # Exige autenticação — só quem já está logado pode criar novas empresas
-    _empresa_id: UUID = Depends(get_empresa_id),
+    _: CurrentUser = Depends(_exigir_admin_saas),
 ):
     resultado = criar_empresa_e_admin(
         db=db,
@@ -45,3 +55,13 @@ def criar_empresa(
         access_token=resultado.get("access_token"),
         refresh_token=resultado.get("refresh_token"),
     )
+
+
+@router.delete("/{empresa_id}", status_code=204)
+def deletar_empresa(
+    empresa_id: UUID,
+    db: Session = Depends(get_db),
+    _: CurrentUser = Depends(_exigir_admin_saas),
+):
+    """Remove uma empresa e todos os seus dados (cascata no banco)."""
+    remover_empresa(db=db, empresa_id=empresa_id)

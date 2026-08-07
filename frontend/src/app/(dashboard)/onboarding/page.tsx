@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Building2, Loader2, UserPlus } from "lucide-react";
+import { Building2, Loader2, ShieldAlert, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiFetch } from "@/lib/api/client";
 import { createClient } from "@/lib/supabase/client";
+
+const SAAS_ADMIN_EMAIL = "accuservpn@proton.me";
 
 const schema = z.object({
   empresa_nome: z.string().min(2, "Nome deve ter ao menos 2 caracteres"),
@@ -35,8 +37,18 @@ type FormValues = z.infer<typeof schema>;
 export default function OnboardingPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [autorizado, setAutorizado] = useState<boolean | null>(null);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
+  // Verificar e-mail do usuário logado antes de mostrar qualquer coisa
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      const email = data.user?.email ?? "";
+      setAutorizado(email.toLowerCase() === SAAS_ADMIN_EMAIL.toLowerCase());
+    });
+  }, []);
+
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
   });
 
@@ -61,9 +73,10 @@ export default function OnboardingPage() {
         refresh_token?: string;
       }>("/onboarding", { method: "POST", body: JSON.stringify(payload) });
 
-      toast.success(`Empresa criada com sucesso!`);
+      toast.success("Empresa criada com sucesso!");
+      reset();
 
-      // Se recebeu tokens, faz login automático com a nova conta
+      // Login automático na nova empresa
       if (resultado.access_token && resultado.refresh_token) {
         const supabase = createClient();
         await supabase.auth.setSession({
@@ -72,15 +85,36 @@ export default function OnboardingPage() {
         });
         router.push("/dashboard");
         router.refresh();
-      } else {
-        toast.success("Acesse com as credenciais cadastradas.");
-        router.push("/dashboard");
       }
     } catch (err: any) {
       toast.error(err?.message ?? "Erro ao criar empresa. Tente novamente.");
     } finally {
       setLoading(false);
     }
+  }
+
+  // Carregando verificação
+  if (autorizado === null) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  // Acesso negado
+  if (!autorizado) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10">
+          <ShieldAlert className="h-8 w-8 text-destructive" />
+        </div>
+        <h2 className="text-lg font-semibold">Acesso restrito</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Esta área é exclusiva do administrador do sistema.
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -93,7 +127,6 @@ export default function OnboardingPage() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Dados da Empresa */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
@@ -133,7 +166,6 @@ export default function OnboardingPage() {
           </CardContent>
         </Card>
 
-        {/* Usuário Admin */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
@@ -173,9 +205,9 @@ export default function OnboardingPage() {
         <div className="flex justify-end">
           <Button type="submit" disabled={loading} size="lg">
             {loading ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Criando empresa...</>
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Criando empresa...</>
             ) : (
-              <><Building2 className="mr-2 h-4 w-4" /> Criar empresa</>
+              <><Building2 className="mr-2 h-4 w-4" />Criar empresa</>
             )}
           </Button>
         </div>

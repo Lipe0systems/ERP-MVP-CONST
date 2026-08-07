@@ -156,3 +156,22 @@ def _fazer_login_supabase(email: str, senha: str) -> dict:
     if response.is_success:
         return response.json()
     return {}
+
+
+def remover_empresa(db: Session, empresa_id: UUID) -> None:
+    """
+    Remove uma empresa e todos os seus dados via cascata (FK ON DELETE CASCADE).
+    Não remove o usuário do Supabase Auth — isso pode ser feito manualmente
+    no painel do Supabase se necessário.
+    """
+    from app.infrastructure.database.models.empresa import EmpresaModel
+    from fastapi import HTTPException, status
+
+    empresa = db.query(EmpresaModel).filter(EmpresaModel.id == empresa_id).first()
+    if empresa is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Empresa não encontrada.",
+        )
+    db.delete(empresa)
+    db.commit()
