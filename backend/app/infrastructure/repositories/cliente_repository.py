@@ -22,6 +22,17 @@ def _to_entity(model: ClienteModel) -> Cliente:
         documento=model.documento,
         email=model.email,
         telefone=model.telefone,
+        whatsapp=model.whatsapp,
+        rg=model.rg,
+        sexo=model.sexo,
+        data_nascimento=model.data_nascimento,
+        cep=model.cep,
+        logradouro=model.logradouro,
+        numero=model.numero,
+        complemento=model.complemento,
+        bairro=model.bairro,
+        cidade=model.cidade,
+        estado=model.estado,
         endereco=model.endereco,
         observacoes=model.observacoes,
         criado_em=model.criado_em,
@@ -78,6 +89,17 @@ class SqlAlchemyClienteRepository(ClienteRepository):
             documento=cliente.documento,
             email=cliente.email,
             telefone=cliente.telefone,
+            whatsapp=cliente.whatsapp,
+            rg=cliente.rg,
+            sexo=cliente.sexo,
+            data_nascimento=cliente.data_nascimento,
+            cep=cliente.cep,
+            logradouro=cliente.logradouro,
+            numero=cliente.numero,
+            complemento=cliente.complemento,
+            bairro=cliente.bairro,
+            cidade=cliente.cidade,
+            estado=cliente.estado,
             endereco=cliente.endereco,
             observacoes=cliente.observacoes,
         )
@@ -99,6 +121,17 @@ class SqlAlchemyClienteRepository(ClienteRepository):
         model.documento = cliente.documento
         model.email = cliente.email
         model.telefone = cliente.telefone
+        model.whatsapp = cliente.whatsapp
+        model.rg = cliente.rg
+        model.sexo = cliente.sexo
+        model.data_nascimento = cliente.data_nascimento
+        model.cep = cliente.cep
+        model.logradouro = cliente.logradouro
+        model.numero = cliente.numero
+        model.complemento = cliente.complemento
+        model.bairro = cliente.bairro
+        model.cidade = cliente.cidade
+        model.estado = cliente.estado
         model.endereco = cliente.endereco
         model.observacoes = cliente.observacoes
 

@@ -1,99 +1,127 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { formatCpfCnpj, isValidCpfCnpj, onlyDigits } from "@/lib/validators";
-import { useAtualizarCliente, useCriarCliente } from "@/hooks/use-clientes";
-import type { Cliente } from "@/types";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useCriarCliente, useAtualizarCliente } from "@/hooks/use-clientes";
+import { buscarCep } from "@/lib/api/clientes";
+import type { ClienteV3 } from "@/types";
 
-const clienteSchema = z.object({
-  nome: z.string().trim().min(2, "Informe o nome completo."),
-  documento: z
-    .string()
-    .min(11, "Documento incompleto.")
-    .refine((v) => isValidCpfCnpj(v), "CPF/CNPJ inválido."),
-  email: z.string().trim().email("E-mail inválido.").optional().or(z.literal("")),
-  telefone: z.string().trim().optional().or(z.literal("")),
-  endereco: z.string().trim().optional().or(z.literal("")),
-  observacoes: z.string().trim().optional().or(z.literal("")),
+const schema = z.object({
+  nome: z.string().min(2, "Nome deve ter ao menos 2 caracteres"),
+  documento: z.string().min(11, "CPF ou CNPJ inválido").max(18),
+  email: z.string().email("E-mail inválido").optional().or(z.literal("")),
+  telefone: z.string().optional(),
+  whatsapp: z.string().optional(),
+  rg: z.string().optional(),
+  sexo: z.enum(["M", "F", "outro", ""]).optional(),
+  data_nascimento: z.string().optional(),
+  cep: z.string().optional(),
+  logradouro: z.string().optional(),
+  numero: z.string().optional(),
+  complemento: z.string().optional(),
+  bairro: z.string().optional(),
+  cidade: z.string().optional(),
+  estado: z.string().max(2).optional(),
+  observacoes: z.string().optional(),
 });
 
-type ClienteFormValues = z.infer<typeof clienteSchema>;
+type FormValues = z.infer<typeof schema>;
 
-interface ClienteFormDialogProps {
+interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  cliente?: Cliente | null;
+  cliente?: ClienteV3 | null;
 }
 
-export function ClienteFormDialog({ open, onOpenChange, cliente }: ClienteFormDialogProps) {
+export function ClienteFormDialog({ open, onOpenChange, cliente }: Props) {
   const isEditing = Boolean(cliente);
   const criar = useCriarCliente();
   const atualizar = useAtualizarCliente();
-  const loading = criar.isPending || atualizar.isPending;
+  const [buscandoCep, setBuscandoCep] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm<ClienteFormValues>({
-    resolver: zodResolver(clienteSchema),
-    defaultValues: { nome: "", documento: "", email: "", telefone: "", endereco: "", observacoes: "" },
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<FormValues>({
+    resolver: zodResolver(schema),
   });
 
-  // Sincroniza o formulário sempre que o modal abre — tanto para edição
-  // (preenche com os dados do cliente) quanto para criação (limpa os campos).
   useEffect(() => {
-    if (!open) return;
-    reset(
-      cliente
-        ? {
-            nome: cliente.nome,
-            documento: formatCpfCnpj(cliente.documento),
-            email: cliente.email ?? "",
-            telefone: cliente.telefone ?? "",
-            endereco: cliente.endereco ?? "",
-            observacoes: cliente.observacoes ?? "",
-          }
-        : { nome: "", documento: "", email: "", telefone: "", endereco: "", observacoes: "" }
-    );
+    if (open) {
+      reset(cliente ? {
+        nome: cliente.nome,
+        documento: cliente.documento,
+        email: cliente.email ?? "",
+        telefone: cliente.telefone ?? "",
+        whatsapp: cliente.whatsapp ?? "",
+        rg: cliente.rg ?? "",
+        sexo: (cliente.sexo as any) ?? "",
+        data_nascimento: cliente.data_nascimento ?? "",
+        cep: cliente.cep ?? "",
+        logradouro: cliente.logradouro ?? "",
+        numero: cliente.numero ?? "",
+        complemento: cliente.complemento ?? "",
+        bairro: cliente.bairro ?? "",
+        cidade: cliente.cidade ?? "",
+        estado: cliente.estado ?? "",
+        observacoes: cliente.observacoes ?? "",
+      } : {
+        nome: "", documento: "", email: "", telefone: "", whatsapp: "",
+        rg: "", sexo: "", data_nascimento: "", cep: "", logradouro: "",
+        numero: "", complemento: "", bairro: "", cidade: "", estado: "",
+        observacoes: "",
+      });
+    }
   }, [open, cliente, reset]);
 
-  const documento = watch("documento");
-
-  function onDocumentoChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setValue("documento", formatCpfCnpj(e.target.value), { shouldValidate: true });
+  async function handleBuscarCep() {
+    const cep = watch("cep") ?? "";
+    if (cep.replace(/\D/g, "").length !== 8) {
+      toast.error("Digite um CEP com 8 dígitos.");
+      return;
+    }
+    setBuscandoCep(true);
+    try {
+      const data = await buscarCep(cep);
+      if (data.logradouro) setValue("logradouro", data.logradouro);
+      if (data.bairro) setValue("bairro", data.bairro);
+      if (data.cidade) setValue("cidade", data.cidade);
+      if (data.estado) setValue("estado", data.estado);
+      toast.success("Endereço preenchido automaticamente.");
+    } catch {
+      toast.error("CEP não encontrado.");
+    } finally {
+      setBuscandoCep(false);
+    }
   }
 
-  async function onSubmit(values: ClienteFormValues) {
+  async function onSubmit(values: FormValues) {
     const payload = {
       nome: values.nome,
-      documento: onlyDigits(values.documento),
+      documento: values.documento.replace(/\D/g, ""),
       email: values.email || null,
       telefone: values.telefone || null,
-      endereco: values.endereco || null,
+      whatsapp: values.whatsapp || null,
+      rg: values.rg || null,
+      sexo: values.sexo || null,
+      data_nascimento: values.data_nascimento || null,
+      cep: values.cep?.replace(/\D/g, "") || null,
+      logradouro: values.logradouro || null,
+      numero: values.numero || null,
+      complemento: values.complemento || null,
+      bairro: values.bairro || null,
+      cidade: values.cidade || null,
+      estado: values.estado || null,
       observacoes: values.observacoes || null,
     };
-
     try {
       if (isEditing && cliente) {
         await atualizar.mutateAsync({ id: cliente.id, data: payload });
@@ -101,99 +129,147 @@ export function ClienteFormDialog({ open, onOpenChange, cliente }: ClienteFormDi
         await criar.mutateAsync(payload);
       }
       onOpenChange(false);
-    } catch {
-      // Erro já foi exibido via toast pelo onError dos hooks de mutação;
-      // aqui só evitamos que a rejeição da Promise fique sem tratamento
-      // e mantemos o modal aberto para o usuário corrigir e tentar de novo.
-    }
+    } catch { /* toast já exibido */ }
   }
+
+  const isPending = criar.isPending || atualizar.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Editar cliente" : "Novo cliente"}</DialogTitle>
-          <DialogDescription>
-            {isEditing ? "Atualize os dados do cliente." : "Preencha os dados para cadastrar um novo cliente."}
-          </DialogDescription>
+          <DialogTitle>{isEditing ? "Editar Cliente" : "Novo Cliente"}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="nome">Nome *</Label>
-              <Input
-                id="nome"
-                aria-invalid={Boolean(errors.nome)}
-                aria-describedby={errors.nome ? "nome-error" : undefined}
-                {...register("nome")}
-              />
-              {errors.nome && (
-                <p id="nome-error" className="text-xs text-destructive">
-                  {errors.nome.message}
-                </p>
-              )}
-            </div>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Tabs defaultValue="dados" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="dados">Dados pessoais</TabsTrigger>
+              <TabsTrigger value="endereco">Endereço</TabsTrigger>
+              <TabsTrigger value="obs">Observações</TabsTrigger>
+            </TabsList>
 
-            <div className="space-y-2">
-              <Label htmlFor="documento">CPF/CNPJ *</Label>
-              <Input
-                id="documento"
-                value={documento}
-                maxLength={18}
-                placeholder="000.000.000-00"
-                aria-invalid={Boolean(errors.documento)}
-                aria-describedby={errors.documento ? "documento-error" : undefined}
-                {...register("documento")}
-                onChange={onDocumentoChange}
-              />
-              {errors.documento && (
-                <p id="documento-error" className="text-xs text-destructive">
-                  {errors.documento.message}
-                </p>
-              )}
-            </div>
+            {/* Aba 1 — Dados pessoais */}
+            <TabsContent value="dados" className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="nome">Nome completo *</Label>
+                  <Input id="nome" {...register("nome")} aria-invalid={Boolean(errors.nome)} />
+                  {errors.nome && <p className="text-xs text-destructive">{errors.nome.message}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="documento">CPF / CNPJ *</Label>
+                  <Input id="documento" {...register("documento")} placeholder="000.000.000-00" />
+                  {errors.documento && <p className="text-xs text-destructive">{errors.documento.message}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="rg">RG</Label>
+                  <Input id="rg" {...register("rg")} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="sexo">Sexo</Label>
+                  <select
+                    id="sexo"
+                    {...register("sexo")}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">Não informado</option>
+                    <option value="M">Masculino</option>
+                    <option value="F">Feminino</option>
+                    <option value="outro">Outro</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="data_nascimento">Data de nascimento</Label>
+                  <Input id="data_nascimento" type="date" {...register("data_nascimento")} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">E-mail</Label>
+                  <Input id="email" type="email" {...register("email")} />
+                  {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="telefone">Telefone</Label>
+                  <Input id="telefone" {...register("telefone")} placeholder="(11) 99999-9999" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="whatsapp">WhatsApp</Label>
+                  <Input id="whatsapp" {...register("whatsapp")} placeholder="(11) 99999-9999" />
+                </div>
+              </div>
+            </TabsContent>
 
-            <div className="space-y-2">
-              <Label htmlFor="telefone">Telefone</Label>
-              <Input id="telefone" placeholder="(00) 00000-0000" {...register("telefone")} />
-            </div>
+            {/* Aba 2 — Endereço com CEP automático */}
+            <TabsContent value="endereco" className="space-y-4">
+              <div className="flex gap-2">
+                <div className="flex-1 space-y-2">
+                  <Label htmlFor="cep">CEP</Label>
+                  <Input id="cep" {...register("cep")} placeholder="00000-000" maxLength={9} />
+                </div>
+                <div className="flex items-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleBuscarCep}
+                    disabled={buscandoCep}
+                  >
+                    {buscandoCep ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Search className="h-4 w-4" />
+                    )}
+                    <span className="ml-2">Buscar</span>
+                  </Button>
+                </div>
+              </div>
 
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="email">E-mail</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="cliente@email.com"
-                aria-invalid={Boolean(errors.email)}
-                aria-describedby={errors.email ? "email-error" : undefined}
-                {...register("email")}
-              />
-              {errors.email && (
-                <p id="email-error" className="text-xs text-destructive">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="logradouro">Logradouro</Label>
+                  <Input id="logradouro" {...register("logradouro")} placeholder="Rua, Avenida..." />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="numero">Número</Label>
+                  <Input id="numero" {...register("numero")} />
+                </div>
+              </div>
 
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="endereco">Endereço</Label>
-              <Input id="endereco" {...register("endereco")} />
-            </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="complemento">Complemento</Label>
+                  <Input id="complemento" {...register("complemento")} placeholder="Apto, Sala..." />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="bairro">Bairro</Label>
+                  <Input id="bairro" {...register("bairro")} />
+                </div>
+              </div>
 
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="observacoes">Observações</Label>
-              <Textarea id="observacoes" rows={3} {...register("observacoes")} />
-            </div>
-          </div>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="cidade">Cidade</Label>
+                  <Input id="cidade" {...register("cidade")} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="estado">UF</Label>
+                  <Input id="estado" {...register("estado")} maxLength={2} placeholder="RJ" />
+                </div>
+              </div>
+            </TabsContent>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isEditing ? "Salvar alterações" : "Cadastrar cliente"}
+            {/* Aba 3 — Observações */}
+            <TabsContent value="obs">
+              <div className="space-y-2">
+                <Label htmlFor="observacoes">Observações</Label>
+                <Textarea id="observacoes" {...register("observacoes")} rows={6} />
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <DialogFooter className="mt-6">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? "Salvando..." : isEditing ? "Salvar alterações" : "Cadastrar cliente"}
             </Button>
           </DialogFooter>
         </form>

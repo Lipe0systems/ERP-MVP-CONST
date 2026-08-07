@@ -10,7 +10,7 @@ import {
   removerCliente,
 } from "@/lib/api/clientes";
 import { extractErrorMessage } from "@/lib/api/client";
-import type { ClienteInput } from "@/types";
+import type { ClienteV3Input as ClienteInput } from "@/types";
 
 const CLIENTES_KEY = "clientes";
 

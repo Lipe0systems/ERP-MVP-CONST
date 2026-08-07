@@ -298,3 +298,30 @@ export interface FornecedorInput {
   endereco?: string | null;
   observacoes?: string | null;
 }
+
+// === Cliente expandido (V3) ===
+// Substitui a interface anterior — campos novos são opcionais para compatibilidade
+
+export interface ClienteV3 extends Cliente {
+  whatsapp?: string | null;
+  rg?: string | null;
+  sexo?: "M" | "F" | "outro" | null;
+  data_nascimento?: string | null;
+  cep?: string | null;
+  logradouro?: string | null;
+  numero?: string | null;
+  complemento?: string | null;
+  bairro?: string | null;
+  cidade?: string | null;
+  estado?: string | null;
+}
+
+export type ClienteV3Input = Omit<ClienteV3, "id" | "criado_em">;
+
+export interface CepData {
+  cep: string;
+  logradouro: string | null;
+  bairro: string | null;
+  cidade: string | null;
+  estado: string | null;
+}

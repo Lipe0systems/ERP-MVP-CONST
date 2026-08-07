@@ -28,3 +28,8 @@ export function atualizarCliente(id: string, data: ClienteInput) {
 export function removerCliente(id: string) {
   return apiFetch<void>(`/clientes/${id}`, { method: "DELETE" });
 }
+
+export function buscarCep(cep: string) {
+  const digitos = cep.replace(/\D/g, "");
+  return apiFetch<import("@/types").CepData>(`/clientes/cep/${digitos}`);
+}
