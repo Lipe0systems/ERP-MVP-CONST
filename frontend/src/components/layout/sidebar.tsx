@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Building2,
+  Landmark,
   Users,
   HardHat,
   Wallet,
@@ -37,6 +38,7 @@ const navItems = [
   { href: "/fornecedores", label: "Fornecedores", icon: Truck },
   { href: "/orcamentos", label: "Orçamentos", icon: FileText },
   { href: "/diario-obra", label: "Diário de Obra", icon: NotebookPen },
+  { href: "/banco", label: "Banco", icon: Landmark },
 
 ];
 

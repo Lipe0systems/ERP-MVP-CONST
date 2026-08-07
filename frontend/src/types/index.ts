@@ -325,3 +325,63 @@ export interface CepData {
   cidade: string | null;
   estado: string | null;
 }
+
+// === Banco (V3-F2) ===
+
+export const TIPO_CONTA = ["corrente", "poupanca", "caixa", "outro"] as const;
+export type TipoConta = (typeof TIPO_CONTA)[number];
+export const TIPO_CONTA_LABEL: Record<TipoConta, string> = {
+  corrente: "Conta Corrente",
+  poupanca: "Poupança",
+  caixa: "Caixa",
+  outro: "Outro",
+};
+
+export const TIPO_LANCAMENTO = ["entrada", "saida"] as const;
+export type TipoLancamento = (typeof TIPO_LANCAMENTO)[number];
+
+export interface ContaBancaria {
+  id: string;
+  nome: string;
+  banco?: string | null;
+  agencia?: string | null;
+  numero_conta?: string | null;
+  tipo: TipoConta;
+  saldo_inicial: number;
+  saldo_atual: number;
+  ativo: boolean;
+  observacoes?: string | null;
+  criado_em: string;
+}
+
+export interface LancamentoBancario {
+  id: string;
+  conta_id: string;
+  tipo: TipoLancamento;
+  valor: number;
+  descricao: string;
+  data: string;
+  categoria?: string | null;
+  referencia?: string | null;
+  criado_em: string;
+}
+
+export interface ContaBancariaInput {
+  nome: string;
+  banco?: string | null;
+  agencia?: string | null;
+  numero_conta?: string | null;
+  tipo: TipoConta;
+  saldo_inicial: number;
+  observacoes?: string | null;
+}
+
+export interface LancamentoBancarioInput {
+  conta_id: string;
+  tipo: TipoLancamento;
+  valor: number;
+  descricao: string;
+  data: string;
+  categoria?: string | null;
+  referencia?: string | null;
+}

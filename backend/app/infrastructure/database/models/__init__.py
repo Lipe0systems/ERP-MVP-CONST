@@ -1,3 +1,9 @@
+"""
+Importa todos os modelos ORM para garantir que estão registrados
+no Base do SQLAlchemy antes de qualquer operação de banco.
+Sem isso, modelos adicionados após o startup inicial podem não ser
+encontrados pelo SQLAlchemy em tempo de execução.
+"""
 from app.infrastructure.database.models.base import BaseModel, TenantModel
 from app.infrastructure.database.models.empresa import EmpresaModel
 from app.infrastructure.database.models.usuario import UsuarioModel
@@ -9,6 +15,7 @@ from app.infrastructure.database.models.compra import CompraModel
 from app.infrastructure.database.models.estoque import ItemEstoqueModel
 from app.infrastructure.database.models.diario_obra import RegistroDiarioModel
 from app.infrastructure.database.models.orcamento import OrcamentoModel, OrcamentoItemModel
+from app.infrastructure.database.models.banco import ContaBancariaModel, LancamentoBancarioModel
 from app.infrastructure.database.models.fornecedor import FornecedorModel
 
 __all__ = [
@@ -19,5 +26,6 @@ __all__ = [
     "CompraModel", "ItemEstoqueModel",
     "RegistroDiarioModel",
     "OrcamentoModel", "OrcamentoItemModel",
+    "ContaBancariaModel", "LancamentoBancarioModel",
     "FornecedorModel",
 ]
