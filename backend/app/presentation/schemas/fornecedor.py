@@ -1,7 +1,7 @@
 """Schemas de entrada/saída para Fornecedores. Camada: Presentation."""
 from datetime import datetime
 from uuid import UUID
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class FornecedorCreate(BaseModel):
@@ -18,6 +18,8 @@ class FornecedorUpdate(FornecedorCreate):
 
 
 class FornecedorOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: UUID
     nome: str
     documento: str | None
