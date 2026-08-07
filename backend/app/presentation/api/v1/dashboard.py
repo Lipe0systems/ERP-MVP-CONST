@@ -1,30 +1,133 @@
 """
-Endpoint de resumo do dashboard inicial.
+Endpoint de resumo do dashboard — V3 expandido.
 Camada: Presentation.
 """
+from datetime import date, timedelta
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.application.use_cases.financeiro_resumo_use_case import FinanceiroResumoUseCase
 from app.core.security import get_empresa_id
+from app.infrastructure.database.models.banco import ContaBancariaModel, LancamentoBancarioModel
+from app.infrastructure.database.models.conta_pagar import ContaPagarModel
+from app.infrastructure.database.models.conta_receber import ContaReceberModel
+from app.infrastructure.database.models.obra import ObraModel
+from app.infrastructure.database.models.orcamento import OrcamentoModel
 from app.infrastructure.database.session import get_db
 from app.infrastructure.repositories.cliente_repository import SqlAlchemyClienteRepository
 from app.infrastructure.repositories.conta_pagar_repository import SqlAlchemyContaPagarRepository
 from app.infrastructure.repositories.conta_receber_repository import SqlAlchemyContaReceberRepository
 from app.infrastructure.repositories.obra_repository import SqlAlchemyObraRepository
+from app.domain.entities.banco import TipoLancamento
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
 
+def _saldo_total_banco(db: Session, empresa_id: UUID) -> float:
+    """Saldo total = saldo_inicial de todas as contas ativas + entradas - saídas."""
+    contas = db.query(ContaBancariaModel).filter(
+        ContaBancariaModel.empresa_id == empresa_id,
+        ContaBancariaModel.ativo == True,
+    ).all()
+
+    if not contas:
+        return 0.0
+
+    conta_ids = [c.id for c in contas]
+    saldo_inicial = sum(float(c.saldo_inicial or 0) for c in contas)
+
+    entradas = db.query(func.sum(LancamentoBancarioModel.valor)).filter(
+        LancamentoBancarioModel.empresa_id == empresa_id,
+        LancamentoBancarioModel.conta_id.in_(conta_ids),
+        LancamentoBancarioModel.tipo == TipoLancamento.ENTRADA.value,
+    ).scalar() or 0
+
+    saidas = db.query(func.sum(LancamentoBancarioModel.valor)).filter(
+        LancamentoBancarioModel.empresa_id == empresa_id,
+        LancamentoBancarioModel.conta_id.in_(conta_ids),
+        LancamentoBancarioModel.tipo == TipoLancamento.SAIDA.value,
+    ).scalar() or 0
+
+    return round(saldo_inicial + float(entradas) - float(saidas), 2)
+
+
+def _obras_por_status(db: Session, empresa_id: UUID) -> list[dict]:
+    """Conta obras agrupadas por status."""
+    rows = (
+        db.query(ObraModel.status, func.count(ObraModel.id))
+        .filter(ObraModel.empresa_id == empresa_id)
+        .group_by(ObraModel.status)
+        .all()
+    )
+    labels = {
+        "planejamento": "Planejamento",
+        "em_andamento": "Em andamento",
+        "pausada": "Pausada",
+        "concluida": "Concluída",
+        "cancelada": "Cancelada",
+    }
+    return [{"status": r[0], "label": labels.get(r[0], r[0]), "total": r[1]} for r in rows]
+
+
+def _contas_vencendo(db: Session, empresa_id: UUID, dias: int = 7) -> dict:
+    """Contas a pagar e receber vencendo nos próximos N dias."""
+    hoje = date.today()
+    limite = hoje + timedelta(days=dias)
+
+    pagar = (
+        db.query(ContaPagarModel)
+        .filter(
+            ContaPagarModel.empresa_id == empresa_id,
+            ContaPagarModel.status == "pendente",
+            ContaPagarModel.data_vencimento >= hoje,
+            ContaPagarModel.data_vencimento <= limite,
+        )
+        .order_by(ContaPagarModel.data_vencimento)
+        .limit(5)
+        .all()
+    )
+
+    receber = (
+        db.query(ContaReceberModel)
+        .filter(
+            ContaReceberModel.empresa_id == empresa_id,
+            ContaReceberModel.status == "pendente",
+            ContaReceberModel.data_vencimento >= hoje,
+            ContaReceberModel.data_vencimento <= limite,
+        )
+        .order_by(ContaReceberModel.data_vencimento)
+        .limit(5)
+        .all()
+    )
+
+    return {
+        "pagar": [{"id": str(c.id), "descricao": c.descricao, "valor": float(c.valor), "vencimento": str(c.data_vencimento)} for c in pagar],
+        "receber": [{"id": str(c.id), "descricao": c.descricao, "valor": float(c.valor), "vencimento": str(c.data_vencimento)} for c in receber],
+    }
+
+
+def _indicadores_orcamentos(db: Session, empresa_id: UUID) -> dict:
+    """Totais de orçamentos por status."""
+    rows = (
+        db.query(OrcamentoModel.status, func.count(OrcamentoModel.id))
+        .filter(OrcamentoModel.empresa_id == empresa_id)
+        .group_by(OrcamentoModel.status)
+        .all()
+    )
+    por_status = {r[0]: r[1] for r in rows}
+    return {
+        "rascunho": por_status.get("rascunho", 0),
+        "aprovado": por_status.get("aprovado", 0),
+        "recusado": por_status.get("recusado", 0),
+        "cancelado": por_status.get("cancelado", 0),
+    }
+
+
 @router.get("/resumo")
 def get_resumo(empresa_id: UUID = Depends(get_empresa_id), db: Session = Depends(get_db)):
-    """
-    Retorna os indicadores principais do dashboard para a empresa autenticada.
-    A partir da Fase 4, todos os indicadores refletem dados reais — nenhum
-    mais é mockado.
-    """
     obras_ativas, obras_concluidas = SqlAlchemyObraRepository(db).contar_ativas_e_concluidas(empresa_id)
     total_clientes = SqlAlchemyClienteRepository(db).contar(empresa_id)
 
@@ -34,10 +137,16 @@ def get_resumo(empresa_id: UUID = Depends(get_empresa_id), db: Session = Depends
     ).obter_resumo(empresa_id)
 
     return {
+        # Indicadores originais (V1)
         "obras_ativas": obras_ativas,
         "obras_concluidas": obras_concluidas,
         "clientes": total_clientes,
         "contas_a_pagar": resumo_financeiro["total_a_pagar"],
         "contas_a_receber": resumo_financeiro["total_a_receber"],
         "fluxo_de_caixa": resumo_financeiro["fluxo_de_caixa"],
+        # Novos indicadores V3
+        "saldo_bancario": _saldo_total_banco(db, empresa_id),
+        "obras_por_status": _obras_por_status(db, empresa_id),
+        "contas_vencendo_7_dias": _contas_vencendo(db, empresa_id, dias=7),
+        "orcamentos": _indicadores_orcamentos(db, empresa_id),
     }
