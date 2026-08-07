@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 
 from app.core.config import get_settings
 from app.presentation.api.v1.router import api_router
+import app.infrastructure.database.models  # noqa: F401
 
 logger = logging.getLogger("uvicorn.error")
 settings = get_settings()
