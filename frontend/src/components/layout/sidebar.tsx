@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
+  Building2,
   Users,
   HardHat,
   Wallet,
@@ -13,6 +14,10 @@ import {
   NotebookPen,
   FileText,
   Truck,
+  ClipboardList,
+  ShoppingBag,
+  FolderOpen,
+  Settings,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -28,10 +33,18 @@ const navItems = [
   { href: "/fornecedores", label: "Fornecedores", icon: Truck },
   { href: "/orcamentos", label: "Orçamentos", icon: FileText },
   { href: "/diario-obra", label: "Diário de Obra", icon: NotebookPen },
+  { href: "/onboarding", label: "Nova Empresa", icon: Building2 },
+];
+
+// Módulos planejados — aparecem bloqueados com badge "Em breve"
+const comingSoonItems = [
+  { label: "Atendimentos", icon: ClipboardList },
+  { label: "Vendas", icon: ShoppingBag },
+  { label: "Documentos", icon: FolderOpen },
+  { label: "Configurações", icon: Settings },
 ];
 
 interface SidebarProps {
-  /** Controla a exibição do drawer no mobile. Ignorado em telas md+ (sempre visível). */
   mobileOpen?: boolean;
   onCloseMobile?: () => void;
 }
@@ -41,7 +54,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <>
-      <nav className="flex-1 space-y-1 p-3">
+      <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
+        {/* Módulos ativos */}
         {navItems.map((item) => {
           const active = pathname.startsWith(item.href);
           return (
@@ -56,15 +70,36 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                   : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
               )}
             >
-              <item.icon className="h-4 w-4" />
+              <item.icon className="h-4 w-4 shrink-0" />
               {item.label}
             </Link>
           );
         })}
+
+        {/* Divisor */}
+        <div className="my-2 border-t" />
+
+        {/* Módulos em breve */}
+        <p className="px-3 pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+          Em breve
+        </p>
+        {comingSoonItems.map((item) => (
+          <div
+            key={item.label}
+            title="Disponível em breve"
+            className="flex cursor-not-allowed items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground/40 select-none"
+          >
+            <item.icon className="h-4 w-4 shrink-0 opacity-50" />
+            <span className="flex-1">{item.label}</span>
+            <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+              Breve
+            </span>
+          </div>
+        ))}
       </nav>
 
       <div className="border-t p-3 text-xs text-muted-foreground">
-        MVP V1 · Construtec
+        V2 · Construtec
       </div>
     </>
   );
