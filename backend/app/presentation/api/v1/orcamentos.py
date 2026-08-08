@@ -8,7 +8,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.application.use_cases.orcamento_use_cases import OrcamentoUseCases
-from app.core.security import get_empresa_id
+from app.core.security import get_empresa_id, get_current_user, CurrentUser
+from app.application.services.auditoria_service import registrar as audit
+from app.domain.entities.auditoria import AcaoAuditoria
 from app.domain.entities.orcamento import StatusOrcamento
 from app.infrastructure.database.session import get_db
 from app.infrastructure.repositories.cliente_repository import SqlAlchemyClienteRepository
@@ -125,8 +127,13 @@ def aprovar_orcamento(
     orcamento_id: UUID,
     empresa_id: UUID = Depends(get_empresa_id),
     use_cases: OrcamentoUseCases = Depends(_get_use_cases),
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
 ):
-    return _entity_to_out(use_cases.aprovar(empresa_id, orcamento_id))
+    orc = use_cases.aprovar(empresa_id, orcamento_id)
+    audit(db, current_user, "orcamentos", AcaoAuditoria.APROVOU,
+          str(orcamento_id), f"Orcamento #{orc.numero} aprovado")
+    return _entity_to_out(orc)
 
 
 @router.post("/{orcamento_id}/recusar", response_model=OrcamentoOut)
@@ -143,8 +150,13 @@ def cancelar_orcamento(
     orcamento_id: UUID,
     empresa_id: UUID = Depends(get_empresa_id),
     use_cases: OrcamentoUseCases = Depends(_get_use_cases),
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
 ):
-    return _entity_to_out(use_cases.cancelar(empresa_id, orcamento_id))
+    orc = use_cases.cancelar(empresa_id, orcamento_id)
+    audit(db, current_user, "orcamentos", AcaoAuditoria.CANCELOU,
+          str(orcamento_id), f"Orcamento #{orc.numero} cancelado")
+    return _entity_to_out(orc)
 
 
 @router.delete("/{orcamento_id}", status_code=204)

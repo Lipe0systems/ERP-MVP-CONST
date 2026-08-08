@@ -17,6 +17,7 @@ import {
   FileText,
   Truck,
   ClipboardList,
+  ShieldCheck,
   ShoppingBag,
   FolderOpen,
   Settings,
@@ -41,6 +42,7 @@ const navItems = [
   { href: "/banco", label: "Banco", icon: Landmark },
   { href: "/atendimentos", label: "Atendimentos", icon: ClipboardList },
   { href: "/vendas", label: "Vendas", icon: ShoppingBag },
+  { href: "/auditoria", label: "Auditoria", icon: ShieldCheck },
 
 ];
 

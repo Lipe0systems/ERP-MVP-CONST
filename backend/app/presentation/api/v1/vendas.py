@@ -5,7 +5,9 @@ from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from app.application.use_cases.venda_use_cases import VendaUseCases
-from app.core.security import get_empresa_id
+from app.core.security import get_empresa_id, get_current_user, CurrentUser
+from app.application.services.auditoria_service import registrar as audit
+from app.domain.entities.auditoria import AcaoAuditoria
 from app.domain.entities.venda import StatusVenda
 from app.infrastructure.database.session import get_db
 from app.infrastructure.repositories.conta_receber_repository import SqlAlchemyContaReceberRepository
@@ -59,33 +61,54 @@ def obter(venda_id: UUID, empresa_id: UUID = Depends(get_empresa_id), uc: VendaU
 @router.post("/de-orcamento", response_model=VendaOut, status_code=201)
 def criar_de_orcamento(
     body: VendaDeOrcamentoIn,
-    empresa_id: UUID = Depends(get_empresa_id), uc: VendaUseCases = Depends(_uc),
+    empresa_id: UUID = Depends(get_empresa_id),
+    uc: VendaUseCases = Depends(_uc),
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
 ):
-    return _to_out(uc.criar_de_orcamento(
+    venda = uc.criar_de_orcamento(
         empresa_id=empresa_id, orcamento_id=body.orcamento_id,
         forma_pagamento=body.forma_pagamento, num_parcelas=body.num_parcelas,
         dias_primeiro_vencimento=body.dias_primeiro_vencimento,
         desconto=body.desconto, observacoes=body.observacoes,
-    ))
+    )
+    audit(db, current_user, "vendas", AcaoAuditoria.CRIOU,
+          str(venda.id), f"Venda #{venda.numero} gerada do orcamento")
+    return _to_out(venda)
 
 
 @router.post("", response_model=VendaOut, status_code=201)
 def criar(
     body: VendaCreateIn,
-    empresa_id: UUID = Depends(get_empresa_id), uc: VendaUseCases = Depends(_uc),
+    empresa_id: UUID = Depends(get_empresa_id),
+    uc: VendaUseCases = Depends(_uc),
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
 ):
-    return _to_out(uc.criar(
+    venda = uc.criar(
         empresa_id=empresa_id, cliente_id=body.cliente_id, obra_id=body.obra_id,
         valor_total=body.valor_total, forma_pagamento=body.forma_pagamento,
         num_parcelas=body.num_parcelas,
         dias_primeiro_vencimento=body.dias_primeiro_vencimento,
         desconto=body.desconto, observacoes=body.observacoes,
-    ))
+    )
+    audit(db, current_user, "vendas", AcaoAuditoria.CRIOU,
+          str(venda.id), f"Venda #{venda.numero} criada")
+    return _to_out(venda)
 
 
 @router.post("/{venda_id}/cancelar", response_model=VendaOut)
-def cancelar(venda_id: UUID, empresa_id: UUID = Depends(get_empresa_id), uc: VendaUseCases = Depends(_uc)):
-    return _to_out(uc.cancelar(empresa_id, venda_id))
+def cancelar(
+    venda_id: UUID,
+    empresa_id: UUID = Depends(get_empresa_id),
+    uc: VendaUseCases = Depends(_uc),
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    venda = uc.cancelar(empresa_id, venda_id)
+    audit(db, current_user, "vendas", AcaoAuditoria.CANCELOU,
+          str(venda_id), f"Venda #{venda.numero} cancelada")
+    return _to_out(venda)
 
 
 @router.get("/{venda_id}/pdf")

@@ -10,7 +10,9 @@ from sqlalchemy.orm import Session
 from app.application.use_cases.conta_pagar_use_cases import ContaPagarUseCases
 from app.application.use_cases.conta_receber_use_cases import ContaReceberUseCases
 from app.application.use_cases.financeiro_resumo_use_case import FinanceiroResumoUseCase
-from app.core.security import get_empresa_id
+from app.core.security import get_empresa_id, get_current_user, CurrentUser
+from app.application.services.auditoria_service import registrar as audit
+from app.domain.entities.auditoria import AcaoAuditoria
 from app.domain.entities.financeiro import StatusConta
 from app.infrastructure.database.session import get_db
 from app.infrastructure.repositories.cliente_repository import SqlAlchemyClienteRepository
