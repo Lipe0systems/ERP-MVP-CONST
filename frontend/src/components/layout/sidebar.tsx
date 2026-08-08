@@ -19,8 +19,6 @@ import {
   ClipboardList,
   ShieldCheck,
   ShoppingBag,
-  FolderOpen,
-  Settings,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -43,15 +41,6 @@ const navItems = [
   { href: "/atendimentos", label: "Atendimentos", icon: ClipboardList },
   { href: "/vendas", label: "Vendas", icon: ShoppingBag },
   { href: "/auditoria", label: "Auditoria", icon: ShieldCheck },
-
-];
-
-// Módulos planejados — aparecem bloqueados com badge "Em breve"
-const comingSoonItems = [
-  { label: "Atendimentos", icon: ClipboardList },
-  { label: "Vendas", icon: ShoppingBag },
-  { label: "Documentos", icon: FolderOpen },
-  { label: "Configurações", icon: Settings },
 ];
 
 interface SidebarProps {
@@ -74,7 +63,6 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <>
       <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
-        {/* Módulos ativos */}
         {navItems.map((item) => {
           const active = pathname.startsWith(item.href);
           return (
@@ -97,45 +85,27 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
         {/* Nova Empresa — visível apenas para o admin do SaaS */}
         {isAdmin && (
-          <Link
-            href="/onboarding"
-            onClick={onNavigate}
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-              pathname.startsWith("/onboarding")
-                ? "bg-secondary text-secondary-foreground"
-                : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
-            )}
-          >
-            <Building2 className="h-4 w-4 shrink-0" />
-            Nova Empresa
-          </Link>
+          <>
+            <div className="my-2 border-t" />
+            <Link
+              href="/onboarding"
+              onClick={onNavigate}
+              className={cn(
+                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                pathname.startsWith("/onboarding")
+                  ? "bg-secondary text-secondary-foreground"
+                  : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+              )}
+            >
+              <Building2 className="h-4 w-4 shrink-0" />
+              Nova Empresa
+            </Link>
+          </>
         )}
-
-        {/* Divisor */}
-        <div className="my-2 border-t" />
-
-        {/* Módulos em breve */}
-        <p className="px-3 pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-          Em breve
-        </p>
-        {comingSoonItems.map((item) => (
-          <div
-            key={item.label}
-            title="Disponível em breve"
-            className="flex cursor-not-allowed items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground/40 select-none"
-          >
-            <item.icon className="h-4 w-4 shrink-0 opacity-50" />
-            <span className="flex-1">{item.label}</span>
-            <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
-              Breve
-            </span>
-          </div>
-        ))}
       </nav>
 
       <div className="border-t p-3 text-xs text-muted-foreground">
-        V2 · Construtec
+        V3 · Construtec
       </div>
     </>
   );
@@ -144,7 +114,6 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
   return (
     <>
-      {/* Sidebar fixa — visível apenas em telas md+ */}
       <aside className="hidden w-64 shrink-0 flex-col border-r bg-card md:flex">
         <div className="flex h-16 items-center gap-2 border-b px-6">
           <Image src="/images/logo-icone.png" alt="" width={32} height={32} className="h-8 w-8 object-contain" />
@@ -153,14 +122,9 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
         <SidebarContent />
       </aside>
 
-      {/* Drawer — visível apenas no mobile quando aberto */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true">
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={onCloseMobile}
-            aria-hidden="true"
-          />
+          <div className="absolute inset-0 bg-black/50" onClick={onCloseMobile} aria-hidden="true" />
           <aside className="absolute inset-y-0 left-0 flex w-64 flex-col border-r bg-card">
             <div className="flex h-16 items-center justify-between gap-2 border-b px-6">
               <div className="flex items-center gap-2">

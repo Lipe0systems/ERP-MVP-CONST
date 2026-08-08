@@ -33,3 +33,7 @@ export function buscarCep(cep: string) {
   const digitos = cep.replace(/\D/g, "");
   return apiFetch<import("@/types").CepData>(`/clientes/cep/${digitos}`);
 }
+
+export function obterCliente(id: string) {
+  return apiFetch<import("@/types").ClienteV3>(`/clientes/${id}`);
+}

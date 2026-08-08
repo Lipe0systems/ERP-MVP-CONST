@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
+
 import { useMemo, useState } from "react";
-import { Pencil, Plus, Search, Trash2, Users } from "lucide-react";
+import { Eye, Pencil, Plus, Search, Trash2, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

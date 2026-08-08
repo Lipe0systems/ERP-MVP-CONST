@@ -5,8 +5,10 @@ import { toast } from "sonner";
 
 import {
   atualizarCliente,
+  buscarCep,
   criarCliente,
   listarClientes,
+  obterCliente,
   removerCliente,
 } from "@/lib/api/clientes";
 import { extractErrorMessage } from "@/lib/api/client";
@@ -67,5 +69,13 @@ export function useRemoverCliente() {
       toast.success("Cliente removido com sucesso.");
     },
     onError: (error) => toast.error(extractErrorMessage(error)),
+  });
+}
+
+export function useCliente(id: string | null) {
+  return useQuery({
+    queryKey: ["clientes", id],
+    queryFn: () => obterCliente(id!),
+    enabled: Boolean(id),
   });
 }
