@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/theme-provider";
 import { NotificacoesPopover } from "@/components/notificacoes/notificacoes-popover";
+import { BuscaGlobal } from "@/components/busca/busca-global";
 import { createClient } from "@/lib/supabase/client";
 
 interface HeaderProps {
@@ -24,15 +25,19 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   return (
     <header className="flex h-16 items-center justify-between border-b bg-background px-6">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="md:hidden"
-        onClick={onMenuClick}
-        aria-label="Abrir menu"
-      >
-        <Menu className="h-5 w-5" />
-      </Button>
+      <div className="flex items-center gap-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          onClick={onMenuClick}
+          aria-label="Abrir menu"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+        {/* Busca global */}
+        <BuscaGlobal />
+      </div>
 
       <div className="flex items-center gap-2">
         {/* Notificações */}
