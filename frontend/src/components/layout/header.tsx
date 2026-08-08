@@ -4,6 +4,7 @@ import { Moon, Sun, LogOut, Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/theme-provider";
+import { NotificacoesPopover } from "@/components/notificacoes/notificacoes-popover";
 import { createClient } from "@/lib/supabase/client";
 
 interface HeaderProps {
@@ -32,7 +33,12 @@ export function Header({ onMenuClick }: HeaderProps) {
       >
         <Menu className="h-5 w-5" />
       </Button>
+
       <div className="flex items-center gap-2">
+        {/* Notificações */}
+        <NotificacoesPopover />
+
+        {/* Tema */}
         <Button
           variant="ghost"
           size="icon"
@@ -42,6 +48,8 @@ export function Header({ onMenuClick }: HeaderProps) {
           <Sun className="h-4 w-4 dark:hidden" />
           <Moon className="hidden h-4 w-4 dark:block" />
         </Button>
+
+        {/* Logout */}
         <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Sair">
           <LogOut className="h-4 w-4" />
         </Button>
