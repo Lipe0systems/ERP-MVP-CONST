@@ -1,4 +1,5 @@
 """Interface do repositório de Recorrências Financeiras. Camada: Domain."""
+from __future__ import annotations
 from abc import ABC, abstractmethod
 from uuid import UUID
 from app.domain.entities.recorrencia import RecorrenciaFinanceira
