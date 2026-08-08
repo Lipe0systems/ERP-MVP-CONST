@@ -462,3 +462,45 @@ export interface AtendimentoInput {
   assinatura_url?: string | null;
   observacoes?: string | null;
 }
+
+// === Vendas (V3-F6) ===
+
+export const FORMA_PAGAMENTO = ["avista", "parcelado", "boleto", "pix", "cartao", "outro"] as const;
+export type FormaPagamento = (typeof FORMA_PAGAMENTO)[number];
+export const FORMA_PAGAMENTO_LABEL: Record<FormaPagamento, string> = {
+  avista: "À vista", parcelado: "Parcelado", boleto: "Boleto",
+  pix: "PIX", cartao: "Cartão", outro: "Outro",
+};
+
+export const STATUS_VENDA = ["aberta", "paga", "cancelada"] as const;
+export type StatusVenda = (typeof STATUS_VENDA)[number];
+export const STATUS_VENDA_LABEL: Record<StatusVenda, string> = {
+  aberta: "Em aberto", paga: "Paga", cancelada: "Cancelada",
+};
+
+export interface ParcelaVenda {
+  id: string; numero: number; valor: number;
+  vencimento: string; conta_receber_id?: string | null;
+}
+
+export interface Venda {
+  id: string; numero: number; cliente_id: string;
+  orcamento_id?: string | null; obra_id?: string | null;
+  status: StatusVenda; forma_pagamento: FormaPagamento;
+  valor_total: number; desconto: number; valor_liquido: number;
+  observacoes?: string | null; parcelas: ParcelaVenda[]; criado_em: string;
+}
+
+export interface VendaListItem {
+  id: string; numero: number; cliente_id: string; cliente_nome: string;
+  orcamento_id?: string | null; obra_id?: string | null; obra_nome?: string | null;
+  status: StatusVenda; forma_pagamento: FormaPagamento;
+  valor_total: number; desconto: number; valor_liquido: number;
+  num_parcelas: number; observacoes?: string | null; criado_em: string;
+}
+
+export interface VendaDeOrcamentoInput {
+  orcamento_id: string; forma_pagamento: FormaPagamento;
+  num_parcelas: number; dias_primeiro_vencimento: number;
+  desconto: number; observacoes?: string | null;
+}

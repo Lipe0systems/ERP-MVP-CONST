@@ -8,6 +8,7 @@ import {
   MoreHorizontal,
   Plus,
   Search,
+  ShoppingBag,
   X as XIcon,
   Undo2,
   Trash2,
@@ -42,6 +43,7 @@ import { useClientes } from "@/hooks/use-clientes";
 import { formatMoeda, formatData } from "@/lib/format";
 import { baixarPdfOrcamento } from "@/lib/api/orcamentos";
 import { baixarRelatorioOrcamentos } from "@/lib/api/relatorios";
+import { VendaDeOrcamentoDialog } from "@/components/vendas/venda-de-orcamento-dialog";
 import { toast } from "sonner";
 import type { OrcamentoListItem, StatusOrcamento } from "@/types";
 
@@ -52,6 +54,7 @@ export default function OrcamentosPage() {
   const [statusFiltro, setStatusFiltro] = useState<StatusOrcamento | "todos">("todos");
   const [page, setPage] = useState(1);
   const [formOpen, setFormOpen] = useState(false);
+  const [vendaOrc, setVendaOrc] = useState<OrcamentoListItem | null>(null);
   const [editandoId, setEditandoId] = useState<string | null>(null);
   const [removendo, setRemovendo] = useState<OrcamentoListItem | null>(null);
 
@@ -298,6 +301,16 @@ export default function OrcamentosPage() {
         onOpenChange={setFormOpen}
         orcamentoId={editandoId}
       />
+
+      {vendaOrc && (
+        <VendaDeOrcamentoDialog
+          open={Boolean(vendaOrc)}
+          onOpenChange={(v) => !v && setVendaOrc(null)}
+          orcamentoId={vendaOrc.id}
+          orcamentoNumero={vendaOrc.numero}
+          valorTotal={vendaOrc.valor_total}
+        />
+      )}
 
       <DeleteConfirmDialog
         titulo="Remover orçamento"
