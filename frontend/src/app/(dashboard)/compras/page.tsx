@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileDown, Package, PackageCheck, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { CheckSquare, FileDown, Package, PackageCheck, Pencil, Plus, Search, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import { Pagination } from "@/components/pagination";
 import { DeleteConfirmDialog } from "@/components/delete-confirm-dialog";
 import { CompraFormDialog } from "@/components/compras/compra-form-dialog";
 import { StatusCompraBadge } from "@/components/compras/status-compra-badge";
-import { useCompras, useReceberCompra, useRemoverCompra } from "@/hooks/use-compras";
+import { useAprovarCompra, useCompras, useReceberCompra, useRemoverCompra } from "@/hooks/use-compras";
 import { baixarRelatorioCompras } from "@/lib/api/relatorios";
 import { toast } from "sonner";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -40,6 +40,7 @@ export default function ComprasPage() {
   const search = useDebounce(searchInput, 400);
   const remover = useRemoverCompra();
   const receber = useReceberCompra();
+  const aprovar = useAprovarCompra();
 
   const { data, isLoading, isError, isFetching } = useCompras({
     search,
@@ -159,6 +160,18 @@ export default function ComprasPage() {
                   <TableCell className="text-right">{formatMoeda(compra.valor_total)}</TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-1">
+                      {compra.status === "pendente" && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Aprovar — gera Conta a Pagar automaticamente"
+                          onClick={() => aprovar.mutate(compra.id)}
+                          disabled={aprovar.isPending}
+                          aria-label="Aprovar compra"
+                        >
+                          <CheckSquare className="h-4 w-4 text-blue-600" />
+                        </Button>
+                      )}
                       {(compra.status === "pendente" || compra.status === "aprovada") && (
                         <Button
                           variant="ghost"

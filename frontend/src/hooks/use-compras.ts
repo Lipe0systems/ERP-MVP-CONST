@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { atualizarCompra, criarCompra, listarCompras, receberCompra, removerCompra } from "@/lib/api/compras";
+import { aprovarCompra, atualizarCompra, criarCompra, listarCompras, receberCompra, removerCompra } from "@/lib/api/compras";
 import { extractErrorMessage } from "@/lib/api/client";
 import type { CompraInput, StatusCompra } from "@/types";
 
@@ -72,6 +72,20 @@ export function useReceberCompra() {
       queryClient.invalidateQueries({ queryKey: ["estoque"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       toast.success("Compra recebida! Estoque atualizado automaticamente.");
+    },
+    onError: (error) => toast.error(extractErrorMessage(error)),
+  });
+}
+
+export function useAprovarCompra() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => aprovarCompra(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["compras"] });
+      queryClient.invalidateQueries({ queryKey: ["financeiro"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      toast.success("Compra aprovada! Conta a pagar gerada automaticamente.");
     },
     onError: (error) => toast.error(extractErrorMessage(error)),
   });

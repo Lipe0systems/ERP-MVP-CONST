@@ -32,3 +32,7 @@ export function removerCompra(id: string) {
 export function receberCompra(id: string) {
   return apiFetch<import("@/types").Compra>(`/compras/${id}/receber`, { method: "POST" });
 }
+
+export function aprovarCompra(id: string) {
+  return apiFetch<import("@/types").Compra>(`/compras/${id}/aprovar`, { method: "POST" });
+}

@@ -19,4 +19,5 @@ class ItemEstoqueModel(TenantModel):
     quantidade = Column(Numeric(14, 3), nullable=False, default=0)
     unidade = Column(String(20))
     valor_medio = Column(Numeric(14, 2), nullable=False, default=0)
+    estoque_minimo = Column(Numeric(14, 3))
     observacoes = Column(Text)

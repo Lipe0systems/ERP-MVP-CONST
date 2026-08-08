@@ -15,6 +15,7 @@ class ItemEstoque:
     quantidade: float
     valor_medio: float
     unidade: str | None = None
+    estoque_minimo: float | None = None
     observacoes: str | None = None
     criado_em: datetime = field(default_factory=datetime.utcnow)
 

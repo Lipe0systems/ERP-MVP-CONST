@@ -26,6 +26,7 @@ const estoqueSchema = z.object({
   produto: z.string().trim().min(2, "Informe o produto."),
   quantidade: z.string().min(1, "Informe a quantidade.").refine((v) => Number(v) >= 0, "Não pode ser negativo."),
   unidade: z.string().trim().optional().or(z.literal("")),
+  estoque_minimo: z.coerce.number().min(0).optional().or(z.literal("")),
   valor_medio: z
     .string()
     .min(1, "Informe o valor médio.")
@@ -39,6 +40,7 @@ const DEFAULT_VALUES: EstoqueFormValues = {
   produto: "",
   quantidade: "",
   unidade: "",
+  estoque_minimo: undefined as any,
   valor_medio: "",
   observacoes: "",
 };
@@ -78,6 +80,7 @@ export function EstoqueFormDialog({ open, onOpenChange, item }: EstoqueFormDialo
             produto: item.produto,
             quantidade: String(item.quantidade),
             unidade: item.unidade ?? "",
+            estoque_minimo: item.estoque_minimo ?? undefined as any,
             valor_medio: String(item.valor_medio),
             observacoes: item.observacoes ?? "",
           }
@@ -90,6 +93,7 @@ export function EstoqueFormDialog({ open, onOpenChange, item }: EstoqueFormDialo
       produto: values.produto,
       quantidade: Number(values.quantidade),
       unidade: values.unidade || null,
+      estoque_minimo: values.estoque_minimo !== undefined && values.estoque_minimo !== "" ? Number(values.estoque_minimo) : null,
       valor_medio: Number(values.valor_medio),
       observacoes: values.observacoes || null,
     };
@@ -142,6 +146,10 @@ export function EstoqueFormDialog({ open, onOpenChange, item }: EstoqueFormDialo
               <Input id="unidade" placeholder="un, kg, m³, saco..." maxLength={20} {...register("unidade")} />
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="estoque_minimo">Estoque mínimo</Label>
+              <Input id="estoque_minimo" type="number" step="0.001" min={0} placeholder="Alerta quando abaixo deste valor" {...register("estoque_minimo")} />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="valor_medio">Valor médio (R$) *</Label>
               <Input

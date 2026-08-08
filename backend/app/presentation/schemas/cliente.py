@@ -6,6 +6,7 @@ from datetime import date, datetime
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
+from app.core.validators import is_valid_cpf_cnpj
 
 from app.core.validators import only_digits
 
@@ -42,10 +43,14 @@ class ClienteBase(BaseModel):
 
     @field_validator("documento")
     @classmethod
-    def documento_apenas_digitos_no_tamanho_certo(cls, v: str) -> str:
+    def documento_valido(cls, v: str) -> str:
+        from app.core.validators import only_digits
         digits = only_digits(v)
         if len(digits) not in (11, 14):
             raise ValueError("Documento deve ser um CPF (11 dígitos) ou CNPJ (14 dígitos).")
+        if not is_valid_cpf_cnpj(digits):
+            tipo = "CPF" if len(digits) == 11 else "CNPJ"
+            raise ValueError(f"{tipo} inválido. Verifique os dígitos verificadores.")
         return digits
 
     @field_validator("sexo")

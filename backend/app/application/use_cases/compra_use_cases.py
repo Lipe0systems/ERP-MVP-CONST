@@ -11,6 +11,7 @@ from fastapi import HTTPException, status
 
 from app.domain.entities.compra import Compra, StatusCompra
 from app.domain.entities.estoque import ItemEstoque
+from app.domain.entities.financeiro import ContaPagar, StatusConta
 from app.domain.repositories.compra_repository import CompraRepository
 from app.domain.repositories.estoque_repository import EstoqueRepository
 from app.domain.repositories.obra_repository import ObraRepository
@@ -22,10 +23,14 @@ class CompraUseCases:
         repository: CompraRepository,
         obra_repository: ObraRepository,
         estoque_repository: EstoqueRepository | None = None,
+        conta_pagar_repository=None,
+        db=None,
     ):
         self.repository = repository
         self.obra_repository = obra_repository
         self.estoque_repository = estoque_repository
+        self.conta_pagar_repository = conta_pagar_repository
+        self.db = db
 
     def _validar_obra(self, empresa_id: UUID, obra_id: UUID | None) -> None:
         if obra_id and self.obra_repository.get_by_id(empresa_id, obra_id) is None:
@@ -113,6 +118,47 @@ class CompraUseCases:
         if not removida:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Compra não encontrada.")
 
+    def aprovar(self, empresa_id: UUID, compra_id: UUID) -> Compra:
+        """
+        Marca a compra como APROVADA e gera automaticamente uma Conta a Pagar
+        para o fornecedor (B4). A Conta a Pagar tem vencimento em 30 dias
+        por padrão — o usuário pode editar depois no módulo Financeiro.
+        """
+        from datetime import timedelta
+        compra = self.obter(empresa_id, compra_id)
+
+        if compra.status != StatusCompra.PENDENTE:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Só é possível aprovar compras pendentes. Status atual: {compra.status.value}.",
+            )
+
+        from dataclasses import replace as dc_replace
+        aprovada = dc_replace(compra, status=StatusCompra.APROVADA)
+        compra_atualizada = self.repository.update(aprovada)
+
+        # B4: Gerar Conta a Pagar automaticamente
+        if self.conta_pagar_repository is not None:
+            try:
+                vencimento = (compra.data_compra or date.today()) + timedelta(days=30)
+                cp = ContaPagar(
+                    id=uuid.uuid4(),
+                    empresa_id=empresa_id,
+                    descricao=f"Compra: {compra.produto}",
+                    valor=compra.valor_total,
+                    data_vencimento=vencimento,
+                    fornecedor=compra.fornecedor,
+                    obra_id=compra.obra_id,
+                    categoria="Compras",
+                    status=StatusConta.PENDENTE,
+                    observacoes=f"Gerada automaticamente ao aprovar compra de {compra.produto}.",
+                )
+                self.conta_pagar_repository.create(cp)
+            except Exception:
+                pass  # best-effort — não bloqueia a aprovação
+
+        return compra_atualizada
+
     def receber(self, empresa_id: UUID, compra_id: UUID) -> Compra:
         """
         Marca a compra como RECEBIDA e dá entrada automática no estoque.
@@ -151,6 +197,24 @@ class CompraUseCases:
     def _dar_entrada_estoque(self, empresa_id: UUID, compra: Compra) -> None:
         """Dá entrada no estoque após recebimento da compra."""
         assert self.estoque_repository is not None
+
+        # B2: Registrar no histórico de preços
+        if self.db is not None:
+            try:
+                from app.infrastructure.database.models.historico_preco import HistoricoPrecoEstoqueModel
+                hist = HistoricoPrecoEstoqueModel(
+                    id=uuid.uuid4(),
+                    empresa_id=empresa_id,
+                    produto=compra.produto,
+                    quantidade=compra.quantidade,
+                    valor_unitario=compra.valor_unitario,
+                    origem="compra",
+                    referencia_id=compra.id,
+                )
+                self.db.add(hist)
+                self.db.commit()
+            except Exception:
+                pass
 
         existente = self.estoque_repository.get_by_produto(empresa_id, compra.produto)
 

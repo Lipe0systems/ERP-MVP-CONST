@@ -16,10 +16,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCriarCliente, useAtualizarCliente } from "@/hooks/use-clientes";
 import { buscarCep } from "@/lib/api/clientes";
 import type { ClienteV3 } from "@/types";
+import { isValidCpfCnpj, onlyDigits } from "@/lib/validators";
 
 const schema = z.object({
   nome: z.string().min(2, "Nome deve ter ao menos 2 caracteres"),
-  documento: z.string().min(11, "CPF ou CNPJ inválido").max(18),
+  documento: z.string().min(11, "Mínimo 11 dígitos").max(18).refine((v) => { const r = isValidCpfCnpj(v); return r === true; }, (v) => ({ message: typeof isValidCpfCnpj(v) === "string" ? isValidCpfCnpj(v) as string : "Documento inválido" })),
   email: z.string().email("E-mail inválido").optional().or(z.literal("")),
   telefone: z.string().optional(),
   whatsapp: z.string().optional(),

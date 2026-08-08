@@ -10,6 +10,8 @@ from sqlalchemy.orm import Session
 from app.application.use_cases.estoque_use_cases import EstoqueUseCases
 from app.core.security import get_empresa_id
 from app.infrastructure.database.session import get_db
+from app.infrastructure.database.models.historico_preco import HistoricoPrecoEstoqueModel
+from sqlalchemy import func
 from app.infrastructure.repositories.estoque_repository import SqlAlchemyEstoqueRepository
 from app.presentation.schemas.estoque import (
     ItemEstoqueCreate,
@@ -92,3 +94,74 @@ def remover_item_estoque(
     use_cases: EstoqueUseCases = Depends(_get_use_cases),
 ):
     use_cases.remover(empresa_id, item_id)
+
+
+@router.get("/abaixo-do-minimo")
+def itens_abaixo_do_minimo(
+    empresa_id: UUID = Depends(get_empresa_id),
+    db: Session = Depends(get_db),
+):
+    """Lista itens cuja quantidade está abaixo do estoque mínimo configurado."""
+    from app.infrastructure.database.models.estoque import ItemEstoqueModel
+    itens = db.query(ItemEstoqueModel).filter(
+        ItemEstoqueModel.empresa_id == empresa_id,
+        ItemEstoqueModel.estoque_minimo.isnot(None),
+        ItemEstoqueModel.quantidade < ItemEstoqueModel.estoque_minimo,
+    ).all()
+    return [
+        {
+            "id": str(i.id),
+            "produto": i.produto,
+            "quantidade": float(i.quantidade),
+            "estoque_minimo": float(i.estoque_minimo),
+            "falta": round(float(i.estoque_minimo) - float(i.quantidade), 3),
+            "unidade": i.unidade,
+        }
+        for i in itens
+    ]
+
+
+@router.get("/{item_id}/historico-precos")
+def historico_precos(
+    item_id: UUID,
+    empresa_id: UUID = Depends(get_empresa_id),
+    db: Session = Depends(get_db),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+):
+    """Retorna o histórico de entradas de preço de um item do estoque."""
+    from app.infrastructure.database.models.estoque import ItemEstoqueModel
+    item = db.query(ItemEstoqueModel).filter(
+        ItemEstoqueModel.empresa_id == empresa_id,
+        ItemEstoqueModel.id == item_id,
+    ).first()
+    if not item:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Item não encontrado.")
+
+    total = db.query(func.count(HistoricoPrecoEstoqueModel.id)).filter(
+        HistoricoPrecoEstoqueModel.empresa_id == empresa_id,
+        HistoricoPrecoEstoqueModel.produto == item.produto,
+    ).scalar() or 0
+
+    rows = db.query(HistoricoPrecoEstoqueModel).filter(
+        HistoricoPrecoEstoqueModel.empresa_id == empresa_id,
+        HistoricoPrecoEstoqueModel.produto == item.produto,
+    ).order_by(HistoricoPrecoEstoqueModel.criado_em.desc()).offset((page - 1) * page_size).limit(page_size).all()
+
+    return {
+        "produto": item.produto,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "items": [
+            {
+                "id": str(r.id),
+                "quantidade": float(r.quantidade),
+                "valor_unitario": float(r.valor_unitario),
+                "origem": r.origem,
+                "criado_em": r.criado_em.isoformat(),
+            }
+            for r in rows
+        ],
+    }

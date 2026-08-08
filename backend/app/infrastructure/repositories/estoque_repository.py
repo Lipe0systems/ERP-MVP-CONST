@@ -13,6 +13,7 @@ from app.domain.entities.estoque import ItemEstoque
 from app.domain.exceptions import DuplicateValueError
 from app.domain.repositories.estoque_repository import EstoqueRepository
 from app.infrastructure.database.models.estoque import ItemEstoqueModel
+from app.infrastructure.database.models.historico_preco import HistoricoPrecoEstoqueModel
 
 
 def _to_float(value) -> float | None:

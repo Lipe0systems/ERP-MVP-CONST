@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from app.application.use_cases.financeiro_resumo_use_case import FinanceiroResumoUseCase
 from app.core.security import get_empresa_id
 from app.infrastructure.database.models.banco import ContaBancariaModel, LancamentoBancarioModel
+from app.infrastructure.database.models.estoque import ItemEstoqueModel
 from app.infrastructure.database.models.conta_pagar import ContaPagarModel
 from app.infrastructure.database.models.conta_receber import ContaReceberModel
 from app.infrastructure.database.models.obra import ObraModel
@@ -149,4 +150,9 @@ def get_resumo(empresa_id: UUID = Depends(get_empresa_id), db: Session = Depends
         "obras_por_status": _obras_por_status(db, empresa_id),
         "contas_vencendo_7_dias": _contas_vencendo(db, empresa_id, dias=7),
         "orcamentos": _indicadores_orcamentos(db, empresa_id),
+        "estoque_abaixo_minimo": db.query(func.count(ItemEstoqueModel.id)).filter(
+            ItemEstoqueModel.empresa_id == empresa_id,
+            ItemEstoqueModel.estoque_minimo.isnot(None),
+            ItemEstoqueModel.quantidade < ItemEstoqueModel.estoque_minimo,
+        ).scalar() or 0,
     }

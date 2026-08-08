@@ -163,6 +163,7 @@ export interface ItemEstoque {
   valor_medio: number;
   valor_total: number;
   unidade?: string | null;
+  estoque_minimo?: number | null;
   observacoes?: string | null;
   criado_em: string;
 }

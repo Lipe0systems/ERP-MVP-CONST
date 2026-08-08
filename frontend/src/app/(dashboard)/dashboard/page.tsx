@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   AlertTriangle,
   ArrowDownCircle,
+  Boxes,
   ArrowUpCircle,
   CheckCircle2,
   ClipboardList,
@@ -52,6 +53,7 @@ interface DashboardResumo {
   obras_por_status: { status: string; label: string; total: number }[];
   contas_vencendo_7_dias: { pagar: ContaAlerta[]; receber: ContaAlerta[] };
   orcamentos: { rascunho: number; aprovado: number; recusado: number; cancelado: number };
+  estoque_abaixo_minimo: number;
 }
 
 async function fetchResumo(): Promise<DashboardResumo> {
@@ -72,6 +74,7 @@ const FALLBACK: DashboardResumo = {
   obras_por_status: [],
   contas_vencendo_7_dias: { pagar: [], receber: [] },
   orcamentos: { rascunho: 0, aprovado: 0, recusado: 0, cancelado: 0 },
+  estoque_abaixo_minimo: 0,
 };
 
 const PIE_COLORS: Record<string, string> = {
@@ -134,6 +137,21 @@ export default function DashboardPage() {
       </div>
 
       {/* Alerta de contas vencendo */}
+      {!isLoading && r.estoque_abaixo_minimo > 0 && (
+        <Card className="border-red-500/30 bg-red-500/5">
+          <CardContent className="flex items-center justify-between p-4">
+            <div className="flex items-center gap-3">
+              <Boxes className="h-5 w-5 text-red-600" />
+              <div>
+                <p className="text-sm font-medium text-red-700 dark:text-red-400">Estoque abaixo do mínimo</p>
+                <p className="text-xs text-muted-foreground">{r.estoque_abaixo_minimo} item{r.estoque_abaixo_minimo > 1 ? "ns" : ""} abaixo do nível mínimo</p>
+              </div>
+            </div>
+            <a href="/estoque" className="text-xs font-medium text-red-600 hover:underline">Ver estoque →</a>
+          </CardContent>
+        </Card>
+      )}
+
       {!isLoading && totalAlerts > 0 && (
         <Card className="border-orange-500/30 bg-orange-500/5">
           <CardHeader className="pb-2">
