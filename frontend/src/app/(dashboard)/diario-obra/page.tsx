@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { BookText, Pencil, Plus, Trash2 } from "lucide-react";
+import { BookText, FileDown, Pencil, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +15,8 @@ import { EmptyState } from "@/components/empty-state";
 import { Pagination } from "@/components/pagination";
 import { useObras } from "@/hooks/use-obras";
 import { useRegistrosDiario, useRemoverRegistroDiario } from "@/hooks/use-diario-obra";
+import { baixarRelatorioDiario } from "@/lib/api/relatorios";
+import { toast } from "sonner";
 import { removerFotoDiario } from "@/lib/supabase/storage";
 import { formatData } from "@/lib/format";
 import type { RegistroDiarioListItem } from "@/types";
@@ -75,10 +77,22 @@ export default function DiarioObraPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Diário de Obra</h1>
           <p className="text-sm text-muted-foreground">Registro diário de atividades, clima e fotos</p>
         </div>
-        <Button onClick={handleNovo}>
-          <Plus className="mr-2 h-4 w-4" />
-          Novo registro
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={async () => {
+              try { await baixarRelatorioDiario(obraId || undefined); }
+              catch { toast.error("Erro ao gerar relatório."); }
+            }}
+          >
+            <FileDown className="mr-2 h-4 w-4" />
+            Relatório PDF
+          </Button>
+          <Button onClick={handleNovo}>
+            <Plus className="mr-2 h-4 w-4" />
+            Novo registro
+          </Button>
+        </div>
       </div>
 
       <Select value={obraId} onChange={handleObraChange} className="sm:w-64">

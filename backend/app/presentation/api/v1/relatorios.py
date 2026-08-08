@@ -96,3 +96,56 @@ def relatorio_orcamentos_pdf(
         media_type="application/pdf",
         headers={"Content-Disposition": 'attachment; filename="relatorio_orcamentos.pdf"'},
     )
+
+
+@router.get("/compras/pdf")
+def relatorio_compras_pdf(
+    empresa_id: UUID = Depends(get_empresa_id),
+    db: Session = Depends(get_db),
+    status: str | None = Query(None),
+):
+    """Gera relatório PDF de compras."""
+    from app.application.services.pdf_compras import gerar_pdf_compras
+    from app.infrastructure.database.models.compra import CompraModel
+
+    q = db.query(CompraModel).filter(CompraModel.empresa_id == empresa_id)
+    if status:
+        q = q.filter(CompraModel.status == status)
+    compras = q.order_by(CompraModel.data_compra.desc()).all()
+
+    pdf_bytes = gerar_pdf_compras(compras)
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": 'attachment; filename="relatorio_compras.pdf"'},
+    )
+
+
+@router.get("/diario-obra/pdf")
+def relatorio_diario_pdf(
+    empresa_id: UUID = Depends(get_empresa_id),
+    db: Session = Depends(get_db),
+    obra_id: str | None = Query(None),
+):
+    """Gera relatório PDF do Diário de Obra."""
+    from app.application.services.pdf_diario_obra import gerar_pdf_diario
+    from app.infrastructure.database.models.diario_obra import RegistroDiarioModel
+    from app.infrastructure.database.models.obra import ObraModel
+
+    q = db.query(RegistroDiarioModel).filter(RegistroDiarioModel.empresa_id == empresa_id)
+    if obra_id:
+        q = q.filter(RegistroDiarioModel.obra_id == obra_id)
+    registros = q.order_by(RegistroDiarioModel.data.desc()).all()
+
+    obra_nome = "Todas as Obras"
+    if obra_id:
+        obra = db.query(ObraModel).filter(ObraModel.id == obra_id).first()
+        if obra:
+            obra_nome = obra.nome
+
+    pdf_bytes = gerar_pdf_diario(registros, obra_nome)
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": 'attachment; filename="diario_obra.pdf"'},
+    )

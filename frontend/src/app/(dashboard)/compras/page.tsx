@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Package, PackageCheck, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { FileDown, Package, PackageCheck, Pencil, Plus, Search, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,8 @@ import { DeleteConfirmDialog } from "@/components/delete-confirm-dialog";
 import { CompraFormDialog } from "@/components/compras/compra-form-dialog";
 import { StatusCompraBadge } from "@/components/compras/status-compra-badge";
 import { useCompras, useReceberCompra, useRemoverCompra } from "@/hooks/use-compras";
+import { baixarRelatorioCompras } from "@/lib/api/relatorios";
+import { toast } from "sonner";
 import { useDebounce } from "@/hooks/use-debounce";
 import { formatData, formatMoeda } from "@/lib/format";
 import { STATUS_COMPRA, type CompraListItem, type StatusCompra } from "@/types";

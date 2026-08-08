@@ -32,3 +32,13 @@ export function baixarRelatorioOrcamentos(status?: string) {
   const query = status ? `?status=${status}` : "";
   return baixarPdf(`/relatorios/orcamentos/pdf${query}`, "relatorio_orcamentos.pdf");
 }
+
+export function baixarRelatorioCompras(status?: string) {
+  const query = status ? `?status=${status}` : "";
+  return baixarPdf(`/relatorios/compras/pdf${query}`, "relatorio_compras.pdf");
+}
+
+export function baixarRelatorioDiario(obraId?: string) {
+  const query = obraId ? `?obra_id=${obraId}` : "";
+  return baixarPdf(`/relatorios/diario-obra/pdf${query}`, "diario_obra.pdf");
+}
