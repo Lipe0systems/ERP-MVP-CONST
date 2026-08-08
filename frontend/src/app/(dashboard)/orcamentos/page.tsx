@@ -243,15 +243,25 @@ export default function OrcamentosPage() {
                       </>
                     )}
                     {orc.status === "aprovado" && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title="Cancelar orçamento (estorna estoque)"
-                        onClick={() => cancelar.mutate(orc.id)}
-                        disabled={cancelar.isPending}
-                      >
-                        <Undo2 className="h-4 w-4 text-amber-600" />
-                      </Button>
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Gerar venda"
+                          onClick={() => setVendaOrc(orc)}
+                        >
+                          <ShoppingBag className="h-4 w-4 text-green-600" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Cancelar orçamento (estorna estoque)"
+                          onClick={() => cancelar.mutate(orc.id)}
+                          disabled={cancelar.isPending}
+                        >
+                          <Undo2 className="h-4 w-4 text-amber-600" />
+                        </Button>
+                      </>
                     )}
                     {orc.status === "recusado" && (
                       <Button
