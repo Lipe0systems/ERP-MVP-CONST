@@ -4,6 +4,7 @@ Uma Venda é gerada a partir de um Orçamento aprovado (ou criada diretamente).
 Cada parcela gera uma Conta a Receber automaticamente.
 Camada: Domain.
 """
+from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from enum import Enum

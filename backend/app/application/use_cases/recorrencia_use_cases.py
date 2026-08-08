@@ -8,6 +8,7 @@ A geração de contas funciona assim:
   atual + `meses_a_frente` — e cria uma Conta a Pagar/Receber para cada mês
   faltante, marcando `ultima_geracao` para não duplicar.
 """
+from __future__ import annotations
 import calendar
 import uuid
 from dataclasses import replace

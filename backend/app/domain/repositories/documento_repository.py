@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Interface do repositório de Documentos. Camada: Domain."""
 from abc import ABC, abstractmethod
 from uuid import UUID

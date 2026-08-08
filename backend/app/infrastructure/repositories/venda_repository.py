@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Implementação SQLAlchemy do VendaRepository. Camada: Infrastructure."""
 from uuid import UUID
 from sqlalchemy import func

@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Interface (porta) do repositório de Fornecedores. Camada: Domain."""
 from abc import ABC, abstractmethod
 from uuid import UUID

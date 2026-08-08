@@ -3,6 +3,7 @@ Interface (porta) do repositório de Clientes.
 Camada: Domain — define o contrato que a Infrastructure deve implementar,
 mantendo o domínio independente de SQLAlchemy/Postgres.
 """
+from __future__ import annotations
 from abc import ABC, abstractmethod
 from uuid import UUID
 

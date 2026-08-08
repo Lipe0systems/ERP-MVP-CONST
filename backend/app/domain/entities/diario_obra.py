@@ -3,6 +3,7 @@ Entidade de domínio: RegistroDiario (Diário de Obra), sempre vinculado a uma
 Empresa e a uma Obra (vínculo obrigatório, diferente de Compras/Financeiro,
 onde a Obra é opcional). Camada: Domain.
 """
+from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from enum import Enum

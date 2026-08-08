@@ -2,6 +2,7 @@
 Casos de uso do módulo Obras: orquestram regras de negócio e delegam
 persistência ao repositório. Camada: Application.
 """
+from __future__ import annotations
 import uuid
 from dataclasses import replace
 from datetime import date

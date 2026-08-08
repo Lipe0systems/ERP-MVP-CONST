@@ -2,6 +2,7 @@
 Casos de uso do módulo Clientes: orquestram regras de negócio e delegam
 persistência ao repositório. Camada: Application.
 """
+from __future__ import annotations
 import uuid
 from dataclasses import replace
 from uuid import UUID

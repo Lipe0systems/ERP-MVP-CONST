@@ -1,6 +1,7 @@
 """
 Casos de uso do módulo Contas a Pagar. Camada: Application.
 """
+from __future__ import annotations
 import uuid
 from dataclasses import replace
 from datetime import date

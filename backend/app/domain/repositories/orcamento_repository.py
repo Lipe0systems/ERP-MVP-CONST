@@ -2,6 +2,7 @@
 Interface (porta) do repositório de Orçamentos.
 Camada: Domain.
 """
+from __future__ import annotations
 from abc import ABC, abstractmethod
 from uuid import UUID
 

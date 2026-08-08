@@ -3,6 +3,7 @@ Entidade de domínio: Atendimento de Obra.
 Cada atendimento é vinculado a um Cliente e, opcionalmente, a uma Obra.
 Camada: Domain.
 """
+from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import date, datetime, time
 from enum import Enum

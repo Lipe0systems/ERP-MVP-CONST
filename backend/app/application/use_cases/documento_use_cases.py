@@ -1,4 +1,5 @@
 """Casos de uso do módulo Documentos. Camada: Application."""
+from __future__ import annotations
 import uuid
 from uuid import UUID
 

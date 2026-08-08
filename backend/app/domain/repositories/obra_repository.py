@@ -2,6 +2,7 @@
 Interface (porta) do repositório de Obras.
 Camada: Domain — define o contrato que a Infrastructure deve implementar.
 """
+from __future__ import annotations
 from abc import ABC, abstractmethod
 from uuid import UUID
 

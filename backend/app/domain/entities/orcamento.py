@@ -5,6 +5,7 @@ Cada OrcamentoItem pode estar vinculado a um produto do Estoque (baixa real na
 aprovação) ou ser texto livre (mão de obra, serviços etc.).
 Camada: Domain.
 """
+from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from enum import Enum

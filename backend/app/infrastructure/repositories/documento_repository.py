@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Implementação SQLAlchemy do DocumentoRepository. Camada: Infrastructure."""
 from uuid import UUID
 from sqlalchemy.orm import Session

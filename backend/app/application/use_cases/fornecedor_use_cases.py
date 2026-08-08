@@ -1,3 +1,4 @@
+from __future__ import annotations
 """Casos de uso do módulo Fornecedores. Camada: Application."""
 import uuid
 from dataclasses import replace

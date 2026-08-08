@@ -2,6 +2,7 @@
 Implementação SQLAlchemy do DiarioObraRepository.
 Camada: Infrastructure.
 """
+from __future__ import annotations
 from uuid import UUID
 
 from sqlalchemy import func

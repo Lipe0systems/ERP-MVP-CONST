@@ -4,6 +4,7 @@ Casos de uso do módulo Vendas. Camada: Application.
 Fluxo principal: criar venda (a partir de orçamento ou do zero)
 → gera parcelas automaticamente → cada parcela cria uma Conta a Receber.
 """
+from __future__ import annotations
 import uuid
 from dataclasses import replace
 from datetime import date, timedelta

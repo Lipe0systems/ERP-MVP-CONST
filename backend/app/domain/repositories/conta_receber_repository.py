@@ -2,6 +2,7 @@
 Interface (porta) do repositório de Contas a Receber.
 Camada: Domain.
 """
+from __future__ import annotations
 from abc import ABC, abstractmethod
 from uuid import UUID
 

@@ -7,6 +7,7 @@ A lógica mais importante está em aprovar() e cancelar():
   estoque suficiente, a aprovação inteira é bloqueada (nada é alterado).
 - cancelar(): reverte as baixas do Estoque e cancela a Conta a Receber gerada.
 """
+from __future__ import annotations
 import uuid
 from dataclasses import replace
 from datetime import date, timedelta
