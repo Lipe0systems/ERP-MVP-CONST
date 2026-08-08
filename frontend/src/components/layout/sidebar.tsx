@@ -17,6 +17,7 @@ import {
   FileText,
   Truck,
   ClipboardList,
+  CalendarDays,
   ShieldCheck,
   ShoppingBag,
   X,
@@ -41,6 +42,7 @@ const navItems = [
   { href: "/atendimentos", label: "Atendimentos", icon: ClipboardList },
   { href: "/vendas", label: "Vendas", icon: ShoppingBag },
   { href: "/auditoria", label: "Auditoria", icon: ShieldCheck },
+  { href: "/calendario", label: "Calendário", icon: CalendarDays },
 ];
 
 interface SidebarProps {
