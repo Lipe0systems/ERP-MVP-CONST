@@ -35,6 +35,7 @@ import { OrcamentoStatusBadge } from "@/components/orcamentos/orcamento-status-b
 import {
   useOrcamentos,
   useAprovarOrcamento,
+  useAprovarOrcamentosEmLote,
   useRecusarOrcamento,
   useCancelarOrcamento,
   useRemoverOrcamento,
@@ -57,6 +58,7 @@ export default function OrcamentosPage() {
   const [vendaOrc, setVendaOrc] = useState<OrcamentoListItem | null>(null);
   const [editandoId, setEditandoId] = useState<string | null>(null);
   const [removendo, setRemovendo] = useState<OrcamentoListItem | null>(null);
+  const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
 
   const { data, isLoading } = useOrcamentos({
     search,
@@ -69,10 +71,35 @@ export default function OrcamentosPage() {
   const recusar = useRecusarOrcamento();
   const cancelar = useCancelarOrcamento();
   const remover = useRemoverOrcamento();
+  const aprovarLote = useAprovarOrcamentosEmLote();
 
   const orcamentos = data?.items ?? [];
   const total = data?.total ?? 0;
   const emptyState = !isLoading && orcamentos.length === 0;
+  const rascunhosVisiveis = orcamentos.filter((o) => o.status === "rascunho");
+
+  function toggleSelecionado(id: string) {
+    setSelecionados((prev) => {
+      const s = new Set(prev);
+      s.has(id) ? s.delete(id) : s.add(id);
+      return s;
+    });
+  }
+
+  function toggleTodos() {
+    setSelecionados((prev) =>
+      prev.size === rascunhosVisiveis.length ? new Set() : new Set(rascunhosVisiveis.map((o) => o.id))
+    );
+  }
+
+  async function handleAprovarLote() {
+    const ids = Array.from(selecionados);
+    if (ids.length === 0) return;
+    try {
+      await aprovarLote.mutateAsync(ids);
+      setSelecionados(new Set());
+    } catch {}
+  }
 
   function handleNovo() {
     setEditandoId(null);
@@ -149,11 +176,40 @@ export default function OrcamentosPage() {
         </select>
       </div>
 
+      {/* Barra de ação em lote */}
+      {selecionados.size > 0 && (
+        <div className="flex items-center justify-between rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-2.5">
+          <span className="text-sm font-medium">
+            {selecionados.size} orçamento{selecionados.size > 1 ? "s" : ""} selecionado{selecionados.size > 1 ? "s" : ""}
+          </span>
+          <div className="flex gap-2">
+            <Button variant="ghost" size="sm" onClick={() => setSelecionados(new Set())}>
+              Cancelar
+            </Button>
+            <Button size="sm" onClick={handleAprovarLote} disabled={aprovarLote.isPending}>
+              <Check className="mr-1.5 h-3.5 w-3.5" />
+              {aprovarLote.isPending ? "Aprovando..." : "Aprovar selecionados"}
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Tabela */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead scope="col" className="w-10">
+                {rascunhosVisiveis.length > 0 && (
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4"
+                    checked={selecionados.size > 0 && selecionados.size === rascunhosVisiveis.length}
+                    onChange={toggleTodos}
+                    aria-label="Selecionar todos os rascunhos"
+                  />
+                )}
+              </TableHead>
               <TableHead scope="col">Nº</TableHead>
               <TableHead scope="col">Cliente</TableHead>
               <TableHead scope="col" className="hidden sm:table-cell">Obra</TableHead>
@@ -176,7 +232,7 @@ export default function OrcamentosPage() {
 
             {emptyState && (
               <TableRow>
-                <TableCell colSpan={8} className="p-0">
+                <TableCell colSpan={9} className="p-0">
                   <EmptyState
                     icon={FileText}
                     title="Nenhum orçamento encontrado"
@@ -190,6 +246,17 @@ export default function OrcamentosPage() {
 
             {orcamentos.map((orc) => (
               <TableRow key={orc.id}>
+                <TableCell>
+                  {orc.status === "rascunho" && (
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4"
+                      checked={selecionados.has(orc.id)}
+                      onChange={() => toggleSelecionado(orc.id)}
+                      aria-label={`Selecionar orçamento #${orc.numero}`}
+                    />
+                  )}
+                </TableCell>
                 <TableCell className="font-medium">#{orc.numero}</TableCell>
                 <TableCell>{orc.cliente_nome}</TableCell>
                 <TableCell className="hidden sm:table-cell">{orc.obra_nome ?? "—"}</TableCell>

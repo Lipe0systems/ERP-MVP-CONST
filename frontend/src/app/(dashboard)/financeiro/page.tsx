@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowDownCircle, ArrowUpCircle, FileDown, Wallet } from "lucide-react";
+import Link from "next/link";
+import { ArrowDownCircle, ArrowUpCircle, FileDown, RefreshCw, Wallet } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 import { Button } from "@/components/ui/button";
@@ -45,15 +46,23 @@ export default function FinanceiroPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Financeiro</h1>
           <p className="text-sm text-muted-foreground">Contas a pagar, contas a receber e fluxo de caixa</p>
         </div>
-        <Button
-          variant="outline"
-          onClick={async () => {
-            try { await baixarRelatorioFinanceiro(); } catch { toast.error("Erro ao gerar relatório."); }
-          }}
-        >
-          <FileDown className="mr-2 h-4 w-4" />
-          Relatório PDF
-        </Button>
+        <div className="flex gap-2">
+          <Link href="/financeiro/recorrencias">
+            <Button variant="outline">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Recorrências
+            </Button>
+          </Link>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              try { await baixarRelatorioFinanceiro(); } catch { toast.error("Erro ao gerar relatório."); }
+            }}
+          >
+            <FileDown className="mr-2 h-4 w-4" />
+            Relatório PDF
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

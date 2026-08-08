@@ -504,3 +504,52 @@ export interface VendaDeOrcamentoInput {
   num_parcelas: number; dias_primeiro_vencimento: number;
   desconto: number; observacoes?: string | null;
 }
+
+// === Recorrência Financeira (Upgrade A3) ===
+
+export const TIPO_RECORRENCIA = ["pagar", "receber"] as const;
+export type TipoRecorrencia = (typeof TIPO_RECORRENCIA)[number];
+export const TIPO_RECORRENCIA_LABEL: Record<TipoRecorrencia, string> = {
+  pagar: "A Pagar", receber: "A Receber",
+};
+
+export interface RecorrenciaFinanceira {
+  id: string;
+  tipo: TipoRecorrencia;
+  descricao: string;
+  valor: number;
+  dia_vencimento: number;
+  ativo: boolean;
+  fornecedor?: string | null;
+  cliente_id?: string | null;
+  obra_id?: string | null;
+  categoria?: string | null;
+  observacoes?: string | null;
+  ultima_geracao?: string | null;
+  criado_em: string;
+}
+
+export interface RecorrenciaCreateInput {
+  tipo: TipoRecorrencia;
+  descricao: string;
+  valor: number;
+  dia_vencimento: number;
+  fornecedor?: string | null;
+  cliente_id?: string | null;
+  obra_id?: string | null;
+  categoria?: string | null;
+  observacoes?: string | null;
+  gerar_mes_atual: boolean;
+}
+
+export interface RecorrenciaUpdateInput {
+  descricao: string;
+  valor: number;
+  dia_vencimento: number;
+  ativo: boolean;
+  fornecedor?: string | null;
+  cliente_id?: string | null;
+  obra_id?: string | null;
+  categoria?: string | null;
+  observacoes?: string | null;
+}

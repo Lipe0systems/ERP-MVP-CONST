@@ -77,3 +77,10 @@ export async function baixarPdfOrcamento(id: string): Promise<void> {
   a.remove();
   URL.revokeObjectURL(url);
 }
+
+export function aprovarOrcamentosEmLote(orcamentoIds: string[]) {
+  return apiFetch<{ aprovados: { id: string; numero: number }[]; falhas: { id: string; erro: string }[] }>(
+    "/orcamentos/aprovar-em-lote",
+    { method: "POST", body: JSON.stringify({ orcamento_ids: orcamentoIds }) }
+  );
+}

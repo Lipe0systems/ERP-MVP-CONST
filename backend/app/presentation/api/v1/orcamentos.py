@@ -19,6 +19,7 @@ from app.infrastructure.repositories.estoque_repository import SqlAlchemyEstoque
 from app.infrastructure.repositories.obra_repository import SqlAlchemyObraRepository
 from app.infrastructure.repositories.orcamento_repository import SqlAlchemyOrcamentoRepository
 from app.presentation.schemas.orcamento import (
+    AprovarLoteIn,
     OrcamentoCreateIn,
     OrcamentoListOut,
     OrcamentoOut,
@@ -134,6 +135,36 @@ def aprovar_orcamento(
     audit(db, current_user, "orcamentos", AcaoAuditoria.APROVOU,
           str(orcamento_id), f"Orcamento #{orc.numero} aprovado")
     return _entity_to_out(orc)
+
+
+@router.post("/aprovar-em-lote")
+def aprovar_orcamentos_em_lote(
+    body: AprovarLoteIn,
+    empresa_id: UUID = Depends(get_empresa_id),
+    use_cases: OrcamentoUseCases = Depends(_get_use_cases),
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    """
+    Aprova múltiplos orçamentos de uma vez. Cada um segue a mesma regra de
+    negócio do endpoint individual (baixa de estoque + conta a receber).
+    Não interrompe no primeiro erro — processa todos e retorna um resumo
+    com sucessos e falhas, para que o usuário veja exatamente o que passou.
+    """
+    sucesso: list[dict] = []
+    falha: list[dict] = []
+
+    for orcamento_id in body.orcamento_ids:
+        try:
+            orc = use_cases.aprovar(empresa_id, orcamento_id)
+            audit(db, current_user, "orcamentos", AcaoAuditoria.APROVOU,
+                  str(orcamento_id), f"Orcamento #{orc.numero} aprovado (lote)")
+            sucesso.append({"id": str(orcamento_id), "numero": orc.numero})
+        except Exception as exc:  # noqa: BLE001
+            detail = getattr(exc, "detail", str(exc))
+            falha.append({"id": str(orcamento_id), "erro": detail})
+
+    return {"aprovados": sucesso, "falhas": falha}
 
 
 @router.post("/{orcamento_id}/recusar", response_model=OrcamentoOut)

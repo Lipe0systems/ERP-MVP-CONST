@@ -92,3 +92,7 @@ class OrcamentoListOut(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+class AprovarLoteIn(BaseModel):
+    orcamento_ids: list[UUID] = Field(min_length=1, max_length=100)

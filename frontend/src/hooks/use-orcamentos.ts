@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import {
   aprovarOrcamento,
+  aprovarOrcamentosEmLote,
   atualizarOrcamento,
   cancelarOrcamento,
   criarOrcamento,
@@ -119,5 +120,25 @@ export function useRemoverOrcamento() {
       toast.success("Orçamento removido com sucesso.");
     },
     onError: (error) => toast.error(extractErrorMessage(error)),
+  });
+}
+
+export function useAprovarOrcamentosEmLote() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: string[]) => aprovarOrcamentosEmLote(ids),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["orcamentos"] });
+      queryClient.invalidateQueries({ queryKey: ["estoque"] });
+      queryClient.invalidateQueries({ queryKey: ["financeiro"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      const { aprovados, falhas } = result;
+      if (falhas.length === 0) {
+        toast.success(`${aprovados.length} orçamento(s) aprovado(s).`);
+      } else {
+        toast.warning(`${aprovados.length} aprovado(s), ${falhas.length} falharam.`);
+      }
+    },
+    onError: (e) => toast.error(extractErrorMessage(e)),
   });
 }
