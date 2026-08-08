@@ -15,6 +15,7 @@ from app.infrastructure.database.models.compra import CompraModel
 from app.infrastructure.database.models.estoque import ItemEstoqueModel
 from app.infrastructure.database.models.diario_obra import RegistroDiarioModel
 from app.infrastructure.database.models.orcamento import OrcamentoModel, OrcamentoItemModel
+from app.infrastructure.database.models.atendimento import AtendimentoModel
 from app.infrastructure.database.models.banco import ContaBancariaModel, LancamentoBancarioModel
 from app.infrastructure.database.models.documento import DocumentoModel
 from app.infrastructure.database.models.fornecedor import FornecedorModel
@@ -27,6 +28,7 @@ __all__ = [
     "CompraModel", "ItemEstoqueModel",
     "RegistroDiarioModel",
     "OrcamentoModel", "OrcamentoItemModel",
+    "AtendimentoModel",
     "ContaBancariaModel", "LancamentoBancarioModel",
     "DocumentoModel",
     "FornecedorModel",

@@ -39,6 +39,7 @@ const navItems = [
   { href: "/orcamentos", label: "Orçamentos", icon: FileText },
   { href: "/diario-obra", label: "Diário de Obra", icon: NotebookPen },
   { href: "/banco", label: "Banco", icon: Landmark },
+  { href: "/atendimentos", label: "Atendimentos", icon: ClipboardList },
 
 ];
 

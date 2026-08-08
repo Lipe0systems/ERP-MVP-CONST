@@ -413,3 +413,52 @@ export interface DocumentoInput {
   orcamento_id?: string | null;
   descricao?: string | null;
 }
+
+// === Atendimentos (V3-F5) ===
+
+export const TIPO_ATENDIMENTO = ["visita", "entrega", "vistoria", "reuniao", "outro"] as const;
+export type TipoAtendimento = (typeof TIPO_ATENDIMENTO)[number];
+export const TIPO_ATENDIMENTO_LABEL: Record<TipoAtendimento, string> = {
+  visita: "Visita", entrega: "Entrega", vistoria: "Vistoria",
+  reuniao: "Reunião", outro: "Outro",
+};
+
+export const STATUS_ATENDIMENTO = ["agendado", "realizado", "cancelado"] as const;
+export type StatusAtendimento = (typeof STATUS_ATENDIMENTO)[number];
+export const STATUS_ATENDIMENTO_LABEL: Record<StatusAtendimento, string> = {
+  agendado: "Agendado", realizado: "Realizado", cancelado: "Cancelado",
+};
+
+export interface AtendimentoListItem {
+  id: string;
+  cliente_id: string;
+  cliente_nome: string;
+  obra_id?: string | null;
+  obra_nome?: string | null;
+  tipo: TipoAtendimento;
+  status: StatusAtendimento;
+  data: string;
+  hora?: string | null;
+  responsavel?: string | null;
+  descricao?: string | null;
+  checklist: string[];
+  checklist_ok: string[];
+  fotos: string[];
+  criado_em: string;
+}
+
+export interface AtendimentoInput {
+  cliente_id: string;
+  obra_id?: string | null;
+  tipo: TipoAtendimento;
+  status: StatusAtendimento;
+  data: string;
+  hora?: string | null;
+  responsavel?: string | null;
+  descricao?: string | null;
+  checklist: string[];
+  checklist_ok: string[];
+  fotos: string[];
+  assinatura_url?: string | null;
+  observacoes?: string | null;
+}
