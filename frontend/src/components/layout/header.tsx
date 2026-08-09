@@ -8,9 +8,7 @@ import { NotificacoesPopover } from "@/components/notificacoes/notificacoes-popo
 import { BuscaGlobal } from "@/components/busca/busca-global";
 import { createClient } from "@/lib/supabase/client";
 
-interface HeaderProps {
-  onMenuClick?: () => void;
-}
+interface HeaderProps { onMenuClick?: () => void; }
 
 export function Header({ onMenuClick }: HeaderProps) {
   const { theme, setTheme } = useTheme();
@@ -24,7 +22,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   }
 
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-background px-6">
+    <header className="flex h-14 items-center justify-between border-b bg-card/80 backdrop-blur-sm px-5 sticky top-0 z-30">
       <div className="flex items-center gap-3">
         <Button
           variant="ghost"
@@ -33,17 +31,13 @@ export function Header({ onMenuClick }: HeaderProps) {
           onClick={onMenuClick}
           aria-label="Abrir menu"
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-4 w-4" />
         </Button>
-        {/* Busca global */}
         <BuscaGlobal />
       </div>
 
-      <div className="flex items-center gap-2">
-        {/* Notificações */}
+      <div className="flex items-center gap-1">
         <NotificacoesPopover />
-
-        {/* Tema */}
         <Button
           variant="ghost"
           size="icon"
@@ -53,8 +47,6 @@ export function Header({ onMenuClick }: HeaderProps) {
           <Sun className="h-4 w-4 dark:hidden" />
           <Moon className="hidden h-4 w-4 dark:block" />
         </Button>
-
-        {/* Logout */}
         <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Sair">
           <LogOut className="h-4 w-4" />
         </Button>

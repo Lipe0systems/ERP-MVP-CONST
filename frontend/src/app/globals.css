@@ -2,54 +2,139 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 4%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 4%;
-    --primary: 240 6% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 6% 10%;
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
-    --accent: 240 5% 96%;
-    --accent-foreground: 240 6% 10%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 240 6% 10%;
-    --radius: 0.6rem;
-  }
+/* ─── Design tokens ──────────────────────────────────────────────────────── */
+:root {
+  /* Cores */
+  --background: 0 0% 100%;
+  --foreground: 224 14% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 224 14% 10%;
+  --primary: 224 14% 10%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 220 13% 96%;
+  --secondary-foreground: 224 14% 10%;
+  --muted: 220 13% 96%;
+  --muted-foreground: 220 9% 46%;
+  --accent: 220 13% 94%;
+  --accent-foreground: 224 14% 10%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
+  --ring: 224 14% 10%;
+  --radius: 0.625rem;
 
-  .dark {
-    --background: 240 10% 4%;
-    --foreground: 0 0% 98%;
-    --card: 240 8% 7%;
-    --card-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 6% 10%;
-    --secondary: 240 5% 14%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 5% 14%;
-    --muted-foreground: 240 4% 64%;
-    --accent: 240 5% 14%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62% 40%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5% 16%;
-    --input: 240 5% 16%;
-    --ring: 240 5% 84%;
+  /* Amber accent (marca Construtec) */
+  --amber: 38 92% 50%;
+  --amber-fg: 38 92% 20%;
+
+  /* ── Easing curves ─────────────────────────────────────────────────────── */
+  /* Entrada/Saída de elementos — strong ease-out: instant feedback */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  /* Movimento na tela — ease-in-out suave */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  /* Drawer / modal — iOS-like */
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* ── Durações ──────────────────────────────────────────────────────────── */
+  --duration-fast: 120ms;    /* feedback de botão, hover micro */
+  --duration-normal: 200ms;  /* tooltip, dropdown */
+  --duration-slow: 300ms;    /* modal, page transition */
+}
+
+.dark {
+  --background: 224 14% 5%;
+  --foreground: 0 0% 97%;
+  --card: 224 12% 8%;
+  --card-foreground: 0 0% 97%;
+  --primary: 0 0% 97%;
+  --primary-foreground: 224 14% 10%;
+  --secondary: 224 10% 13%;
+  --secondary-foreground: 0 0% 97%;
+  --muted: 224 10% 13%;
+  --muted-foreground: 220 9% 58%;
+  --accent: 224 10% 14%;
+  --accent-foreground: 0 0% 97%;
+  --destructive: 0 62% 46%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 224 10% 16%;
+  --input: 224 10% 16%;
+  --ring: 220 13% 80%;
+}
+
+/* ─── Reset base ──────────────────────────────────────────────────────────── */
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  /* Tracking negativo em headings grandes (Apple typography) */
+  h1 { letter-spacing: -0.02em; }
+  h2 { letter-spacing: -0.015em; }
+  h3 { letter-spacing: -0.01em; }
+}
+
+/* ─── Utilities de easing (usadas como classes) ───────────────────────────── */
+@layer utilities {
+  .ease-ui     { transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1); }
+  .ease-screen { transition-timing-function: cubic-bezier(0.77, 0, 0.175, 1); }
+  .ease-drawer { transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1); }
+}
+
+/* ─── Page transition ─────────────────────────────────────────────────────── */
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
+.page-enter {
+  animation: page-in var(--duration-slow) var(--ease-out) both;
+}
+
+/* ─── Stagger para listas (aplica em filhos diretos) ─────────────────────── */
+@keyframes item-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.stagger-children > * {
+  animation: item-in 250ms var(--ease-out) both;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 30ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 60ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 90ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(n+6) { animation-delay: 150ms; }
+
+/* ─── Scrollbar refinada ──────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.5); }
+
+/* ─── prefers-reduced-motion ─────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .page-enter,
+  .stagger-children > * {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
-  body {
-    @apply bg-background text-foreground;
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 }
