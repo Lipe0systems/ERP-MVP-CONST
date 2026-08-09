@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { Eye, Pencil, Plus, Search, Trash2, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/page-header";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -59,16 +60,12 @@ export default function ClientesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Clientes</h1>
-          <p className="text-sm text-muted-foreground">Gerencie os clientes da sua empresa</p>
-        </div>
+      <PageHeader icon={Users} title="Clientes" subtitle="Gerencie os clientes da sua empresa" cor="blue">
         <Button onClick={handleNovo}>
           <Plus className="mr-2 h-4 w-4" />
           Novo cliente
         </Button>
-      </div>
+      </PageHeader>
 
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

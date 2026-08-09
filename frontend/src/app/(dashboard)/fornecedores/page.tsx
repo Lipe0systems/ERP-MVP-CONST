@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Pencil, Plus, Search, Trash2, Truck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/page-header";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -37,16 +38,12 @@ export default function FornecedoresPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Fornecedores</h1>
-          <p className="text-sm text-muted-foreground">Cadastro e gestão de fornecedores</p>
-        </div>
+      <PageHeader icon={Truck} title="Fornecedores" subtitle="Cadastro e gestão de fornecedores" cor="green">
         <Button onClick={handleNovo}>
           <Plus className="mr-2 h-4 w-4" />
           Novo Fornecedor
         </Button>
-      </div>
+      </PageHeader>
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

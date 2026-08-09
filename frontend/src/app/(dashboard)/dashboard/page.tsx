@@ -4,57 +4,43 @@ import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import {
   AlertTriangle, ArrowDownCircle, ArrowUpCircle, Boxes,
-  CheckCircle2, HardHat, Landmark, Settings, TrendingUp, Users,
+  CheckCircle2, HardHat, Landmark, Settings, Users, TrendingUp,
 } from "lucide-react";
 import {
-  CartesianGrid, Cell, Line, LineChart, Pie, PieChart,
+  Area, AreaChart, CartesianGrid, Cell, Pie, PieChart,
   ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { StatCard } from "@/components/ui/stat-card";
 import { createClient } from "@/lib/supabase/client";
 import { formatMoeda, formatData } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
-// Todos os widgets disponíveis
 const TODOS_WIDGETS = [
   "saldo_bancario", "obras_ativas", "obras_concluidas", "clientes",
   "contas_pagar", "contas_receber", "alerta_estoque", "alerta_vencimentos",
-  "grafico_fluxo", "grafico_obras", "orcamentos", "proximos_vencimentos",
+  "grafico_fluxo", "grafico_obras", "orcamentos",
 ] as const;
-
 type WidgetId = (typeof TODOS_WIDGETS)[number];
 
 const WIDGET_LABELS: Record<WidgetId, string> = {
-  saldo_bancario: "Saldo bancário",
-  obras_ativas: "Obras ativas",
-  obras_concluidas: "Obras concluídas",
-  clientes: "Total de clientes",
-  contas_pagar: "A pagar",
-  contas_receber: "A receber",
-  alerta_estoque: "Alerta de estoque",
-  alerta_vencimentos: "Alertas de vencimento",
-  grafico_fluxo: "Fluxo de caixa",
-  grafico_obras: "Obras por status",
+  saldo_bancario: "Saldo bancário", obras_ativas: "Obras ativas",
+  obras_concluidas: "Obras concluídas", clientes: "Total de clientes",
+  contas_pagar: "A pagar", contas_receber: "A receber",
+  alerta_estoque: "Alerta de estoque", alerta_vencimentos: "Alertas de vencimento",
+  grafico_fluxo: "Fluxo de caixa", grafico_obras: "Obras por status",
   orcamentos: "Orçamentos por status",
-  proximos_vencimentos: "Próximos vencimentos",
 };
 
-const DEFAULT_WIDGETS: WidgetId[] = [
-  "saldo_bancario", "obras_ativas", "clientes", "contas_pagar", "contas_receber",
-  "alerta_estoque", "alerta_vencimentos", "grafico_fluxo", "grafico_obras", "orcamentos",
-];
-
+const DEFAULT_WIDGETS: WidgetId[] = [...TODOS_WIDGETS];
 const LS_KEY = "dashboard_widgets";
 
 function loadWidgets(): WidgetId[] {
   try {
-    const stored = localStorage.getItem(LS_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored) as WidgetId[];
-      return parsed.filter((w) => TODOS_WIDGETS.includes(w));
-    }
+    const s = localStorage.getItem(LS_KEY);
+    if (s) return (JSON.parse(s) as WidgetId[]).filter((w) => TODOS_WIDGETS.includes(w));
   } catch {}
   return DEFAULT_WIDGETS;
 }
@@ -101,7 +87,6 @@ export default function DashboardPage() {
 
   const [widgets, setWidgets] = useState<WidgetId[]>(DEFAULT_WIDGETS);
   const [configurando, setConfigurando] = useState(false);
-
   useEffect(() => { setWidgets(loadWidgets()); }, []);
 
   function toggleWidget(id: WidgetId) {
@@ -116,10 +101,16 @@ export default function DashboardPage() {
   const totalAlerts = r.contas_vencendo_7_dias.pagar.length + r.contas_vencendo_7_dias.receber.length;
 
   return (
-    <div className="space-y-6">
+    <div className="relative space-y-6">
+      {/* Mesh gradient ambiente de fundo */}
+      <div className="pointer-events-none fixed inset-0 -z-10 mesh-bg" />
+
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Olá! Aqui está seu <span className="text-gradient-brand">resumo</span>
+          </h1>
           <p className="text-sm text-muted-foreground">Visão geral das suas obras e finanças</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => setConfigurando((v) => !v)}>
@@ -132,17 +123,18 @@ export default function DashboardPage() {
       {configurando && (
         <Card className="border-dashed">
           <CardContent className="p-4">
-            <p className="mb-3 text-sm font-medium">Selecione os widgets que deseja exibir:</p>
+            <p className="mb-3 text-sm font-medium">Widgets exibidos:</p>
             <div className="flex flex-wrap gap-2">
               {TODOS_WIDGETS.map((id) => (
                 <button
                   key={id}
                   onClick={() => toggleWidget(id)}
-                  className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                  className={cn(
+                    "rounded-full border px-3 py-1 text-xs font-medium transition-all duration-150 ease-ui",
                     widgets.includes(id)
-                      ? "border-amber-500 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                      ? "border-transparent bg-grad-brand text-white shadow-sm"
                       : "border-muted text-muted-foreground hover:border-muted-foreground"
-                  }`}
+                  )}
                 >
                   {WIDGET_LABELS[id]}
                 </button>
@@ -152,64 +144,71 @@ export default function DashboardPage() {
         </Card>
       )}
 
-      {/* Saldo bancário */}
+      {/* Saldo — destaque grande com gradiente */}
       {show("saldo_bancario") && (
-        <Card className="border-amber-500/30 bg-amber-500/5">
-          <CardContent className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-3">
-              <Landmark className="h-5 w-5 text-amber-600" />
-              <span className="text-sm font-medium">Saldo total em caixa</span>
+        <div className="relative overflow-hidden rounded-2xl bg-grad-brand p-6 text-white glow-brand">
+          <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10 blur-2xl animate-float" />
+          <div className="pointer-events-none absolute -bottom-16 -left-8 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
+          <div className="relative flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2 text-white/90">
+                <Landmark className="h-4 w-4" />
+                <span className="text-sm font-medium">Saldo total em caixa</span>
+              </div>
+              <p className="mt-2 text-4xl font-bold tabular-nums tracking-tight">
+                {isLoading ? "—" : formatMoeda(r.saldo_bancario)}
+              </p>
             </div>
-            {isLoading ? <Skeleton className="h-7 w-32" />
-              : <span className={`text-xl font-bold ${r.saldo_bancario >= 0 ? "text-green-600" : "text-destructive"}`}>{formatMoeda(r.saldo_bancario)}</span>}
-          </CardContent>
-        </Card>
+            <div className="hidden sm:flex h-16 w-16 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm">
+              <TrendingUp className="h-8 w-8" />
+            </div>
+          </div>
+        </div>
       )}
 
-      {/* Cards de indicadores */}
+      {/* Cards de indicadores — grid vivid */}
       {(show("obras_ativas") || show("obras_concluidas") || show("clientes") || show("contas_pagar") || show("contas_receber")) && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 xl:grid-cols-5 stagger-children">
           {show("obras_ativas") && (
-            <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Obras ativas</CardTitle><HardHat className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-semibold">{isLoading ? "…" : r.obras_ativas}</div></CardContent></Card>
+            <StatCard label="Obras ativas" value={isLoading ? "—" : r.obras_ativas} icon={HardHat} cor="brand" loading={isLoading} />
           )}
           {show("obras_concluidas") && (
-            <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Concluídas</CardTitle><CheckCircle2 className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-semibold">{isLoading ? "…" : r.obras_concluidas}</div></CardContent></Card>
+            <StatCard label="Concluídas" value={isLoading ? "—" : r.obras_concluidas} icon={CheckCircle2} cor="green" loading={isLoading} />
           )}
           {show("clientes") && (
-            <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">Clientes</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-semibold">{isLoading ? "…" : r.clientes}</div></CardContent></Card>
+            <StatCard label="Clientes" value={isLoading ? "—" : r.clientes} icon={Users} cor="blue" loading={isLoading} />
           )}
           {show("contas_pagar") && (
-            <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">A pagar</CardTitle><ArrowDownCircle className="h-4 w-4 text-destructive" /></CardHeader><CardContent><div className="text-2xl font-semibold text-destructive">{isLoading ? "…" : formatMoeda(r.contas_a_pagar)}</div></CardContent></Card>
+            <StatCard label="A pagar" value={isLoading ? "—" : formatMoeda(r.contas_a_pagar)} icon={ArrowDownCircle} cor="red" loading={isLoading} />
           )}
           {show("contas_receber") && (
-            <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium">A receber</CardTitle><ArrowUpCircle className="h-4 w-4 text-green-600" /></CardHeader><CardContent><div className="text-2xl font-semibold text-green-600">{isLoading ? "…" : formatMoeda(r.contas_a_receber)}</div></CardContent></Card>
+            <StatCard label="A receber" value={isLoading ? "—" : formatMoeda(r.contas_a_receber)} icon={ArrowUpCircle} cor="green" loading={isLoading} />
           )}
         </div>
       )}
 
-      {/* Alerta estoque mínimo */}
+      {/* Alertas */}
       {show("alerta_estoque") && !isLoading && r.estoque_abaixo_minimo > 0 && (
-        <Card className="border-red-500/30 bg-red-500/5">
-          <CardContent className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-3">
-              <Boxes className="h-5 w-5 text-red-600" />
-              <div>
-                <p className="text-sm font-medium text-red-700 dark:text-red-400">Estoque abaixo do mínimo</p>
-                <p className="text-xs text-muted-foreground">{r.estoque_abaixo_minimo} item{r.estoque_abaixo_minimo > 1 ? "ns" : ""} abaixo do nível mínimo</p>
-              </div>
+        <div className="flex items-center justify-between overflow-hidden rounded-2xl border border-red-500/20 bg-gradient-to-r from-red-500/10 to-rose-500/5 p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-lg">
+              <Boxes className="h-5 w-5" />
             </div>
-            <a href="/estoque" className="text-xs font-medium text-red-600 hover:underline">Ver estoque →</a>
-          </CardContent>
-        </Card>
+            <div>
+              <p className="text-sm font-semibold text-red-700 dark:text-red-400">Estoque abaixo do mínimo</p>
+              <p className="text-xs text-muted-foreground">{r.estoque_abaixo_minimo} item{r.estoque_abaixo_minimo > 1 ? "ns" : ""} precisam de reposição</p>
+            </div>
+          </div>
+          <a href="/estoque" className="shrink-0 rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-500/20">Ver estoque →</a>
+        </div>
       )}
 
-      {/* Alertas de vencimento */}
       {show("alerta_vencimentos") && !isLoading && totalAlerts > 0 && (
-        <Card className="border-orange-500/30 bg-orange-500/5">
+        <Card className="overflow-hidden border-amber-500/20 bg-gradient-to-r from-amber-500/[0.07] to-orange-500/[0.03]">
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm text-orange-700 dark:text-orange-400">
+            <CardTitle className="flex items-center gap-2 text-sm text-amber-700 dark:text-amber-400">
               <AlertTriangle className="h-4 w-4" />
-              {totalAlerts} conta{totalAlerts > 1 ? "s" : ""} vencendo nos próximos 7 dias
+              {totalAlerts} conta{totalAlerts > 1 ? "s" : ""} vencendo em 7 dias
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -255,24 +254,42 @@ export default function DashboardPage() {
       {(show("grafico_fluxo") || show("grafico_obras")) && (
         <div className="grid gap-4 lg:grid-cols-3">
           {show("grafico_fluxo") && (
-            <Card className={show("grafico_obras") ? "lg:col-span-2" : "lg:col-span-3"}>
-              <CardHeader><CardTitle>Fluxo de caixa</CardTitle></CardHeader>
+            <Card className={cn("card-vivid overflow-hidden", show("grafico_obras") ? "lg:col-span-2" : "lg:col-span-3")}>
+              <CardHeader>
+                <CardTitle className="text-base font-semibold text-foreground">Fluxo de caixa</CardTitle>
+              </CardHeader>
               <CardContent className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={r.fluxo_de_caixa.length ? r.fluxo_de_caixa : [{ mes: "—", entrada: 0, saida: 0 }]}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="mes" fontSize={12} /><YAxis fontSize={12} />
-                    <Tooltip formatter={(v: number) => formatMoeda(v)} />
-                    <Line type="monotone" dataKey="entrada" name="Entrada" stroke="#22c55e" strokeWidth={2} />
-                    <Line type="monotone" dataKey="saida" name="Saída" stroke="#ef4444" strokeWidth={2} />
-                  </LineChart>
+                  <AreaChart data={r.fluxo_de_caixa.length ? r.fluxo_de_caixa : [{ mes: "—", entrada: 0, saida: 0 }]}>
+                    <defs>
+                      <linearGradient id="gEntrada" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#22c55e" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="gSaida" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#ef4444" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
+                    <XAxis dataKey="mes" fontSize={12} tickLine={false} axisLine={false} />
+                    <YAxis fontSize={12} tickLine={false} axisLine={false} />
+                    <Tooltip
+                      formatter={(v: number) => formatMoeda(v)}
+                      contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }}
+                    />
+                    <Area type="monotone" dataKey="entrada" name="Entrada" stroke="#22c55e" strokeWidth={2.5} fill="url(#gEntrada)" />
+                    <Area type="monotone" dataKey="saida" name="Saída" stroke="#ef4444" strokeWidth={2.5} fill="url(#gSaida)" />
+                  </AreaChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
           )}
           {show("grafico_obras") && (
-            <Card>
-              <CardHeader><CardTitle>Obras por status</CardTitle></CardHeader>
+            <Card className="card-vivid">
+              <CardHeader>
+                <CardTitle className="text-base font-semibold text-foreground">Obras por status</CardTitle>
+              </CardHeader>
               <CardContent className="flex flex-col items-center">
                 {r.obras_por_status.length === 0 ? (
                   <p className="py-10 text-sm text-muted-foreground">Nenhuma obra.</p>
@@ -281,21 +298,21 @@ export default function DashboardPage() {
                     <div className="h-44 w-full">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
-                          <Pie data={r.obras_por_status} dataKey="total" nameKey="label" cx="50%" cy="50%" outerRadius={70} label={false}>
-                            {r.obras_por_status.map((entry) => <Cell key={entry.status} fill={PIE_COLORS[entry.status] ?? "#94a3b8"} />)}
+                          <Pie data={r.obras_por_status} dataKey="total" nameKey="label" cx="50%" cy="50%" innerRadius={45} outerRadius={70} paddingAngle={3} label={false}>
+                            {r.obras_por_status.map((e) => <Cell key={e.status} fill={PIE_COLORS[e.status] ?? "#94a3b8"} />)}
                           </Pie>
-                          <Tooltip />
+                          <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} />
                         </PieChart>
                       </ResponsiveContainer>
                     </div>
                     <div className="mt-2 w-full space-y-1">
-                      {r.obras_por_status.map((entry) => (
-                        <div key={entry.status} className="flex items-center justify-between text-xs">
+                      {r.obras_por_status.map((e) => (
+                        <div key={e.status} className="flex items-center justify-between text-xs">
                           <div className="flex items-center gap-1.5">
-                            <span className="h-2 w-2 rounded-full shrink-0" style={{ background: PIE_COLORS[entry.status] ?? "#94a3b8" }} />
-                            <span className="text-muted-foreground">{entry.label}</span>
+                            <span className="h-2 w-2 rounded-full" style={{ background: PIE_COLORS[e.status] ?? "#94a3b8" }} />
+                            <span className="text-muted-foreground">{e.label}</span>
                           </div>
-                          <span className="font-medium">{entry.total}</span>
+                          <span className="font-medium tabular-nums">{e.total}</span>
                         </div>
                       ))}
                     </div>
@@ -307,19 +324,21 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Orçamentos por status */}
+      {/* Orçamentos */}
       {show("orcamentos") && (
-        <div className="grid gap-4 sm:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-4 stagger-children">
           {[
-            { key: "rascunho" as const, label: "Rascunhos", color: "text-muted-foreground" },
-            { key: "aprovado" as const, label: "Aprovados", color: "text-green-600" },
-            { key: "recusado" as const, label: "Recusados", color: "text-destructive" },
-            { key: "cancelado" as const, label: "Cancelados", color: "text-amber-600" },
+            { key: "rascunho" as const, label: "Rascunhos", grad: "from-slate-400 to-slate-500" },
+            { key: "aprovado" as const, label: "Aprovados", grad: "from-green-500 to-emerald-600" },
+            { key: "recusado" as const, label: "Recusados", grad: "from-red-500 to-rose-600" },
+            { key: "cancelado" as const, label: "Cancelados", grad: "from-amber-500 to-orange-600" },
           ].map((item) => (
-            <Card key={item.key}>
-              <CardHeader className="pb-1"><CardTitle className="text-xs font-medium text-muted-foreground">Orçamentos {item.label}</CardTitle></CardHeader>
-              <CardContent><p className={`text-2xl font-semibold ${item.color}`}>{isLoading ? "…" : r.orcamentos[item.key]}</p></CardContent>
-            </Card>
+            <div key={item.key} className="card-vivid rounded-2xl p-4">
+              <p className="text-xs font-medium text-muted-foreground">Orç. {item.label}</p>
+              <p className={cn("mt-1 bg-gradient-to-br bg-clip-text text-3xl font-bold tabular-nums text-transparent", item.grad)}>
+                {isLoading ? "—" : r.orcamentos[item.key]}
+              </p>
+            </div>
           ))}
         </div>
       )}

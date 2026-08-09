@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -47,11 +48,7 @@ export default function BancoPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Banco</h1>
-          <p className="text-sm text-muted-foreground">Contas bancárias e lançamentos</p>
-        </div>
+      <PageHeader icon={Landmark} title="Banco" subtitle="Contas bancárias e lançamentos" cor="cyan">
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => { setContaEditando(null); setContaFormOpen(true); }}>
             <Landmark className="mr-2 h-4 w-4" />
@@ -62,7 +59,7 @@ export default function BancoPage() {
             Lançamento
           </Button>
         </div>
-      </div>
+      </PageHeader>
 
       {/* Saldo total */}
       {saldoData && (

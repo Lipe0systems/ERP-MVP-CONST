@@ -1,5 +1,7 @@
 "use client";
 
+import { PageHeader } from "@/components/page-header";
+
 import { useState } from "react";
 import { ShieldCheck } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -62,10 +64,7 @@ export default function AuditoriaPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Auditoria</h1>
-        <p className="text-sm text-muted-foreground">Log de ações nos módulos críticos</p>
-      </div>
+      <PageHeader icon={ShieldCheck} title="Auditoria" subtitle="Log de ações nos módulos críticos" cor="purple" />
 
       {/* Filtros */}
       <div className="flex flex-col gap-3 sm:flex-row">

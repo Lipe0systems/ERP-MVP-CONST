@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ClipboardList, Edit, Plus, Search, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/page-header";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -50,16 +51,12 @@ export default function AtendimentosPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Atendimentos</h1>
-          <p className="text-sm text-muted-foreground">Visitas, inspeções e entregas de obra</p>
-        </div>
+      <PageHeader icon={ClipboardList} title="Atendimentos" subtitle="Visitas, inspeções e entregas de obra" cor="blue">
         <Button onClick={handleNovo}>
           <Plus className="mr-2 h-4 w-4" />
           Novo Atendimento
         </Button>
-      </div>
+      </PageHeader>
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { CheckSquare, FileDown, Package, PackageCheck, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { CheckSquare, FileDown, Package, PackageCheck, Pencil, Plus, Search, ShoppingCart, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/page-header";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -74,16 +75,12 @@ export default function ComprasPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Compras</h1>
-          <p className="text-sm text-muted-foreground">Materiais e insumos comprados para as obras</p>
-        </div>
+      <PageHeader icon={ShoppingCart} title="Compras" subtitle="Materiais e insumos comprados para as obras" cor="purple">
         <Button onClick={handleNovo}>
           <Plus className="mr-2 h-4 w-4" />
           Nova compra
         </Button>
-      </div>
+      </PageHeader>
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <div className="relative max-w-sm flex-1">

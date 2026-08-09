@@ -4,6 +4,7 @@ import { FileDown, ShoppingBag, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/page-header";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/pagination";
@@ -38,13 +39,9 @@ export default function VendasPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Vendas</h1>
-          <p className="text-sm text-muted-foreground">Geradas a partir dos orçamentos aprovados</p>
-        </div>
+      <PageHeader icon={ShoppingBag} title="Vendas" subtitle="Geradas a partir dos orçamentos aprovados" cor="green">
         <p className="text-xs text-muted-foreground">Para criar uma venda, aprove um orçamento e clique em "Gerar Venda".</p>
-      </div>
+      </PageHeader>
 
       <div className="flex gap-3">
         <select

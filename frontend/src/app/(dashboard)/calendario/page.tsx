@@ -7,6 +7,7 @@ import {
   Clock, Landmark, HardHat, ClipboardList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/client";
@@ -106,15 +107,11 @@ export default function CalendarioPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Calendário</h1>
-          <p className="text-sm text-muted-foreground">Atendimentos, vencimentos e obras</p>
-        </div>
+      <PageHeader icon={CalendarDays} title="Calendário" subtitle="Atendimentos, vencimentos e obras" cor="cyan">
         <Button variant="outline" size="sm" onClick={() => { setAno(hoje.getFullYear()); setMes(hoje.getMonth()); }}>
           Hoje
         </Button>
-      </div>
+      </PageHeader>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Calendário */}

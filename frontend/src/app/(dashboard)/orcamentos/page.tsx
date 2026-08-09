@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/page-header";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -122,13 +123,7 @@ export default function OrcamentosPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Orçamentos</h1>
-          <p className="text-sm text-muted-foreground">
-            Geração, aprovação e acompanhamento de orçamentos
-          </p>
-        </div>
+      <PageHeader icon={FileText} title="Orçamentos" subtitle="Geração, aprovação e acompanhamento de orçamentos" cor="purple">
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -144,7 +139,7 @@ export default function OrcamentosPage() {
             Novo Orçamento
           </Button>
         </div>
-      </div>
+      </PageHeader>
 
       {/* Filtros */}
       <div className="flex flex-col gap-3 sm:flex-row">

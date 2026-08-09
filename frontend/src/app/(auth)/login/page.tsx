@@ -52,17 +52,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-white/[0.03] p-8 backdrop-blur-sm sm:p-10">
+    <div className="w-full rounded-3xl border border-white/10 bg-white/[0.04] p-8 shadow-2xl backdrop-blur-xl sm:p-10">
       {/* Marca */}
       <div className="mb-8 flex items-center gap-3">
-        <Image src="/images/logo-icone.png" alt="" width={48} height={48} className="h-12 w-12 shrink-0 object-contain" />
+        <div className="relative"><div className="absolute inset-0 rounded-2xl bg-amber-500/40 blur-lg" /><Image src="/images/logo-icone.png" alt="" width={48} height={48} className="relative h-12 w-12 shrink-0 object-contain" /></div>
         <div>
           <p className="text-lg font-bold leading-tight text-white">Construtec</p>
           <p className="text-xs text-white/50">ERP para Construtoras</p>
         </div>
       </div>
 
-      <h1 className="text-2xl font-bold text-white">Bem-vindo de volta!</h1>
+      <h1 className="text-2xl font-bold text-white">Bem-vindo de <span className="bg-gradient-to-r from-amber-300 to-orange-400 bg-clip-text text-transparent">volta!</span></h1>
       <p className="mb-7 mt-1 text-sm text-white/50">Acesse sua conta para continuar</p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -137,7 +137,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 py-2.5 text-sm font-semibold text-[#0b0f19] transition-opacity hover:opacity-90 disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 py-3 text-sm font-semibold text-[#0b0f19] shadow-lg shadow-amber-500/30 transition-all duration-150 ease-ui hover:shadow-xl hover:shadow-amber-500/40 active:scale-[0.98] disabled:opacity-60"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
           Entrar

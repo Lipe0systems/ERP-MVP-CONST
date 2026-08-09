@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Link2, Plus, Shield, Trash2, UserCheck, Users, X } from "lucide-react";
+import { Copy, Link2, Plus, Settings, Shield, Trash2, UserCheck, Users, X } from "lucide-react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -129,10 +130,7 @@ export default function ConfiguracoesPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Configurações</h1>
-        <p className="text-sm text-muted-foreground">Gerencie os usuários e acessos da sua empresa</p>
-      </div>
+      <PageHeader icon={Settings} title="Configurações" subtitle="Gerencie os usuários e acessos da sua empresa" cor="brand" />
 
       {/* Usuários ativos */}
       <Card>

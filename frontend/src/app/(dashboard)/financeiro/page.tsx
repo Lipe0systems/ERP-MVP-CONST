@@ -5,6 +5,7 @@ import { ArrowDownCircle, ArrowUpCircle, FileDown, RefreshCw, Wallet } from "luc
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -41,11 +42,7 @@ export default function FinanceiroPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Financeiro</h1>
-          <p className="text-sm text-muted-foreground">Contas a pagar, contas a receber e fluxo de caixa</p>
-        </div>
+      <PageHeader icon={Wallet} title="Financeiro" subtitle="Contas a pagar, contas a receber e fluxo de caixa" cor="green">
         <div className="flex gap-2">
           <Link href="/financeiro/recorrencias">
             <Button variant="outline">
@@ -63,7 +60,7 @@ export default function FinanceiroPage() {
             Relatório PDF
           </Button>
         </div>
-      </div>
+      </PageHeader>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {cards.map((card) => (
