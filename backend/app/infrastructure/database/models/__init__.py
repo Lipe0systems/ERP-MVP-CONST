@@ -16,6 +16,7 @@ from app.infrastructure.database.models.estoque import ItemEstoqueModel
 from app.infrastructure.database.models.diario_obra import RegistroDiarioModel
 from app.infrastructure.database.models.orcamento import OrcamentoModel, OrcamentoItemModel
 from app.infrastructure.database.models.atendimento import AtendimentoModel
+from app.infrastructure.database.models.convite import ConviteUsuarioModel
 from app.infrastructure.database.models.historico_preco import HistoricoPrecoEstoqueModel
 from app.infrastructure.database.models.recorrencia import RecorrenciaFinanceiraModel
 from app.infrastructure.database.models.auditoria import RegistroAuditoriaModel
@@ -33,6 +34,7 @@ __all__ = [
     "RegistroDiarioModel",
     "OrcamentoModel", "OrcamentoItemModel",
     "AtendimentoModel",
+    "ConviteUsuarioModel",
     "HistoricoPrecoEstoqueModel",
     "RecorrenciaFinanceiraModel",
     "RegistroAuditoriaModel",

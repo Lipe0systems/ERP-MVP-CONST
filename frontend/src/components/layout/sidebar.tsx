@@ -18,6 +18,7 @@ import {
   Truck,
   ClipboardList,
   CalendarDays,
+  Settings,
   ShieldCheck,
   ShoppingBag,
   X,
@@ -43,6 +44,7 @@ const navItems = [
   { href: "/vendas", label: "Vendas", icon: ShoppingBag },
   { href: "/auditoria", label: "Auditoria", icon: ShieldCheck },
   { href: "/calendario", label: "Calendário", icon: CalendarDays },
+  { href: "/configuracoes", label: "Configurações", icon: Settings },
 ];
 
 interface SidebarProps {

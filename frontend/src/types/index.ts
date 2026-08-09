@@ -12,7 +12,7 @@ export interface Usuario {
   empresa_id: string;
   nome: string;
   email: string;
-  papel: "admin" | "membro";
+  papel: "admin" | "membro" | "visualizador";
   ativo: boolean;
 }
 
@@ -553,4 +553,24 @@ export interface RecorrenciaUpdateInput {
   obra_id?: string | null;
   categoria?: string | null;
   observacoes?: string | null;
+}
+
+// === Usuários e Convites (D2) ===
+
+export const PAPEL_USUARIO = ["admin", "membro", "visualizador"] as const;
+export type PapelUsuario = (typeof PAPEL_USUARIO)[number];
+export const PAPEL_USUARIO_LABEL: Record<PapelUsuario, string> = {
+  admin: "Administrador", membro: "Membro", visualizador: "Visualizador",
+};
+
+export const STATUS_CONVITE = ["pendente", "aceito", "expirado", "cancelado"] as const;
+export type StatusConvite = (typeof STATUS_CONVITE)[number];
+
+export interface Usuario {
+  id: string; nome: string; email: string; papel: PapelUsuario; ativo: boolean;
+}
+
+export interface Convite {
+  id: string; email: string; papel: PapelUsuario;
+  status: StatusConvite; expira_em: string; link_aceite: string;
 }
