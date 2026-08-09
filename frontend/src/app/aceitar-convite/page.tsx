@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,11 @@ import { createClient } from "@/lib/supabase/client";
 
 type Estado = "carregando" | "valido" | "invalido" | "cadastrando" | "sucesso";
 
-export default function AceitarConvitePage() {
+const PAPEL_LABEL: Record<string, string> = {
+  admin: "Administrador", membro: "Membro", visualizador: "Visualizador",
+};
+
+function AceitarConviteConteudo() {
   const params = useSearchParams();
   const router = useRouter();
   const token = params.get("token") ?? "";
@@ -25,7 +29,7 @@ export default function AceitarConvitePage() {
   const [confirmSenha, setConfirmSenha] = useState("");
 
   useEffect(() => {
-    if (!token) { setEstado("invalido"); return; }
+    if (!token) { setEstado("invalido"); setErroMsg("Token não encontrado."); return; }
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/usuarios/convites/${token}/validar`)
       .then((r) => r.json())
       .then((data) => {
@@ -43,9 +47,9 @@ export default function AceitarConvitePage() {
 
   async function handleCadastro(e: React.FormEvent) {
     e.preventDefault();
+    if (!nome.trim()) { setErroMsg("Informe seu nome."); return; }
     if (senha.length < 8) { setErroMsg("A senha deve ter ao menos 8 caracteres."); return; }
     if (senha !== confirmSenha) { setErroMsg("As senhas não coincidem."); return; }
-    if (!nome.trim()) { setErroMsg("Informe seu nome."); return; }
 
     setEstado("cadastrando");
     setErroMsg("");
@@ -57,7 +61,6 @@ export default function AceitarConvitePage() {
         password: senha,
         options: { data: { nome, convite_token: token } },
       });
-
       if (error) throw error;
       setEstado("sucesso");
       setTimeout(() => router.push("/login"), 3000);
@@ -66,10 +69,6 @@ export default function AceitarConvitePage() {
       setEstado("valido");
     }
   }
-
-  const PAPEL_LABEL: Record<string, string> = {
-    admin: "Administrador", membro: "Membro", visualizador: "Visualizador",
-  };
 
   if (estado === "carregando") {
     return (
@@ -86,7 +85,7 @@ export default function AceitarConvitePage() {
           <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
             <XCircle className="h-12 w-12 text-destructive" />
             <h1 className="text-xl font-semibold">Convite inválido</h1>
-            <p className="text-sm text-muted-foreground">{erroMsg || "Este convite não é válido ou já foi utilizado."}</p>
+            <p className="text-sm text-muted-foreground">{erroMsg}</p>
             <Button variant="outline" onClick={() => router.push("/login")}>Ir para o login</Button>
           </CardContent>
         </Card>
@@ -101,9 +100,7 @@ export default function AceitarConvitePage() {
           <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
             <CheckCircle2 className="h-12 w-12 text-green-500" />
             <h1 className="text-xl font-semibold">Conta criada!</h1>
-            <p className="text-sm text-muted-foreground">
-              Sua conta foi criada com sucesso. Redirecionando para o login...
-            </p>
+            <p className="text-sm text-muted-foreground">Redirecionando para o login...</p>
           </CardContent>
         </Card>
       </div>
@@ -116,7 +113,8 @@ export default function AceitarConvitePage() {
         <CardHeader className="text-center">
           <CardTitle>Você foi convidado!</CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            Crie sua conta para acessar o Construtec como <strong>{PAPEL_LABEL[papelConvite] ?? papelConvite}</strong>.
+            Crie sua conta para acessar o Construtec como{" "}
+            <strong>{PAPEL_LABEL[papelConvite] ?? papelConvite}</strong>.
           </p>
         </CardHeader>
         <CardContent>
@@ -139,11 +137,26 @@ export default function AceitarConvitePage() {
             </div>
             {erroMsg && <p className="text-sm text-destructive">{erroMsg}</p>}
             <Button type="submit" className="w-full" disabled={estado === "cadastrando"}>
-              {estado === "cadastrando" ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Criando conta...</> : "Criar minha conta"}
+              {estado === "cadastrando"
+                ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Criando conta...</>
+                : "Criar minha conta"}
             </Button>
           </form>
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+// Suspense obrigatório no Next.js 15 para páginas que usam useSearchParams()
+export default function AceitarConvitePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    }>
+      <AceitarConviteConteudo />
+    </Suspense>
   );
 }
