@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.domain.entities.fornecedor import Fornecedor
 from app.domain.repositories.fornecedor_repository import FornecedorRepository
 from app.infrastructure.database.models.fornecedor import FornecedorModel
+from datetime import datetime
 
 
 def _to_entity(model: FornecedorModel) -> Fornecedor:
@@ -79,6 +80,6 @@ class SqlAlchemyFornecedorRepository(FornecedorRepository):
         ).first()
         if model is None:
             return False
-        self.db.delete(model)
+        model.deletado_em = datetime.utcnow()
         self.db.commit()
         return True

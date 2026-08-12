@@ -25,6 +25,7 @@ from app.infrastructure.database.models.funcionario import FuncionarioModel
 from app.infrastructure.database.models.alocacao_obra import AlocacaoObraModel
 from app.infrastructure.database.models.registro_ponto import RegistroPontoModel
 from app.infrastructure.database.models.obra import ObraModel
+from app.infrastructure.database.soft_delete import soft_delete
 from app.presentation.schemas.rh import (
     FuncionarioCreate, FuncionarioUpdate, FuncionarioOut,
     AlocacaoCreate, AlocacaoOut,
@@ -164,7 +165,7 @@ def remover_alocacao(aid: UUID, empresa_id: UUID = Depends(get_empresa_id), db: 
     ).first()
     if not m:
         raise HTTPException(404, "Alocação não encontrada.")
-    db.delete(m); db.commit()
+    soft_delete(db, m)
 
 
 # ═══ PONTO ══════════════════════════════════════════════════════════════════

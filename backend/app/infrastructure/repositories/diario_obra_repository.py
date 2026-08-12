@@ -12,6 +12,7 @@ from app.domain.entities.diario_obra import ClimaObra, RegistroDiario
 from app.domain.repositories.diario_obra_repository import DiarioObraRepository
 from app.infrastructure.database.models.diario_obra import RegistroDiarioModel
 from app.infrastructure.database.models.obra import ObraModel
+from datetime import datetime
 
 
 def _to_entity(model: RegistroDiarioModel) -> RegistroDiario:
@@ -122,6 +123,6 @@ class SqlAlchemyDiarioObraRepository(DiarioObraRepository):
         )
         if model is None:
             return False
-        self.db.delete(model)
+        model.deletado_em = datetime.utcnow()
         self.db.commit()
         return True

@@ -14,6 +14,7 @@ from app.domain.exceptions import DuplicateValueError
 from app.domain.repositories.estoque_repository import EstoqueRepository
 from app.infrastructure.database.models.estoque import ItemEstoqueModel
 from app.infrastructure.database.models.historico_preco import HistoricoPrecoEstoqueModel
+from datetime import datetime
 
 
 def _to_float(value) -> float | None:
@@ -129,6 +130,6 @@ class SqlAlchemyEstoqueRepository(EstoqueRepository):
         )
         if model is None:
             return False
-        self.db.delete(model)
+        model.deletado_em = datetime.utcnow()
         self.db.commit()
         return True

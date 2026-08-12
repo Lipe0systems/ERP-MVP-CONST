@@ -10,6 +10,7 @@ from app.domain.repositories.atendimento_repository import AtendimentoRepository
 from app.infrastructure.database.models.atendimento import AtendimentoModel
 from app.infrastructure.database.models.cliente import ClienteModel
 from app.infrastructure.database.models.obra import ObraModel
+from app.infrastructure.database.soft_delete import soft_delete
 
 
 def _to_entity(m: AtendimentoModel) -> Atendimento:
@@ -107,5 +108,5 @@ class SqlAlchemyAtendimentoRepository(AtendimentoRepository):
             AtendimentoModel.id == atendimento_id,
         ).first()
         if not m: return False
-        self.db.delete(m); self.db.commit()
+        soft_delete(self.db, m)
         return True

@@ -13,6 +13,7 @@ from app.domain.entities.cliente import Cliente
 from app.domain.exceptions import DependencyExistsError
 from app.domain.repositories.cliente_repository import ClienteRepository
 from app.infrastructure.database.models.cliente import ClienteModel
+from datetime import datetime
 
 
 def _to_entity(model: ClienteModel) -> Cliente:
@@ -149,7 +150,7 @@ class SqlAlchemyClienteRepository(ClienteRepository):
         if model is None:
             return False
         try:
-            self.db.delete(model)
+            model.deletado_em = datetime.utcnow()
             self.db.commit()
         except IntegrityError as exc:
             # Ocorre quando o cliente possui registros dependentes (ex.: Obras)

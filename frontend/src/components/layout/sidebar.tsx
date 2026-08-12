@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Building2, Landmark, Users, HardHat,
   Wallet, ShoppingCart, Boxes, NotebookPen, FileText,
   Truck, ClipboardList, ShieldCheck, ShoppingBag,
-  CalendarDays, Settings, Database, Briefcase, X,
+  CalendarDays, Settings, Database, Briefcase, Trash2, X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -34,6 +34,7 @@ const navItems = [
   { href: "/auditoria", label: "Auditoria", icon: ShieldCheck, cor: "purple" },
   { href: "/calendario", label: "Calendário", icon: CalendarDays, cor: "cyan" },
   { href: "/backup", label: "Backup", icon: Database, cor: "cyan" },
+  { href: "/lixeira", label: "Lixeira", icon: Trash2, cor: "amber" },
   { href: "/configuracoes", label: "Configurações", icon: Settings, cor: "amber" },
 ] as const;
 

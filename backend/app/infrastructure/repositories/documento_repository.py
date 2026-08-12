@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.domain.entities.documento import Documento
 from app.domain.repositories.documento_repository import DocumentoRepository
 from app.infrastructure.database.models.documento import DocumentoModel
+from app.infrastructure.database.soft_delete import soft_delete
 
 
 def _to_entity(m: DocumentoModel) -> Documento:
@@ -52,5 +53,5 @@ class SqlAlchemyDocumentoRepository(DocumentoRepository):
             DocumentoModel.id == documento_id,
         ).first()
         if not m: return False
-        self.db.delete(m); self.db.commit()
+        soft_delete(self.db, m)
         return True

@@ -12,6 +12,7 @@ from app.domain.entities.financeiro import ContaPagar, StatusConta
 from app.domain.repositories.conta_pagar_repository import ContaPagarRepository
 from app.infrastructure.database.models.conta_pagar import ContaPagarModel
 from app.infrastructure.database.models.obra import ObraModel
+from datetime import datetime
 
 
 def _to_float(value) -> float | None:
@@ -148,7 +149,7 @@ class SqlAlchemyContaPagarRepository(ContaPagarRepository):
         )
         if model is None:
             return False
-        self.db.delete(model)
+        model.deletado_em = datetime.utcnow()
         self.db.commit()
         return True
 

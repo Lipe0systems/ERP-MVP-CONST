@@ -12,6 +12,7 @@ from app.domain.entities.compra import Compra, StatusCompra
 from app.domain.repositories.compra_repository import CompraRepository
 from app.infrastructure.database.models.compra import CompraModel
 from app.infrastructure.database.models.obra import ObraModel
+from datetime import datetime
 
 
 def _to_float(value) -> float | None:
@@ -148,6 +149,6 @@ class SqlAlchemyCompraRepository(CompraRepository):
         )
         if model is None:
             return False
-        self.db.delete(model)
+        model.deletado_em = datetime.utcnow()
         self.db.commit()
         return True

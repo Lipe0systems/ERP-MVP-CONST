@@ -14,6 +14,7 @@ from app.domain.exceptions import DependencyExistsError
 from app.domain.repositories.obra_repository import ObraRepository
 from app.infrastructure.database.models.cliente import ClienteModel
 from app.infrastructure.database.models.obra import ObraModel
+from datetime import datetime
 
 
 def _to_float(value) -> float | None:
@@ -149,7 +150,7 @@ class SqlAlchemyObraRepository(ObraRepository):
         if model is None:
             return False
         try:
-            self.db.delete(model)
+            model.deletado_em = datetime.utcnow()
             self.db.commit()
         except IntegrityError as exc:
             # Ocorre quando a obra possui registros dependentes (ex.: contas

@@ -13,6 +13,7 @@ from app.domain.repositories.conta_receber_repository import ContaReceberReposit
 from app.infrastructure.database.models.cliente import ClienteModel
 from app.infrastructure.database.models.conta_receber import ContaReceberModel
 from app.infrastructure.database.models.obra import ObraModel
+from datetime import datetime
 
 
 def _to_float(value) -> float | None:
@@ -150,7 +151,7 @@ class SqlAlchemyContaReceberRepository(ContaReceberRepository):
         )
         if model is None:
             return False
-        self.db.delete(model)
+        model.deletado_em = datetime.utcnow()
         self.db.commit()
         return True
 

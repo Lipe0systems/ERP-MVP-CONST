@@ -49,3 +49,7 @@ __all__ = [
     "DocumentoModel",
     "FornecedorModel",
 ]
+
+# Registra os eventos de soft delete global (DEVE vir após todos os models,
+# pois soft_delete.py importa BaseModel).
+import app.infrastructure.database.soft_delete  # noqa: F401,E402

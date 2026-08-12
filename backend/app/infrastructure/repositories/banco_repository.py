@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.domain.entities.banco import ContaBancaria, LancamentoBancario, TipoConta, TipoLancamento
 from app.domain.repositories.banco_repository import ContaBancariaRepository, LancamentoBancarioRepository
 from app.infrastructure.database.models.banco import ContaBancariaModel, LancamentoBancarioModel
+from app.infrastructure.database.soft_delete import soft_delete
 
 
 def _conta_to_entity(m: ContaBancariaModel) -> ContaBancaria:
@@ -113,7 +114,7 @@ class SqlAlchemyLancamentoBancarioRepository(LancamentoBancarioRepository):
             LancamentoBancarioModel.id == lancamento_id,
         ).first()
         if not m: return False
-        self.db.delete(m); self.db.commit()
+        soft_delete(self.db, m)
         return True
 
     def saldo_conta(self, empresa_id: UUID, conta_id: UUID) -> float:

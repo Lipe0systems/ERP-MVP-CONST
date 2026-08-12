@@ -1,7 +1,9 @@
 """
 Mixin base para todos os modelos: UUID como PK e vínculo multi-tenant.
+Inclui suporte a soft delete (coluna deletado_em) — ver soft_delete.py.
 Camada: Infrastructure.
 """
+from __future__ import annotations
 import uuid
 from datetime import datetime
 
@@ -17,6 +19,8 @@ class BaseModel(Base):
     id = Column(PGUUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     criado_em = Column(DateTime, default=datetime.utcnow, nullable=False)
     atualizado_em = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    # Soft delete: quando preenchido, o registro está "na lixeira".
+    deletado_em = Column(DateTime, nullable=True, index=True)
 
 
 class TenantModel(BaseModel):
