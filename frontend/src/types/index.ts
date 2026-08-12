@@ -574,3 +574,77 @@ export interface Convite {
   id: string; email: string; papel: PapelUsuario;
   status: StatusConvite; expira_em: string; link_aceite: string;
 }
+
+// === RH (V4) ===
+export const TIPO_CONTRATACAO = ["clt", "diarista", "empreiteiro", "pj"] as const;
+export type TipoContratacao = (typeof TIPO_CONTRATACAO)[number];
+export const TIPO_CONTRATACAO_LABEL: Record<TipoContratacao, string> = {
+  clt: "CLT", diarista: "Diarista", empreiteiro: "Empreiteiro", pj: "PJ",
+};
+
+export const STATUS_PONTO = ["presente", "falta", "meio_periodo", "atestado", "ferias", "folga"] as const;
+export type StatusPonto = (typeof STATUS_PONTO)[number];
+export const STATUS_PONTO_LABEL: Record<StatusPonto, string> = {
+  presente: "Presente", falta: "Falta", meio_periodo: "Meio período",
+  atestado: "Atestado", ferias: "Férias", folga: "Folga",
+};
+
+export interface Funcionario {
+  id: string;
+  nome: string;
+  cpf: string | null;
+  cargo: string | null;
+  salario: number;
+  tipo_contratacao: TipoContratacao;
+  data_admissao: string | null;
+  data_demissao: string | null;
+  telefone: string | null;
+  email: string | null;
+  ativo: boolean;
+  observacoes: string | null;
+  criado_em: string;
+}
+
+export interface FuncionarioInput {
+  nome: string;
+  cpf?: string | null;
+  cargo?: string | null;
+  salario: number;
+  tipo_contratacao: TipoContratacao;
+  data_admissao?: string | null;
+  data_demissao?: string | null;
+  telefone?: string | null;
+  email?: string | null;
+  ativo: boolean;
+  observacoes?: string | null;
+}
+
+export interface Alocacao {
+  id: string;
+  funcionario_id: string;
+  obra_id: string;
+  data_inicio: string;
+  data_fim: string | null;
+  funcao: string | null;
+  ativa: boolean;
+  funcionario_nome?: string | null;
+  obra_nome?: string | null;
+}
+
+export interface RegistroPonto {
+  id: string;
+  funcionario_id: string;
+  obra_id: string | null;
+  data: string;
+  status: StatusPonto;
+  horas: number | null;
+  observacoes: string | null;
+  funcionario_nome?: string | null;
+}
+
+export interface CustoMaoObra {
+  obra_id: string;
+  obra_nome: string;
+  funcionarios: number;
+  custo_mensal_estimado: number;
+}
