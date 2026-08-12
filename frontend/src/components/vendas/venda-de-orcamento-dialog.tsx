@@ -24,9 +24,10 @@ interface Props {
   orcamentoId: string;
   orcamentoNumero: number;
   valorTotal: number;
+  onCriado?: (vendaId: string) => void;
 }
 
-export function VendaDeOrcamentoDialog({ open, onOpenChange, orcamentoId, orcamentoNumero, valorTotal }: Props) {
+export function VendaDeOrcamentoDialog({ open, onOpenChange, orcamentoId, orcamentoNumero, valorTotal, onCriado }: Props) {
   const criar = useCriarVendaDeOrcamento();
   const { register, handleSubmit, watch, formState: { errors } } = useForm<F>({
     resolver: zodResolver(schema),
@@ -40,7 +41,8 @@ export function VendaDeOrcamentoDialog({ open, onOpenChange, orcamentoId, orcame
 
   async function onSubmit(values: F) {
     try {
-      await criar.mutateAsync({ orcamento_id: orcamentoId, ...values, observacoes: values.observacoes || null });
+      const venda = await criar.mutateAsync({ orcamento_id: orcamentoId, ...values, observacoes: values.observacoes || null });
+      onCriado?.(venda.id);
       onOpenChange(false);
     } catch {}
   }

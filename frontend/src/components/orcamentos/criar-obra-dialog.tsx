@@ -27,15 +27,16 @@ interface Props {
   orcamentoId: string;
   orcamentoNumero: number;
   valorTotal: number;
+  onCriado?: (obraId: string) => void;
 }
 
-export function CriarObraDialog({ open, onOpenChange, orcamentoId, orcamentoNumero, valorTotal }: Props) {
+export function CriarObraDialog({ open, onOpenChange, orcamentoId, orcamentoNumero, valorTotal, onCriado }: Props) {
   const criar = useCriarObraDoOrcamento();
   const { register, handleSubmit } = useForm<F>({ resolver: zodResolver(schema) });
 
   async function onSubmit(values: F) {
     try {
-      await criar.mutateAsync({
+      const resp = await criar.mutateAsync({
         id: orcamentoId,
         dados: {
           nome: values.nome || undefined,
@@ -45,6 +46,7 @@ export function CriarObraDialog({ open, onOpenChange, orcamentoId, orcamentoNume
           data_previsao: values.data_previsao || undefined,
         },
       });
+      onCriado?.(resp.obra_id);
       onOpenChange(false);
     } catch {}
   }

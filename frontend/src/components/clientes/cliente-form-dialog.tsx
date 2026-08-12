@@ -43,9 +43,10 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   cliente?: ClienteV3 | null;
+  onCriado?: (clienteId: string) => void;
 }
 
-export function ClienteFormDialog({ open, onOpenChange, cliente }: Props) {
+export function ClienteFormDialog({ open, onOpenChange, cliente, onCriado }: Props) {
   const isEditing = Boolean(cliente);
   const criar = useCriarCliente();
   const atualizar = useAtualizarCliente();
@@ -127,7 +128,8 @@ export function ClienteFormDialog({ open, onOpenChange, cliente }: Props) {
       if (isEditing && cliente) {
         await atualizar.mutateAsync({ id: cliente.id, data: payload });
       } else {
-        await criar.mutateAsync(payload);
+        const novo = await criar.mutateAsync(payload);
+        onCriado?.(novo.id);
       }
       onOpenChange(false);
     } catch { /* toast já exibido */ }

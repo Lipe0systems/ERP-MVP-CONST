@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Building2, Landmark, Users, HardHat,
   Wallet, ShoppingCart, Boxes, NotebookPen, FileText,
   Truck, ClipboardList, ShieldCheck, ShoppingBag,
-  CalendarDays, Settings, Database, Briefcase, Trash2, X,
+  CalendarDays, Settings, Database, Briefcase, Trash2, Workflow, X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -19,6 +19,7 @@ const SAAS_ADMIN_EMAIL = "accuservpn@proton.me";
 // Cada item tem uma cor-tema (usada no glow do ícone ativo e hover)
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, cor: "amber" },
+  { href: "/workspace", label: "Workspace", icon: Workflow, cor: "purple" },
   { href: "/clientes", label: "Clientes", icon: Users, cor: "blue" },
   { href: "/obras", label: "Obras", icon: HardHat, cor: "amber" },
   { href: "/financeiro", label: "Financeiro", icon: Wallet, cor: "green" },

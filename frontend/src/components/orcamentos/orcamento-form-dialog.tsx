@@ -41,9 +41,11 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   orcamentoId?: string | null;
+  clienteIdInicial?: string | null;
+  onCriado?: (orcamentoId: string) => void;
 }
 
-export function OrcamentoFormDialog({ open, onOpenChange, orcamentoId }: Props) {
+export function OrcamentoFormDialog({ open, onOpenChange, orcamentoId, clienteIdInicial, onCriado }: Props) {
   const isEditing = Boolean(orcamentoId);
   const { data: orcamento } = useOrcamento(orcamentoId ?? null);
 
@@ -88,13 +90,13 @@ export function OrcamentoFormDialog({ open, onOpenChange, orcamentoId }: Props) 
         }))
       );
     } else if (open && !isEditing) {
-      setClienteId("");
+      setClienteId(clienteIdInicial ?? "");
       setObraId("");
       setValidade("");
       setObservacoes("");
       setItens([emptyItem()]);
     }
-  }, [open, isEditing, orcamento]);
+  }, [open, isEditing, orcamento, clienteIdInicial]);
 
   // Injetar opção atual do orçamento (padrão dropdown seguro da V1)
   const clientes = useMemo(() => {
@@ -165,7 +167,8 @@ export function OrcamentoFormDialog({ open, onOpenChange, orcamentoId }: Props) 
       if (isEditing && orcamentoId) {
         await atualizar.mutateAsync({ id: orcamentoId, data: payload });
       } else {
-        await criar.mutateAsync(payload);
+        const novo = await criar.mutateAsync(payload);
+        onCriado?.(novo.id);
       }
       onOpenChange(false);
     } catch {
