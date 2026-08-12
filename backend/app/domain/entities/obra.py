@@ -29,4 +29,6 @@ class Obra:
     status: ObraStatus = ObraStatus.PLANEJAMENTO
     valor_previsto: float | None = None
     valor_realizado: float | None = None
+    orcamento_origem_id: UUID | None = None
+    venda_origem_id: UUID | None = None
     criado_em: datetime = field(default_factory=datetime.utcnow)

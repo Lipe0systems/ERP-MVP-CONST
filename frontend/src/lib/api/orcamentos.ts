@@ -84,3 +84,21 @@ export function aprovarOrcamentosEmLote(orcamentoIds: string[]) {
     { method: "POST", body: JSON.stringify({ orcamento_ids: orcamentoIds }) }
   );
 }
+
+interface CriarObraResposta {
+  criada: boolean;
+  obra_id: string;
+  obra_nome: string;
+  valor_previsto?: number;
+  mensagem: string;
+}
+
+export function criarObraDoOrcamento(id: string, dados?: {
+  nome?: string; endereco?: string; responsavel?: string;
+  data_inicio?: string; data_previsao?: string;
+}) {
+  return apiFetch<CriarObraResposta>(`/orcamentos/${id}/criar-obra`, {
+    method: "POST",
+    body: JSON.stringify(dados ?? {}),
+  });
+}

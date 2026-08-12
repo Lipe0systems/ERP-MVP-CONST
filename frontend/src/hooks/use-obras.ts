@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { atualizarObra, criarObra, listarObras, removerObra } from "@/lib/api/obras";
+import { atualizarObra, criarObra, listarObras, obterObra, obterResultadoObra, removerObra } from "@/lib/api/obras";
 import { extractErrorMessage } from "@/lib/api/client";
 import type { ObraInput, ObraStatus } from "@/types";
 
@@ -69,5 +69,21 @@ export function useRemoverObra() {
       toast.success("Obra removida com sucesso.");
     },
     onError: (error) => toast.error(extractErrorMessage(error)),
+  });
+}
+
+export function useObra(id: string | null) {
+  return useQuery({
+    queryKey: [OBRAS_KEY, id],
+    queryFn: () => obterObra(id!),
+    enabled: Boolean(id),
+  });
+}
+
+export function useResultadoObra(id: string | null) {
+  return useQuery({
+    queryKey: [OBRAS_KEY, id, "resultado"],
+    queryFn: () => obterResultadoObra(id!),
+    enabled: Boolean(id),
   });
 }

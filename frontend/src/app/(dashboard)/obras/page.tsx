@@ -1,7 +1,9 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 import { useState } from "react";
-import { HardHat, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { Eye, HardHat, Pencil, Plus, Search, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
@@ -26,6 +28,7 @@ export default function ObrasPage() {
   const [status, setStatus] = useState<ObraStatus | "todos">("todos");
   const [page, setPage] = useState(1);
   const [formOpen, setFormOpen] = useState(false);
+  const router = useRouter();
   const [obraEditando, setObraEditando] = useState<ObraListItem | null>(null);
   const [obraRemovendo, setObraRemovendo] = useState<ObraListItem | null>(null);
 
@@ -149,6 +152,14 @@ export default function ObrasPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => router.push(`/obras/${obra.id}`)}
+                        aria-label={`Ver detalhes de ${obra.nome}`}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"

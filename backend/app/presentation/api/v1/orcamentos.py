@@ -3,6 +3,8 @@ Endpoints REST do módulo Orçamentos.
 Camada: Presentation.
 """
 from uuid import UUID
+from datetime import date
+from pydantic import BaseModel
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
@@ -18,6 +20,7 @@ from app.infrastructure.repositories.conta_receber_repository import SqlAlchemyC
 from app.infrastructure.repositories.estoque_repository import SqlAlchemyEstoqueRepository
 from app.infrastructure.repositories.obra_repository import SqlAlchemyObraRepository
 from app.infrastructure.repositories.orcamento_repository import SqlAlchemyOrcamentoRepository
+from app.domain.entities.obra import Obra, ObraStatus
 from app.presentation.schemas.orcamento import (
     AprovarLoteIn,
     OrcamentoCreateIn,
@@ -232,3 +235,103 @@ def gerar_pdf(
             "Content-Disposition": f'attachment; filename="{filename}"',
         },
     )
+
+# ═══ V4 — Integração: Orçamento → Obra ══════════════════════════════════════
+
+class _CriarObraIn(BaseModel):
+    """Payload opcional para customizar a obra criada a partir do orçamento."""
+    nome: str | None = None
+    endereco: str | None = None
+    responsavel: str | None = None
+    data_inicio: date | None = None
+    data_previsao: date | None = None
+
+
+@router.post("/{orcamento_id}/criar-obra")
+def criar_obra_a_partir_do_orcamento(
+    orcamento_id: UUID,
+    body: _CriarObraIn = _CriarObraIn(),
+    empresa_id: UUID = Depends(get_empresa_id),
+    db: Session = Depends(get_db),
+    use_cases: OrcamentoUseCases = Depends(_get_use_cases),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    """
+    Cria uma Obra a partir de um orçamento aprovado, reaproveitando cliente,
+    valor contratado e prazo. Também cria o Orçamento-base da obra (snapshot
+    do previsto). Se o orçamento já estiver vinculado a uma obra, retorna
+    essa obra existente em vez de criar uma nova (evita duplicidade).
+    """
+    orc = use_cases.obter(empresa_id, orcamento_id)
+
+    if orc.status != StatusOrcamento.APROVADO:
+        raise HTTPException(422, "Só é possível criar obra a partir de um orçamento aprovado.")
+
+    obra_repo = SqlAlchemyObraRepository(db)
+
+    # Já existe obra vinculada a este orçamento? Não duplica.
+    if orc.obra_id:
+        obra_existente = obra_repo.get_by_id(empresa_id, orc.obra_id)
+        if obra_existente:
+            return {
+                "criada": False,
+                "obra_id": str(obra_existente.id),
+                "obra_nome": obra_existente.nome,
+                "mensagem": "Este orçamento já está vinculado a uma obra existente.",
+            }
+
+    import uuid as _uuid
+    nova_obra = Obra(
+        id=_uuid.uuid4(),
+        empresa_id=empresa_id,
+        nome=body.nome or f"Obra — Orçamento #{orc.numero:04d}",
+        cliente_id=orc.cliente_id,
+        endereco=body.endereco,
+        responsavel=body.responsavel,
+        data_inicio=body.data_inicio,
+        data_previsao=body.data_previsao or orc.validade,
+        status=ObraStatus.PLANEJAMENTO,
+        valor_previsto=orc.valor_total,
+        orcamento_origem_id=orc.id,
+    )
+    obra_criada = obra_repo.create(nova_obra)
+
+    # Vincula o orçamento comercial à obra recém-criada (preserva o orçamento
+    # original intacto — atualiza só a coluna obra_id, sem tocar nos itens).
+    from app.infrastructure.database.models.orcamento import OrcamentoModel as _OrcModel
+    db.query(_OrcModel).filter(
+        _OrcModel.empresa_id == empresa_id, _OrcModel.id == orcamento_id
+    ).update({"obra_id": obra_criada.id})
+    db.commit()
+
+    # Cria o Orçamento-base da obra (snapshot do previsto — Fluxo 2)
+    from app.infrastructure.database.models.orcamento_base_obra import OrcamentoBaseObraModel
+    base = OrcamentoBaseObraModel(
+        id=_uuid.uuid4(),
+        empresa_id=empresa_id,
+        obra_id=obra_criada.id,
+        orcamento_origem_id=orc.id,
+        valor_previsto=orc.valor_total,
+        descricao=f"Gerado automaticamente do orçamento #{orc.numero:04d}.",
+    )
+    db.add(base)
+    db.commit()
+
+    # Auditoria (best-effort — não bloqueia a operação principal)
+    try:
+        audit(
+            db, usuario=current_user, modulo="obras",
+            acao=AcaoAuditoria.CRIOU,
+            entidade_id=str(obra_criada.id),
+            descricao=f"Obra criada a partir do orçamento #{orc.numero:04d}.",
+        )
+    except Exception:
+        pass
+
+    return {
+        "criada": True,
+        "obra_id": str(obra_criada.id),
+        "obra_nome": obra_criada.nome,
+        "valor_previsto": obra_criada.valor_previsto,
+        "mensagem": "Obra criada com sucesso a partir do orçamento.",
+    }

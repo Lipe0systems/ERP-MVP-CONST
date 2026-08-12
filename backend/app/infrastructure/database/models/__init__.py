@@ -20,6 +20,8 @@ from app.infrastructure.database.models.convite import ConviteUsuarioModel
 from app.infrastructure.database.models.funcionario import FuncionarioModel
 from app.infrastructure.database.models.alocacao_obra import AlocacaoObraModel
 from app.infrastructure.database.models.registro_ponto import RegistroPontoModel
+from app.infrastructure.database.models.orcamento_base_obra import OrcamentoBaseObraModel
+from app.infrastructure.database.models.movimentacao_estoque import MovimentacaoEstoqueModel
 from app.infrastructure.database.models.historico_preco import HistoricoPrecoEstoqueModel
 from app.infrastructure.database.models.recorrencia import RecorrenciaFinanceiraModel
 from app.infrastructure.database.models.auditoria import RegistroAuditoriaModel
@@ -41,6 +43,8 @@ __all__ = [
     "FuncionarioModel",
     "AlocacaoObraModel",
     "RegistroPontoModel",
+    "OrcamentoBaseObraModel",
+    "MovimentacaoEstoqueModel",
     "HistoricoPrecoEstoqueModel",
     "RecorrenciaFinanceiraModel",
     "RegistroAuditoriaModel",

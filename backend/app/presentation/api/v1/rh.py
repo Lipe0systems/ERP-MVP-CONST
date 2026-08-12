@@ -290,3 +290,99 @@ def custo_mao_obra(
         }
         for oid, onome, qtd, custo in q.all()
     ]
+
+# ═══ V4 — Custo de mão de obra com rateio por ponto (Fluxo 5) ══════════════
+
+@router.get("/custo-mao-obra-rateado")
+def custo_mao_obra_rateado(
+    empresa_id: UUID = Depends(get_empresa_id),
+    db: Session = Depends(get_db),
+    obra_id: UUID | None = None,
+):
+    """
+    Versão mais precisa do custo de mão de obra: quando o funcionário tem
+    registros de PONTO em mais de uma obra no período, rateia o custo
+    proporcionalmente aos dias efetivamente trabalhados em cada uma —
+    em vez de contar o salário cheio em todas as obras alocadas.
+
+    Fallback: funcionário sem nenhum registro de ponto no mês corrente
+    entra pela alocação simples (like custo_mao_obra), pois não há dados
+    de dias trabalhados para ratear.
+    """
+    from datetime import date as _date
+    hoje = _date.today()
+    inicio_mes = hoje.replace(day=1)
+
+    # 1. Dias de presença por (funcionário, obra) no mês corrente
+    dias_por_obra = (
+        db.query(
+            RegistroPontoModel.funcionario_id,
+            RegistroPontoModel.obra_id,
+            func.count(RegistroPontoModel.id).label("dias"),
+        )
+        .filter(
+            RegistroPontoModel.empresa_id == empresa_id,
+            RegistroPontoModel.data >= inicio_mes,
+            RegistroPontoModel.data <= hoje,
+            RegistroPontoModel.status == "presente",
+            RegistroPontoModel.obra_id.isnot(None),
+        )
+        .group_by(RegistroPontoModel.funcionario_id, RegistroPontoModel.obra_id)
+        .all()
+    )
+
+    # 2. Total de dias presentes por funcionário (para calcular a proporção)
+    total_dias_func: dict = {}
+    for fid, _oid, dias in dias_por_obra:
+        total_dias_func[fid] = total_dias_func.get(fid, 0) + dias
+
+    # 3. Salários dos funcionários ativos envolvidos
+    func_ids = list(total_dias_func.keys())
+    salarios = {}
+    if func_ids:
+        for f in db.query(FuncionarioModel).filter(
+            FuncionarioModel.empresa_id == empresa_id, FuncionarioModel.id.in_(func_ids)
+        ):
+            salarios[f.id] = float(f.salario)
+
+    # 4. Rateio: custo_obra += salario_funcionario * (dias_na_obra / total_dias_func)
+    custo_por_obra: dict = {}
+    for fid, oid, dias in dias_por_obra:
+        salario = salarios.get(fid, 0)
+        total = total_dias_func.get(fid, 0) or 1
+        proporcao = dias / total
+        custo_por_obra[oid] = custo_por_obra.get(oid, 0) + salario * proporcao
+
+    # 5. Funcionários alocados mas SEM nenhum ponto no mês: fallback = alocação simples
+    func_com_ponto = set(func_ids)
+    alocacoes = (
+        db.query(AlocacaoObraModel.funcionario_id, AlocacaoObraModel.obra_id, FuncionarioModel.salario)
+        .join(FuncionarioModel, FuncionarioModel.id == AlocacaoObraModel.funcionario_id)
+        .filter(
+            AlocacaoObraModel.empresa_id == empresa_id,
+            AlocacaoObraModel.ativa == True,
+            FuncionarioModel.ativo == True,
+        )
+        .all()
+    )
+    for fid, oid, salario in alocacoes:
+        if fid not in func_com_ponto:
+            custo_por_obra[oid] = custo_por_obra.get(oid, 0) + float(salario)
+
+    if not custo_por_obra:
+        return []
+
+    obras = {
+        o.id: o.nome
+        for o in db.query(ObraModel).filter(
+            ObraModel.empresa_id == empresa_id, ObraModel.id.in_(custo_por_obra.keys())
+        )
+    }
+
+    resultado = [
+        {"obra_id": str(oid), "obra_nome": obras.get(oid, "—"), "custo_mao_obra": round(custo, 2)}
+        for oid, custo in custo_por_obra.items()
+    ]
+    if obra_id:
+        resultado = [r for r in resultado if r["obra_id"] == str(obra_id)]
+    return sorted(resultado, key=lambda r: r["obra_nome"])

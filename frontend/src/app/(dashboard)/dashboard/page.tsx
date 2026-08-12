@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
+import { SaudeObrasWidget } from "@/components/dashboard/saude-obras-widget";
 import { createClient } from "@/lib/supabase/client";
 import { formatMoeda, formatData } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -21,7 +22,7 @@ import { cn } from "@/lib/utils";
 const TODOS_WIDGETS = [
   "saldo_bancario", "obras_ativas", "obras_concluidas", "clientes",
   "contas_pagar", "contas_receber", "alerta_estoque", "alerta_vencimentos",
-  "grafico_fluxo", "grafico_obras", "orcamentos",
+  "grafico_fluxo", "grafico_obras", "orcamentos", "saude_obras",
 ] as const;
 type WidgetId = (typeof TODOS_WIDGETS)[number];
 
@@ -31,7 +32,7 @@ const WIDGET_LABELS: Record<WidgetId, string> = {
   contas_pagar: "A pagar", contas_receber: "A receber",
   alerta_estoque: "Alerta de estoque", alerta_vencimentos: "Alertas de vencimento",
   grafico_fluxo: "Fluxo de caixa", grafico_obras: "Obras por status",
-  orcamentos: "Orçamentos por status",
+  orcamentos: "Orçamentos por status", saude_obras: "Saúde das obras",
 };
 
 const DEFAULT_WIDGETS: WidgetId[] = [...TODOS_WIDGETS];
@@ -342,6 +343,8 @@ export default function DashboardPage() {
           ))}
         </div>
       )}
+
+      {show("saude_obras") && <SaudeObrasWidget />}
     </div>
   );
 }

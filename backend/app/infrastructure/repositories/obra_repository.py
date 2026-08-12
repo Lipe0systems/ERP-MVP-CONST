@@ -34,6 +34,8 @@ def _to_entity(model: ObraModel) -> Obra:
         status=ObraStatus(model.status),
         valor_previsto=_to_float(model.valor_previsto),
         valor_realizado=_to_float(model.valor_realizado),
+        orcamento_origem_id=model.orcamento_origem_id,
+        venda_origem_id=model.venda_origem_id,
         criado_em=model.criado_em,
     )
 
@@ -112,6 +114,8 @@ class SqlAlchemyObraRepository(ObraRepository):
             status=obra.status.value,
             valor_previsto=obra.valor_previsto,
             valor_realizado=obra.valor_realizado,
+            orcamento_origem_id=obra.orcamento_origem_id,
+            venda_origem_id=obra.venda_origem_id,
         )
         self.db.add(model)
         self.db.commit()

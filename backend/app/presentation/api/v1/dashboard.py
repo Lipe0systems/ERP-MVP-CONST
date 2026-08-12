@@ -156,3 +156,70 @@ def get_resumo(empresa_id: UUID = Depends(get_empresa_id), db: Session = Depends
             ItemEstoqueModel.quantidade < ItemEstoqueModel.estoque_minimo,
         ).scalar() or 0,
     }
+
+@router.get("/saude-obras")
+def saude_das_obras(empresa_id: UUID = Depends(get_empresa_id), db: Session = Depends(get_db)):
+    """
+    Classifica cada obra em andamento por saúde financeira, com base no
+    percentual do orçamento previsto já consumido (mesmo critério do
+    endpoint /obras/{id}/resultado — ver lá para o detalhamento completo).
+
+    dentro_orcamento < 80% consumido | atencao 80-100% | acima_orcamento > 100%
+    """
+    from app.infrastructure.database.models.obra import ObraModel
+    from app.infrastructure.database.models.orcamento_base_obra import OrcamentoBaseObraModel
+    from app.infrastructure.database.models.movimentacao_estoque import MovimentacaoEstoqueModel
+    from app.infrastructure.database.models.estoque import ItemEstoqueModel
+    from app.infrastructure.database.models.conta_pagar import ContaPagarModel
+    from app.infrastructure.database.models.alocacao_obra import AlocacaoObraModel
+    from app.infrastructure.database.models.funcionario import FuncionarioModel
+
+    obras = db.query(ObraModel).filter(
+        ObraModel.empresa_id == empresa_id, ObraModel.status == "em_andamento",
+    ).all()
+
+    resultado = []
+    for obra in obras:
+        base = db.query(OrcamentoBaseObraModel).filter(
+            OrcamentoBaseObraModel.empresa_id == empresa_id, OrcamentoBaseObraModel.obra_id == obra.id
+        ).first()
+        custo_previsto = float(base.valor_previsto) if base else float(obra.valor_previsto or 0)
+
+        custo_material = db.query(
+            func.coalesce(func.sum(MovimentacaoEstoqueModel.quantidade * ItemEstoqueModel.valor_medio), 0)
+        ).join(ItemEstoqueModel, ItemEstoqueModel.id == MovimentacaoEstoqueModel.estoque_id).filter(
+            MovimentacaoEstoqueModel.empresa_id == empresa_id,
+            MovimentacaoEstoqueModel.obra_id == obra.id,
+            MovimentacaoEstoqueModel.tipo.in_(["entrada", "transferencia", "consumo"]),
+        ).scalar() or 0
+
+        custo_pagar = db.query(func.coalesce(func.sum(ContaPagarModel.valor), 0)).filter(
+            ContaPagarModel.empresa_id == empresa_id, ContaPagarModel.obra_id == obra.id,
+        ).scalar() or 0
+
+        custo_mo = db.query(func.coalesce(func.sum(FuncionarioModel.salario), 0)).join(
+            AlocacaoObraModel, AlocacaoObraModel.funcionario_id == FuncionarioModel.id
+        ).filter(
+            AlocacaoObraModel.empresa_id == empresa_id, AlocacaoObraModel.obra_id == obra.id,
+            AlocacaoObraModel.ativa == True, FuncionarioModel.ativo == True,
+        ).scalar() or 0
+
+        custo_realizado = float(custo_material) + float(custo_pagar) + float(custo_mo)
+        pct = (custo_realizado / custo_previsto * 100) if custo_previsto else 0
+
+        if pct < 80:
+            saude = "dentro_orcamento"
+        elif pct < 100:
+            saude = "atencao"
+        else:
+            saude = "acima_orcamento"
+
+        resultado.append({
+            "obra_id": str(obra.id), "obra_nome": obra.nome,
+            "custo_previsto": round(custo_previsto, 2),
+            "custo_realizado": round(custo_realizado, 2),
+            "percentual_consumido": round(pct, 2),
+            "saude": saude,
+        })
+
+    return sorted(resultado, key=lambda r: -r["percentual_consumido"])

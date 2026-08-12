@@ -13,6 +13,12 @@ from app.infrastructure.database.session import get_db
 from app.infrastructure.database.models.historico_preco import HistoricoPrecoEstoqueModel
 from sqlalchemy import func
 from app.infrastructure.repositories.estoque_repository import SqlAlchemyEstoqueRepository
+from app.infrastructure.database.models.movimentacao_estoque import MovimentacaoEstoqueModel
+from app.infrastructure.database.models.estoque import ItemEstoqueModel
+from app.core.security import get_current_user, CurrentUser
+from pydantic import BaseModel, Field
+from datetime import datetime
+import uuid as _uuid
 from app.presentation.schemas.estoque import (
     ItemEstoqueCreate,
     ItemEstoqueListOut,
@@ -165,3 +171,128 @@ def historico_precos(
             for r in rows
         ],
     }
+
+# ═══ V4 — Movimentações de estoque (rastreabilidade / Fluxo 4) ═════════════
+
+class MovimentacaoIn(BaseModel):
+    estoque_id: UUID
+    tipo: str = Field(pattern="^(transferencia|consumo|ajuste)$")
+    quantidade: float = Field(gt=0)
+    obra_id: UUID | None = None
+    observacao: str | None = None
+
+
+@router.get("/movimentacoes")
+def listar_movimentacoes(
+    empresa_id: UUID = Depends(get_empresa_id),
+    db: Session = Depends(get_db),
+    obra_id: UUID | None = None,
+    estoque_id: UUID | None = None,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+):
+    """Histórico de movimentações — entradas, transferências, consumos e ajustes."""
+    q = db.query(MovimentacaoEstoqueModel).filter(MovimentacaoEstoqueModel.empresa_id == empresa_id)
+    if obra_id:
+        q = q.filter(MovimentacaoEstoqueModel.obra_id == obra_id)
+    if estoque_id:
+        q = q.filter(MovimentacaoEstoqueModel.estoque_id == estoque_id)
+    total = q.count()
+    rows = q.order_by(MovimentacaoEstoqueModel.criado_em.desc()).offset((page - 1) * page_size).limit(page_size).all()
+    return {
+        "total": total, "page": page, "page_size": page_size,
+        "items": [
+            {
+                "id": str(m.id), "produto": m.produto, "tipo": m.tipo,
+                "quantidade": float(m.quantidade), "origem": m.origem, "destino": m.destino,
+                "obra_id": str(m.obra_id) if m.obra_id else None,
+                "observacao": m.observacao, "criado_em": m.criado_em.isoformat(),
+            }
+            for m in rows
+        ],
+    }
+
+
+@router.post("/movimentacoes", status_code=201)
+def registrar_movimentacao(
+    body: MovimentacaoIn,
+    empresa_id: UUID = Depends(get_empresa_id),
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    """
+    Registra uma movimentação manual de estoque: transferência para obra,
+    consumo na obra, ou ajuste de inventário. Atualiza a quantidade do item.
+    """
+    from fastapi import HTTPException
+
+    item = db.query(ItemEstoqueModel).filter(
+        ItemEstoqueModel.empresa_id == empresa_id, ItemEstoqueModel.id == body.estoque_id
+    ).first()
+    if not item:
+        raise HTTPException(404, "Item de estoque não encontrado.")
+
+    if body.tipo in ("transferencia", "consumo") and float(item.quantidade) < body.quantidade:
+        raise HTTPException(422, f"Quantidade insuficiente em estoque ({float(item.quantidade)} disponível).")
+
+    # Ajuste pode somar ou subtrair; transferência/consumo sempre reduz o saldo central.
+    if body.tipo == "ajuste":
+        # Ajuste positivo soma, mas aqui tratamos a quantidade sempre como delta absoluto
+        # aplicado — o sinal fica a critério do observacao/uso; simplificamos para reposição.
+        item.quantidade = float(item.quantidade) + body.quantidade
+    else:
+        item.quantidade = float(item.quantidade) - body.quantidade
+
+    mov = MovimentacaoEstoqueModel(
+        id=_uuid.uuid4(),
+        empresa_id=empresa_id,
+        estoque_id=item.id,
+        produto=item.produto,
+        tipo=body.tipo,
+        quantidade=body.quantidade,
+        origem="estoque_central" if body.tipo in ("transferencia", "consumo") else "ajuste",
+        destino="obra" if body.obra_id else None,
+        obra_id=body.obra_id,
+        usuario_id=current_user.id,
+        observacao=body.observacao,
+    )
+    db.add(mov)
+    db.commit()
+
+    return {
+        "id": str(mov.id), "tipo": mov.tipo, "quantidade": float(mov.quantidade),
+        "saldo_atual": float(item.quantidade),
+    }
+
+
+@router.get("/custo-material-obra")
+def custo_material_por_obra(
+    empresa_id: UUID = Depends(get_empresa_id),
+    db: Session = Depends(get_db),
+    obra_id: UUID | None = None,
+):
+    """
+    Custo de materiais por obra (Fluxo 4/6), calculado a partir das
+    movimentações REALMENTE associadas à obra (consumo + transferência +
+    compras diretas) — nunca a soma de todas as compras da empresa.
+    """
+    q = (
+        db.query(
+            MovimentacaoEstoqueModel.obra_id,
+            func.sum(MovimentacaoEstoqueModel.quantidade * ItemEstoqueModel.valor_medio).label("custo"),
+        )
+        .join(ItemEstoqueModel, ItemEstoqueModel.id == MovimentacaoEstoqueModel.estoque_id)
+        .filter(
+            MovimentacaoEstoqueModel.empresa_id == empresa_id,
+            MovimentacaoEstoqueModel.obra_id.isnot(None),
+            MovimentacaoEstoqueModel.tipo.in_(["entrada", "transferencia", "consumo"]),
+        )
+    )
+    if obra_id:
+        q = q.filter(MovimentacaoEstoqueModel.obra_id == obra_id)
+    q = q.group_by(MovimentacaoEstoqueModel.obra_id)
+
+    return [
+        {"obra_id": str(oid), "custo_material": float(custo or 0)}
+        for oid, custo in q.all()
+    ]

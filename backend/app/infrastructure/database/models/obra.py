@@ -25,3 +25,8 @@ class ObraModel(TenantModel):
     status = Column(String(20), nullable=False, default=ObraStatus.PLANEJAMENTO.value, index=True)
     valor_previsto = Column(Numeric(14, 2))
     valor_realizado = Column(Numeric(14, 2))
+
+    # Rastreabilidade: de qual orçamento/venda esta obra se originou (V4 — integração).
+    # Nulo quando a obra foi criada diretamente, sem passar por um orçamento comercial.
+    orcamento_origem_id = Column(PGUUID(as_uuid=True), ForeignKey("orcamentos.id", ondelete="SET NULL"))
+    venda_origem_id = Column(PGUUID(as_uuid=True), ForeignKey("vendas.id", ondelete="SET NULL"))

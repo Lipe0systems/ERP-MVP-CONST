@@ -14,6 +14,7 @@ import {
   Trash2,
   Edit,
   MessageCircle,
+  HardHat,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,7 @@ import { formatMoeda, formatData } from "@/lib/format";
 import { baixarPdfOrcamento } from "@/lib/api/orcamentos";
 import { baixarRelatorioOrcamentos } from "@/lib/api/relatorios";
 import { VendaDeOrcamentoDialog } from "@/components/vendas/venda-de-orcamento-dialog";
+import { CriarObraDialog } from "@/components/orcamentos/criar-obra-dialog";
 import { toast } from "sonner";
 import type { OrcamentoListItem, StatusOrcamento } from "@/types";
 
@@ -57,6 +59,7 @@ export default function OrcamentosPage() {
   const [page, setPage] = useState(1);
   const [formOpen, setFormOpen] = useState(false);
   const [vendaOrc, setVendaOrc] = useState<OrcamentoListItem | null>(null);
+  const [obraOrc, setObraOrc] = useState<OrcamentoListItem | null>(null);
   const [editandoId, setEditandoId] = useState<string | null>(null);
   const [removendo, setRemovendo] = useState<OrcamentoListItem | null>(null);
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
@@ -314,6 +317,16 @@ export default function OrcamentosPage() {
                         >
                           <ShoppingBag className="h-4 w-4 text-green-600" />
                         </Button>
+                        {!orc.obra_id && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Criar obra a partir deste orçamento"
+                            onClick={() => setObraOrc(orc)}
+                          >
+                            <HardHat className="h-4 w-4 text-amber-600" />
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="icon"
@@ -381,6 +394,16 @@ export default function OrcamentosPage() {
           orcamentoId={vendaOrc.id}
           orcamentoNumero={vendaOrc.numero}
           valorTotal={vendaOrc.valor_total}
+        />
+      )}
+
+      {obraOrc && (
+        <CriarObraDialog
+          open={Boolean(obraOrc)}
+          onOpenChange={(v) => !v && setObraOrc(null)}
+          orcamentoId={obraOrc.id}
+          orcamentoNumero={obraOrc.numero}
+          valorTotal={obraOrc.valor_total}
         />
       )}
 

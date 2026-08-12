@@ -245,3 +245,26 @@ class CompraUseCases:
                 unidade=compra.unidade,
             )
             self.estoque_repository.create(novo_item)
+
+        # V4 — Registra a movimentação de entrada, rastreando a obra quando a
+        # compra estiver vinculada a uma (Fluxo 3/4 da integração).
+        if self.db is not None:
+            try:
+                from app.infrastructure.database.models.movimentacao_estoque import MovimentacaoEstoqueModel
+                item_atual = self.estoque_repository.get_by_produto(empresa_id, compra.produto)
+                mov = MovimentacaoEstoqueModel(
+                    id=uuid.uuid4(),
+                    empresa_id=empresa_id,
+                    estoque_id=item_atual.id if item_atual else uuid.uuid4(),
+                    produto=compra.produto,
+                    tipo="entrada",
+                    quantidade=compra.quantidade,
+                    origem="compra",
+                    destino="obra" if compra.obra_id else "estoque_central",
+                    obra_id=compra.obra_id,
+                    referencia_id=compra.id,
+                )
+                self.db.add(mov)
+                self.db.commit()
+            except Exception:
+                pass

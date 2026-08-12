@@ -21,4 +21,7 @@ class ContaReceberModel(TenantModel):
     obra_id = Column(PGUUID(as_uuid=True), ForeignKey("obras.id", ondelete="RESTRICT"), index=True)
     data_recebimento = Column(Date)
     status = Column(String(20), nullable=False, default=StatusConta.PENDENTE.value, index=True)
+    # V4 — Integração Financeiro → Banco: lançamento gerado ao liquidar
+    lancamento_bancario_id = Column(PGUUID(as_uuid=True), ForeignKey("lancamentos_bancarios.id", ondelete="SET NULL"))
+    conta_bancaria_id = Column(PGUUID(as_uuid=True), ForeignKey("contas_bancarias.id", ondelete="SET NULL"))
     observacoes = Column(Text)

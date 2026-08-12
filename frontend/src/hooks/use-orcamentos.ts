@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import {
   aprovarOrcamento,
   aprovarOrcamentosEmLote,
+  criarObraDoOrcamento,
   atualizarOrcamento,
   cancelarOrcamento,
   criarOrcamento,
@@ -140,5 +141,20 @@ export function useAprovarOrcamentosEmLote() {
       }
     },
     onError: (e) => toast.error(extractErrorMessage(e)),
+  });
+}
+
+export function useCriarObraDoOrcamento() {
+  const invalidate = useInvalidate();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, dados }: { id: string; dados?: Parameters<typeof criarObraDoOrcamento>[1] }) =>
+      criarObraDoOrcamento(id, dados),
+    onSuccess: (resp) => {
+      invalidate();
+      queryClient.invalidateQueries({ queryKey: ["obras"] });
+      toast.success(resp.mensagem);
+    },
+    onError: (error) => toast.error(extractErrorMessage(error)),
   });
 }
