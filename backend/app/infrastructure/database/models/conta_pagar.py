@@ -25,4 +25,5 @@ class ContaPagarModel(TenantModel):
     # V4 — Integração Financeiro → Banco: lançamento gerado ao liquidar
     lancamento_bancario_id = Column(PGUUID(as_uuid=True), ForeignKey("lancamentos_bancarios.id", ondelete="SET NULL"))
     conta_bancaria_id = Column(PGUUID(as_uuid=True), ForeignKey("contas_bancarias.id", ondelete="SET NULL"))
+    comprovante_url = Column(String(1000))
     observacoes = Column(Text)

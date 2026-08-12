@@ -32,6 +32,7 @@ def listar_notificacoes(
     """
     hoje = date.today()
     amanha = hoje + timedelta(days=1)
+    proximos_3 = hoje + timedelta(days=3)
     proximos_7 = hoje + timedelta(days=7)
 
     notificacoes = []
@@ -68,6 +69,24 @@ def listar_notificacoes(
             "descricao": f"{vencendo_pagar} conta{'s' if vencendo_pagar > 1 else ''} vence{'m' if vencendo_pagar > 1 else ''} em até 7 dias",
             "quantidade": vencendo_pagar,
             "urgente": False,
+            "link": "/financeiro",
+        })
+
+    # 1b. Contas a pagar vencendo nos próximos 3 dias — alerta mais forte
+    vencendo_pagar_3d = db.query(func.count(ContaPagarModel.id)).filter(
+        ContaPagarModel.empresa_id == empresa_id,
+        ContaPagarModel.status == "pendente",
+        ContaPagarModel.data_vencimento >= hoje,
+        ContaPagarModel.data_vencimento <= proximos_3,
+    ).scalar() or 0
+
+    if vencendo_pagar_3d > 0:
+        notificacoes.append({
+            "tipo": "conta_pagar_vencendo_urgente",
+            "titulo": "Vencimento próximo",
+            "descricao": f"{vencendo_pagar_3d} conta{'s' if vencendo_pagar_3d > 1 else ''} vence{'m' if vencendo_pagar_3d > 1 else ''} em até 3 dias",
+            "quantidade": vencendo_pagar_3d,
+            "urgente": True,
             "link": "/financeiro",
         })
 

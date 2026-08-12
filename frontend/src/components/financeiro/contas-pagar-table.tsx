@@ -11,8 +11,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Pagination } from "@/components/pagination";
 import { StatusContaBadge } from "@/components/financeiro/status-conta-badge";
 import { ContaPagarFormDialog } from "@/components/financeiro/conta-pagar-form-dialog";
+import { PagarReceberDialog } from "@/components/financeiro/pagar-receber-dialog";
 import { DeleteConfirmDialog } from "@/components/delete-confirm-dialog";
-import { useContasPagar, useRemoverContaPagar, useLiquidarContaPagar, useCancelarContaPagar } from "@/hooks/use-financeiro";
+import { useContasPagar, useRemoverContaPagar, useCancelarContaPagar } from "@/hooks/use-financeiro";
 import { useDebounce } from "@/hooks/use-debounce";
 import { formatData, formatMoeda } from "@/lib/format";
 import { STATUS_CONTA, type ContaPagarListItem, type StatusConta } from "@/types";
@@ -35,7 +36,7 @@ export function ContasPagarTable() {
 
   const search = useDebounce(searchInput, 400);
   const remover = useRemoverContaPagar();
-  const liquidar = useLiquidarContaPagar();
+  const [pagando, setPagando] = useState<ContaPagarListItem | null>(null);
   const cancelarRapido = useCancelarContaPagar();
 
   const { data, isLoading, isError, isFetching } = useContasPagar({
@@ -153,8 +154,7 @@ export function ContasPagarTable() {
                             variant="ghost"
                             size="icon"
                             title="Marcar como paga"
-                            onClick={() => liquidar.mutate(conta)}
-                            disabled={liquidar.isPending}
+                            onClick={() => setPagando(conta)}
                             aria-label={`Marcar ${conta.descricao} como paga`}
                           >
                             <CheckCircle className="h-4 w-4 text-green-600" />
@@ -199,6 +199,16 @@ export function ContasPagarTable() {
       )}
 
       <ContaPagarFormDialog open={formOpen} onOpenChange={setFormOpen} conta={contaEditando} />
+      {pagando && (
+        <PagarReceberDialog
+          open={Boolean(pagando)}
+          onOpenChange={(o) => !o && setPagando(null)}
+          tipo="pagar"
+          contaId={pagando.id}
+          descricao={pagando.descricao}
+          valor={pagando.valor}
+        />
+      )}
       <DeleteConfirmDialog
         titulo="Remover conta a pagar"
         open={Boolean(contaRemovendo)}

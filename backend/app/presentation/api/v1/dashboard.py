@@ -128,7 +128,7 @@ def _indicadores_orcamentos(db: Session, empresa_id: UUID) -> dict:
 
 
 @router.get("/resumo")
-def get_resumo(empresa_id: UUID = Depends(get_empresa_id), db: Session = Depends(get_db)):
+def get_resumo(empresa_id: UUID = Depends(get_empresa_id), db: Session = Depends(get_db), dias: int = 7):
     obras_ativas, obras_concluidas = SqlAlchemyObraRepository(db).contar_ativas_e_concluidas(empresa_id)
     total_clientes = SqlAlchemyClienteRepository(db).contar(empresa_id)
 
@@ -148,7 +148,7 @@ def get_resumo(empresa_id: UUID = Depends(get_empresa_id), db: Session = Depends
         # Novos indicadores V3
         "saldo_bancario": _saldo_total_banco(db, empresa_id),
         "obras_por_status": _obras_por_status(db, empresa_id),
-        "contas_vencendo_7_dias": _contas_vencendo(db, empresa_id, dias=7),
+        "contas_vencendo_7_dias": _contas_vencendo(db, empresa_id, dias=dias),
         "orcamentos": _indicadores_orcamentos(db, empresa_id),
         "estoque_abaixo_minimo": db.query(func.count(ItemEstoqueModel.id)).filter(
             ItemEstoqueModel.empresa_id == empresa_id,

@@ -230,6 +230,7 @@ def remover_conta_receber(
 class _LiquidarIn(BaseModel):
     conta_bancaria_id: UUID
     data: _date | None = None
+    comprovante_url: str | None = None
 
 
 @router.post("/contas-pagar/{conta_id}/pagar", response_model=ContaPagarOut)
@@ -278,6 +279,7 @@ def pagar_conta(
     model.data_pagamento = data_pagamento
     model.lancamento_bancario_id = lanc.id
     model.conta_bancaria_id = body.conta_bancaria_id
+    model.comprovante_url = body.comprovante_url
     db.commit()
     db.refresh(model)
 
@@ -331,6 +333,7 @@ def receber_conta(
     model.data_recebimento = data_recebimento
     model.lancamento_bancario_id = lanc.id
     model.conta_bancaria_id = body.conta_bancaria_id
+    model.comprovante_url = body.comprovante_url
     db.commit()
     db.refresh(model)
 
@@ -341,3 +344,114 @@ def receber_conta(
         pass
 
     return use_cases.obter(empresa_id, conta_id)
+
+# ═══ Lucro realizado e análise por categoria (upgrade Financeiro) ═══════════
+
+@router.get("/lucro")
+def lucro_realizado(
+    empresa_id: UUID = Depends(get_empresa_id),
+    db: Session = Depends(get_db),
+    dias: int = 30,
+):
+    """
+    Lucro REALIZADO no período: soma dos lançamentos bancários de entrada
+    menos os de saída, nos últimos `dias` dias. Usa apenas dinheiro que
+    realmente entrou/saiu (via /pagar e /receber), não pendências.
+    """
+    from app.infrastructure.database.models.banco import LancamentoBancarioModel
+
+    hoje = _date.today()
+    inicio = hoje - __import__("datetime").timedelta(days=dias)
+    inicio_anterior = inicio - __import__("datetime").timedelta(days=dias)
+
+    def _somar(data_ini, data_fim):
+        entradas = db.query(func.coalesce(func.sum(LancamentoBancarioModel.valor), 0)).filter(
+            LancamentoBancarioModel.empresa_id == empresa_id,
+            LancamentoBancarioModel.tipo == "entrada",
+            LancamentoBancarioModel.data >= data_ini, LancamentoBancarioModel.data <= data_fim,
+        ).scalar() or 0
+        saidas = db.query(func.coalesce(func.sum(LancamentoBancarioModel.valor), 0)).filter(
+            LancamentoBancarioModel.empresa_id == empresa_id,
+            LancamentoBancarioModel.tipo == "saida",
+            LancamentoBancarioModel.data >= data_ini, LancamentoBancarioModel.data <= data_fim,
+        ).scalar() or 0
+        return float(entradas), float(saidas)
+
+    receita, despesa = _somar(inicio, hoje)
+    receita_ant, despesa_ant = _somar(inicio_anterior, inicio)
+
+    lucro = receita - despesa
+    lucro_anterior = receita_ant - despesa_ant
+    variacao_pct = ((lucro - lucro_anterior) / abs(lucro_anterior) * 100) if lucro_anterior else None
+
+    return {
+        "dias": dias,
+        "receita_realizada": round(receita, 2),
+        "despesa_realizada": round(despesa, 2),
+        "lucro": round(lucro, 2),
+        "periodo_anterior": {
+            "receita_realizada": round(receita_ant, 2),
+            "despesa_realizada": round(despesa_ant, 2),
+            "lucro": round(lucro_anterior, 2),
+        },
+        "variacao_pct": round(variacao_pct, 2) if variacao_pct is not None else None,
+    }
+
+
+@router.get("/analise-categoria")
+def analise_por_categoria(
+    empresa_id: UUID = Depends(get_empresa_id),
+    db: Session = Depends(get_db),
+    dias: int = 30,
+):
+    """
+    Agrupa contas a pagar e a receber LIQUIDADAS por categoria, no período
+    dos últimos `dias` dias, com base na data de pagamento/recebimento.
+    """
+    from app.infrastructure.database.models.conta_pagar import ContaPagarModel
+    from app.infrastructure.database.models.conta_receber import ContaReceberModel
+
+    hoje = _date.today()
+    inicio = hoje - __import__("datetime").timedelta(days=dias)
+
+    despesas = (
+        db.query(
+            func.coalesce(ContaPagarModel.categoria, "Sem categoria").label("categoria"),
+            func.coalesce(func.sum(ContaPagarModel.valor), 0).label("total"),
+        )
+        .filter(
+            ContaPagarModel.empresa_id == empresa_id,
+            ContaPagarModel.status == "liquidado",
+            ContaPagarModel.data_pagamento >= inicio,
+            ContaPagarModel.data_pagamento <= hoje,
+        )
+        .group_by(func.coalesce(ContaPagarModel.categoria, "Sem categoria"))
+        .all()
+    )
+
+    receitas = (
+        db.query(
+            func.coalesce(ContaReceberModel.categoria, "Sem categoria").label("categoria"),
+            func.coalesce(func.sum(ContaReceberModel.valor), 0).label("total"),
+        )
+        .filter(
+            ContaReceberModel.empresa_id == empresa_id,
+            ContaReceberModel.status == "liquidado",
+            ContaReceberModel.data_recebimento >= inicio,
+            ContaReceberModel.data_recebimento <= hoje,
+        )
+        .group_by(func.coalesce(ContaReceberModel.categoria, "Sem categoria"))
+        .all()
+    )
+
+    return {
+        "dias": dias,
+        "despesas": sorted(
+            [{"categoria": cat, "total": float(tot)} for cat, tot in despesas],
+            key=lambda x: -x["total"],
+        ),
+        "receitas": sorted(
+            [{"categoria": cat, "total": float(tot)} for cat, tot in receitas],
+            key=lambda x: -x["total"],
+        ),
+    }

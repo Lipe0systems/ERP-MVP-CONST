@@ -11,8 +11,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Pagination } from "@/components/pagination";
 import { StatusContaBadge } from "@/components/financeiro/status-conta-badge";
 import { ContaReceberFormDialog } from "@/components/financeiro/conta-receber-form-dialog";
+import { PagarReceberDialog } from "@/components/financeiro/pagar-receber-dialog";
 import { DeleteConfirmDialog } from "@/components/delete-confirm-dialog";
-import { useContasReceber, useRemoverContaReceber, useLiquidarContaReceber, useCancelarContaReceber } from "@/hooks/use-financeiro";
+import { useContasReceber, useRemoverContaReceber, useCancelarContaReceber } from "@/hooks/use-financeiro";
 import { useDebounce } from "@/hooks/use-debounce";
 import { formatData, formatMoeda } from "@/lib/format";
 import { STATUS_CONTA, type ContaReceberListItem, type StatusConta } from "@/types";
@@ -35,7 +36,7 @@ export function ContasReceberTable() {
 
   const search = useDebounce(searchInput, 400);
   const remover = useRemoverContaReceber();
-  const liquidar = useLiquidarContaReceber();
+  const [recebendo, setRecebendo] = useState<ContaReceberListItem | null>(null);
   const cancelarRapido = useCancelarContaReceber();
 
   const { data, isLoading, isError, isFetching } = useContasReceber({
@@ -153,8 +154,7 @@ export function ContasReceberTable() {
                             variant="ghost"
                             size="icon"
                             title="Marcar como recebida"
-                            onClick={() => liquidar.mutate(conta)}
-                            disabled={liquidar.isPending}
+                            onClick={() => setRecebendo(conta)}
                             aria-label={`Marcar ${conta.descricao} como recebida`}
                           >
                             <CheckCircle className="h-4 w-4 text-green-600" />
@@ -199,6 +199,16 @@ export function ContasReceberTable() {
       )}
 
       <ContaReceberFormDialog open={formOpen} onOpenChange={setFormOpen} conta={contaEditando} />
+      {recebendo && (
+        <PagarReceberDialog
+          open={Boolean(recebendo)}
+          onOpenChange={(o) => !o && setRecebendo(null)}
+          tipo="receber"
+          contaId={recebendo.id}
+          descricao={recebendo.descricao}
+          valor={recebendo.valor}
+        />
+      )}
       <DeleteConfirmDialog
         titulo="Remover conta a receber"
         open={Boolean(contaRemovendo)}
