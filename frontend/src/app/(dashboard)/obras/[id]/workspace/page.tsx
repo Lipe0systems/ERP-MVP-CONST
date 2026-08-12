@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft, HardHat, LayoutDashboard, ClipboardList, ShoppingCart,
   Boxes, Users, NotebookPen, Wallet, FileArchive, TrendingUp, ExternalLink,
+  type LucideIcon,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -298,10 +299,12 @@ function LinhaItem({ titulo, subtitulo, valor, badge, corValor }: LinhaItemProps
   );
 }
 
-function SecaoLista({ vazio, iconeVazio, tituloVazio, descVazio, acaoLabel, onAcao, children }: {
-  vazio: boolean; iconeVazio: React.ElementType; tituloVazio: string; descVazio: string;
+interface SecaoListaProps {
+  vazio: boolean; iconeVazio: LucideIcon; tituloVazio: string; descVazio: string;
   acaoLabel: string; onAcao: () => void; children: React.ReactNode;
-}) {
+}
+
+function SecaoLista({ vazio, iconeVazio, tituloVazio, descVazio, acaoLabel, onAcao, children }: SecaoListaProps) {
   return (
     <Card className="card-vivid">
       <CardContent className={cn(vazio ? "" : "space-y-2 p-4")}>
