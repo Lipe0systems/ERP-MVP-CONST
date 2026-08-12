@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Calendar, HardHat, Loader2, MapPin, User } from "lucide-react";
+import { ArrowLeft, Calendar, HardHat, LayoutDashboard, Loader2, MapPin, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -60,6 +60,10 @@ export default function ObraDetalhePage() {
             <ObraStatusBadge status={obra.status} />
           </div>
         </div>
+        <Button onClick={() => router.push(`/obras/${obra.id}/workspace`)} className="bg-grad-brand text-white glow-sm">
+          <LayoutDashboard className="mr-2 h-4 w-4" />
+          Abrir workspace
+        </Button>
       </div>
 
       <Card className="card-vivid">

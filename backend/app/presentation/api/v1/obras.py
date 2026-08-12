@@ -215,3 +215,128 @@ def resultado_da_obra(
         },
         "saude": saude,
     }
+
+# ═══ V4 — Workspace da Obra: agregador de todas as abas ═════════════════════
+
+@router.get("/{obra_id}/workspace")
+def workspace_da_obra(
+    obra_id: UUID,
+    empresa_id: UUID = Depends(get_empresa_id),
+    db: Session = Depends(get_db),
+):
+    """
+    Retorna, numa só chamada, os dados consolidados que as abas do Workspace
+    da Obra precisam: compras, materiais (movimentações), equipe, financeiro
+    e documentos — todos filtrados pela obra. NÃO duplica lógica: apenas
+    consulta as mesmas tabelas dos módulos existentes, filtrando por obra_id.
+    """
+    from fastapi import HTTPException
+    from app.infrastructure.database.models.obra import ObraModel
+    from app.infrastructure.database.models.compra import CompraModel
+    from app.infrastructure.database.models.movimentacao_estoque import MovimentacaoEstoqueModel
+    from app.infrastructure.database.models.conta_pagar import ContaPagarModel
+    from app.infrastructure.database.models.conta_receber import ContaReceberModel
+    from app.infrastructure.database.models.alocacao_obra import AlocacaoObraModel
+    from app.infrastructure.database.models.funcionario import FuncionarioModel
+    from app.infrastructure.database.models.documento import DocumentoModel
+    from app.infrastructure.database.models.diario_obra import RegistroDiarioModel
+
+    obra = db.query(ObraModel).filter(
+        ObraModel.empresa_id == empresa_id, ObraModel.id == obra_id
+    ).first()
+    if not obra:
+        raise HTTPException(404, "Obra não encontrada.")
+
+    # ── Compras da obra
+    compras = db.query(CompraModel).filter(
+        CompraModel.empresa_id == empresa_id, CompraModel.obra_id == obra_id
+    ).order_by(CompraModel.data_compra.desc()).all()
+
+    # ── Materiais: movimentações da obra
+    movimentacoes = db.query(MovimentacaoEstoqueModel).filter(
+        MovimentacaoEstoqueModel.empresa_id == empresa_id,
+        MovimentacaoEstoqueModel.obra_id == obra_id,
+    ).order_by(MovimentacaoEstoqueModel.criado_em.desc()).all()
+
+    # ── Equipe: funcionários alocados
+    equipe = (
+        db.query(AlocacaoObraModel, FuncionarioModel.nome, FuncionarioModel.cargo, FuncionarioModel.salario)
+        .join(FuncionarioModel, FuncionarioModel.id == AlocacaoObraModel.funcionario_id)
+        .filter(AlocacaoObraModel.empresa_id == empresa_id, AlocacaoObraModel.obra_id == obra_id)
+        .all()
+    )
+
+    # ── Financeiro da obra
+    contas_pagar = db.query(ContaPagarModel).filter(
+        ContaPagarModel.empresa_id == empresa_id, ContaPagarModel.obra_id == obra_id
+    ).all()
+    contas_receber = db.query(ContaReceberModel).filter(
+        ContaReceberModel.empresa_id == empresa_id, ContaReceberModel.obra_id == obra_id
+    ).all()
+
+    # ── Documentos e diário
+    documentos = db.query(DocumentoModel).filter(
+        DocumentoModel.empresa_id == empresa_id, DocumentoModel.obra_id == obra_id
+    ).order_by(DocumentoModel.criado_em.desc()).all()
+    diario = db.query(RegistroDiarioModel).filter(
+        RegistroDiarioModel.empresa_id == empresa_id, RegistroDiarioModel.obra_id == obra_id
+    ).order_by(RegistroDiarioModel.criado_em.desc()).limit(20).all()
+
+    return {
+        "obra": {
+            "id": str(obra.id), "nome": obra.nome, "status": obra.status,
+            "endereco": obra.endereco, "responsavel": obra.responsavel,
+            "cliente_id": str(obra.cliente_id) if obra.cliente_id else None,
+            "data_inicio": obra.data_inicio.isoformat() if obra.data_inicio else None,
+            "data_previsao": obra.data_previsao.isoformat() if obra.data_previsao else None,
+            "valor_previsto": float(obra.valor_previsto or 0),
+        },
+        "compras": [
+            {
+                "id": str(c.id), "produto": c.produto, "fornecedor": c.fornecedor,
+                "quantidade": float(c.quantidade), "valor_unitario": float(c.valor_unitario),
+                "status": c.status, "data_compra": c.data_compra.isoformat() if c.data_compra else None,
+            }
+            for c in compras
+        ],
+        "materiais": [
+            {
+                "id": str(m.id), "produto": m.produto, "tipo": m.tipo,
+                "quantidade": float(m.quantidade), "origem": m.origem, "destino": m.destino,
+                "criado_em": m.criado_em.isoformat(),
+            }
+            for m in movimentacoes
+        ],
+        "equipe": [
+            {
+                "alocacao_id": str(a.id), "funcionario_nome": nome, "cargo": cargo,
+                "funcao": a.funcao, "salario": float(sal or 0), "ativa": a.ativa,
+                "data_inicio": a.data_inicio.isoformat() if a.data_inicio else None,
+            }
+            for a, nome, cargo, sal in equipe
+        ],
+        "financeiro": {
+            "a_pagar": [
+                {"id": str(c.id), "descricao": c.descricao, "valor": float(c.valor),
+                 "status": c.status, "vencimento": c.data_vencimento.isoformat() if c.data_vencimento else None}
+                for c in contas_pagar
+            ],
+            "a_receber": [
+                {"id": str(c.id), "descricao": c.descricao, "valor": float(c.valor),
+                 "status": c.status, "vencimento": c.data_vencimento.isoformat() if c.data_vencimento else None}
+                for c in contas_receber
+            ],
+            "total_a_pagar": sum(float(c.valor) for c in contas_pagar),
+            "total_a_receber": sum(float(c.valor) for c in contas_receber),
+        },
+        "documentos": [
+            {"id": str(d.id), "nome": d.nome, "arquivo_url": d.arquivo_url,
+             "arquivo_tipo": d.arquivo_tipo, "criado_em": d.criado_em.isoformat()}
+            for d in documentos
+        ],
+        "diario": [
+            {"id": str(r.id), "observacoes": r.observacoes,
+             "criado_em": r.criado_em.isoformat()}
+            for r in diario
+        ],
+    }
