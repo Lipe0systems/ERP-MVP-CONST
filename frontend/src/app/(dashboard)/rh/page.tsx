@@ -3,7 +3,7 @@
 import { useState } from "react";
 import {
   Users, Plus, Pencil, Trash2, Search, CalendarCheck,
-  Building2, DollarSign, Briefcase,
+  Building2, DollarSign, Briefcase, HardHat,
 } from "lucide-react";
 
 import { PageHeader } from "@/components/page-header";
@@ -16,6 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { EmptyState } from "@/components/empty-state";
 import { DeleteConfirmDialog } from "@/components/delete-confirm-dialog";
 import { FuncionarioFormDialog } from "@/components/rh/funcionario-form-dialog";
+import { AlocacaoDialog } from "@/components/rh/alocacao-dialog";
 import { PontoTab } from "@/components/rh/ponto-tab";
 import { CustoObraTab } from "@/components/rh/custo-obra-tab";
 import { useFuncionarios, useRemoverFuncionario } from "@/hooks/use-rh";
@@ -71,6 +72,7 @@ function FuncionariosTab() {
   const [formOpen, setFormOpen] = useState(false);
   const [editando, setEditando] = useState<Funcionario | null>(null);
   const [removendo, setRemovendo] = useState<Funcionario | null>(null);
+  const [alocando, setAlocando] = useState<Funcionario | null>(null);
 
   const { data, isLoading } = useFuncionarios({ search: search || undefined });
   const remover = useRemoverFuncionario();
@@ -121,6 +123,9 @@ function FuncionariosTab() {
                     <TableCell className="hidden text-muted-foreground sm:table-cell">{f.data_admissao ? formatData(f.data_admissao) : "—"}</TableCell>
                     <TableCell>
                       <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" title="Alocar em obra" onClick={() => setAlocando(f)}>
+                          <HardHat className="h-3.5 w-3.5 text-amber-600" />
+                        </Button>
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => editar(f)}>
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
@@ -138,6 +143,7 @@ function FuncionariosTab() {
       </Card>
 
       <FuncionarioFormDialog open={formOpen} onOpenChange={setFormOpen} funcionario={editando} />
+      <AlocacaoDialog open={Boolean(alocando)} onOpenChange={(o) => !o && setAlocando(null)} funcionario={alocando} />
       <DeleteConfirmDialog
         titulo="Desligar funcionário"
         open={Boolean(removendo)}
