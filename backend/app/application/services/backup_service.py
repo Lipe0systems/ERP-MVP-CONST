@@ -25,7 +25,7 @@ from uuid import UUID
 from sqlalchemy import inspect as sa_inspect
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
+from app.core.config import get_settings
 
 from app.infrastructure.database.models.atendimento import AtendimentoModel
 from app.infrastructure.database.models.banco import ContaBancariaModel, LancamentoBancarioModel
@@ -236,6 +236,7 @@ def _baixar_arquivo_storage(caminho: str) -> bytes | None:
     Retorna os bytes ou None em caso de falha (best-effort).
     """
     import httpx
+    settings = get_settings()
     base = settings.SUPABASE_URL.rstrip("/")
     url = f"{base}/storage/v1/object/documentos/{caminho}"
     headers = {
