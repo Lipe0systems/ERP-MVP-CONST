@@ -20,7 +20,7 @@ from app.infrastructure.repositories.cliente_repository import SqlAlchemyCliente
 from app.infrastructure.repositories.conta_pagar_repository import SqlAlchemyContaPagarRepository
 from app.infrastructure.repositories.conta_receber_repository import SqlAlchemyContaReceberRepository
 from app.infrastructure.repositories.obra_repository import SqlAlchemyObraRepository
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import date as _date
 import uuid as _uuid
 from app.presentation.schemas.financeiro import (
