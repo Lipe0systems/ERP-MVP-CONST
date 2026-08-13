@@ -94,7 +94,7 @@ export function ContasPagarTable() {
     });
   }
 
-  const grupos = agrupado
+  const grupos: [string, ContaPagarListItem[]][] = agrupado
     ? Object.entries(
         contas.reduce<Record<string, ContaPagarListItem[]>>((acc, c) => {
           const chave = c.fornecedor || "Sem fornecedor";

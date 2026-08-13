@@ -94,7 +94,7 @@ export function ContasReceberTable() {
     });
   }
 
-  const grupos = agrupado
+  const grupos: [string, ContaReceberListItem[]][] = agrupado
     ? Object.entries(
         contas.reduce<Record<string, ContaReceberListItem[]>>((acc, c) => {
           const chave = c.cliente_nome || "Sem cliente";
