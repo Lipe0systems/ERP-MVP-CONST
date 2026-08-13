@@ -16,6 +16,8 @@ from app.infrastructure.repositories.estoque_repository import SqlAlchemyEstoque
 from app.infrastructure.database.models.movimentacao_estoque import MovimentacaoEstoqueModel
 from app.infrastructure.database.models.estoque import ItemEstoqueModel
 from app.core.security import get_current_user, CurrentUser
+from app.application.services.auditoria_service import registrar as audit
+from app.domain.entities.auditoria import AcaoAuditoria
 from pydantic import BaseModel, Field
 from datetime import datetime
 import uuid as _uuid
@@ -258,6 +260,13 @@ def registrar_movimentacao(
     )
     db.add(mov)
     db.commit()
+
+    try:
+        audit(db, usuario=current_user, modulo="estoque", acao=AcaoAuditoria.EDITOU,
+              entidade_id=str(mov.id),
+              descricao=f"{body.tipo.capitalize()}: {body.quantidade} de {item.produto}" + (f" (obra vinculada)" if body.obra_id else "") + ".")
+    except Exception:
+        pass
 
     return {
         "id": str(mov.id), "tipo": mov.tipo, "quantidade": float(mov.quantidade),

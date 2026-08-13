@@ -141,6 +141,7 @@ def vincular_cliente(
     cliente_id: UUID,
     empresa_id: UUID = Depends(get_empresa_id),
     db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
 ):
     """
     Vincula um cliente (novo ou existente — já criado via módulo Clientes)
@@ -165,6 +166,13 @@ def vincular_cliente(
         p.fase = "orcamento"
     db.commit()
     db.refresh(p)
+
+    try:
+        audit(db, usuario=current_user, modulo="workspace", acao=AcaoAuditoria.EDITOU,
+              entidade_id=str(p.id), descricao=f"Cliente vinculado ao processo: {cliente.nome}.")
+    except Exception:
+        pass
+
     return _enriquecer(db, empresa_id, p)
 
 
@@ -174,6 +182,7 @@ def vincular_orcamento(
     orcamento_id: UUID,
     empresa_id: UUID = Depends(get_empresa_id),
     db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
 ):
     """
     Vincula um orçamento (criado pelo módulo Orçamentos normal) ao processo
@@ -197,6 +206,13 @@ def vincular_orcamento(
         p.fase = "proposta"
     db.commit()
     db.refresh(p)
+
+    try:
+        audit(db, usuario=current_user, modulo="workspace", acao=AcaoAuditoria.EDITOU,
+              entidade_id=str(p.id), descricao=f"Orçamento #{orc.numero} vinculado ao processo.")
+    except Exception:
+        pass
+
     return _enriquecer(db, empresa_id, p)
 
 
@@ -235,6 +251,7 @@ def vincular_venda(
     venda_id: UUID,
     empresa_id: UUID = Depends(get_empresa_id),
     db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
 ):
     """
     Vincula a venda (criada pelo módulo Vendas normal, via /vendas/de-orcamento)
@@ -256,6 +273,13 @@ def vincular_venda(
     p.fase = "obra"
     db.commit()
     db.refresh(p)
+
+    try:
+        audit(db, usuario=current_user, modulo="workspace", acao=AcaoAuditoria.EDITOU,
+              entidade_id=str(p.id), descricao=f"Venda #{venda.numero} vinculada ao processo.")
+    except Exception:
+        pass
+
     return _enriquecer(db, empresa_id, p)
 
 

@@ -8,7 +8,9 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.application.use_cases.compra_use_cases import CompraUseCases
-from app.core.security import get_empresa_id
+from app.core.security import get_empresa_id, get_current_user, CurrentUser
+from app.application.services.auditoria_service import registrar as audit
+from app.domain.entities.auditoria import AcaoAuditoria
 from app.domain.entities.compra import StatusCompra
 from app.infrastructure.database.session import get_db
 from app.infrastructure.repositories.compra_repository import SqlAlchemyCompraRepository
@@ -117,11 +119,23 @@ def aprovar_compra(
 def receber_compra(
     compra_id: UUID,
     empresa_id: UUID = Depends(get_empresa_id),
+    db: Session = Depends(get_db),
     use_cases: CompraUseCases = Depends(_get_use_cases),
+    current_user: CurrentUser = Depends(get_current_user),
 ):
     """
     Marca a compra como recebida e dá entrada automática no estoque.
     Se o produto já existir no estoque, soma a quantidade e recalcula o
     valor médio ponderado. Se não existir, cria um novo item.
     """
-    return use_cases.receber(empresa_id, compra_id)
+    resultado = use_cases.receber(empresa_id, compra_id)
+
+    try:
+        vinculo = f" — vinculada à obra" if getattr(resultado, "obra_id", None) else ""
+        audit(db, usuario=current_user, modulo="compras", acao=AcaoAuditoria.RECEBEU,
+              entidade_id=str(compra_id),
+              descricao=f"Compra recebida: {resultado.produto}{vinculo}.")
+    except Exception:
+        pass
+
+    return resultado

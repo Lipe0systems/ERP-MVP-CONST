@@ -5,7 +5,7 @@ Resumo Financeiro. Camada: Presentation.
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, status
-from sqlalchemy import func
+from sqlalchemy import func, case
 from sqlalchemy.orm import Session
 
 from app.application.use_cases.conta_pagar_use_cases import ContaPagarUseCases
@@ -456,3 +456,183 @@ def analise_por_categoria(
             key=lambda x: -x["total"],
         ),
     }
+
+# ═══ Projeção de saldo futuro ════════════════════════════════════════════════
+
+@router.get("/projecao-saldo")
+def projecao_saldo(
+    empresa_id: UUID = Depends(get_empresa_id),
+    db: Session = Depends(get_db),
+    dias: int = 30,
+):
+    """
+    Projeta o saldo bancário dia a dia: parte do saldo atual (soma dos
+    lançamentos já feitos) e vai somando/subtraindo as contas PENDENTES
+    conforme seus vencimentos, até `dias` dias à frente.
+    """
+    from app.infrastructure.database.models.banco import LancamentoBancarioModel
+    from app.infrastructure.database.models.conta_pagar import ContaPagarModel
+    from app.infrastructure.database.models.conta_receber import ContaReceberModel
+
+    hoje = _date.today()
+    fim = hoje + __import__("datetime").timedelta(days=dias)
+
+    saldo_atual = float(
+        db.query(func.coalesce(func.sum(
+            case((LancamentoBancarioModel.tipo == "entrada", LancamentoBancarioModel.valor),
+                 else_=-LancamentoBancarioModel.valor)
+        ), 0))
+        .filter(LancamentoBancarioModel.empresa_id == empresa_id)
+        .scalar() or 0
+    )
+
+    a_receber = (
+        db.query(ContaReceberModel.data_vencimento, ContaReceberModel.valor)
+        .filter(
+            ContaReceberModel.empresa_id == empresa_id,
+            ContaReceberModel.status == "pendente",
+            ContaReceberModel.data_vencimento >= hoje,
+            ContaReceberModel.data_vencimento <= fim,
+        ).all()
+    )
+    a_pagar = (
+        db.query(ContaPagarModel.data_vencimento, ContaPagarModel.valor)
+        .filter(
+            ContaPagarModel.empresa_id == empresa_id,
+            ContaPagarModel.status == "pendente",
+            ContaPagarModel.data_vencimento >= hoje,
+            ContaPagarModel.data_vencimento <= fim,
+        ).all()
+    )
+
+    # Agrupa por data
+    variacao_por_dia: dict = {}
+    for venc, valor in a_receber:
+        variacao_por_dia[venc] = variacao_por_dia.get(venc, 0) + float(valor)
+    for venc, valor in a_pagar:
+        variacao_por_dia[venc] = variacao_por_dia.get(venc, 0) - float(valor)
+
+    pontos = []
+    saldo_acumulado = saldo_atual
+    data_atual = hoje
+    while data_atual <= fim:
+        saldo_acumulado += variacao_por_dia.get(data_atual, 0)
+        pontos.append({"data": data_atual.isoformat(), "saldo_projetado": round(saldo_acumulado, 2)})
+        data_atual += __import__("datetime").timedelta(days=1)
+
+    return {
+        "saldo_atual": round(saldo_atual, 2),
+        "saldo_final_projetado": round(saldo_acumulado, 2),
+        "dias": dias,
+        "pontos": pontos,
+    }
+
+# ═══ Pagamento em lote ═══════════════════════════════════════════════════════
+
+class _LiquidarLoteIn(BaseModel):
+    conta_ids: list[UUID] = Field(min_length=1)
+    conta_bancaria_id: UUID
+    data: _date | None = None
+
+
+@router.post("/contas-pagar/pagar-lote")
+def pagar_lote(
+    body: _LiquidarLoteIn,
+    empresa_id: UUID = Depends(get_empresa_id),
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    """Paga várias contas de uma vez, escolhendo uma única conta bancária para o lote."""
+    from app.infrastructure.database.models.conta_pagar import ContaPagarModel
+    from app.infrastructure.database.models.banco import LancamentoBancarioModel
+
+    data_pagamento = body.data or _date.today()
+    pagas, ja_pagas, nao_encontradas = [], [], []
+
+    for conta_id in body.conta_ids:
+        model = db.query(ContaPagarModel).filter(
+            ContaPagarModel.empresa_id == empresa_id, ContaPagarModel.id == conta_id
+        ).first()
+        if not model:
+            nao_encontradas.append(str(conta_id))
+            continue
+        if model.lancamento_bancario_id:
+            ja_pagas.append(str(conta_id))
+            continue
+
+        lanc = LancamentoBancarioModel(
+            id=_uuid.uuid4(), empresa_id=empresa_id, conta_id=body.conta_bancaria_id,
+            tipo="saida", valor=model.valor, descricao=f"Pagamento: {model.descricao}",
+            data=data_pagamento, categoria=model.categoria,
+            referencia=f"conta_pagar:{model.id}",
+        )
+        db.add(lanc)
+        db.flush()
+
+        model.status = "liquidado"
+        model.data_pagamento = data_pagamento
+        model.lancamento_bancario_id = lanc.id
+        model.conta_bancaria_id = body.conta_bancaria_id
+        pagas.append(str(conta_id))
+
+    db.commit()
+
+    try:
+        audit(db, usuario=current_user, modulo="financeiro", acao=AcaoAuditoria.EDITOU,
+              entidade_id=",".join(pagas)[:255] or "lote-vazio",
+              descricao=f"Pagamento em lote: {len(pagas)} conta(s) paga(s).")
+    except Exception:
+        pass
+
+    return {"pagas": pagas, "ja_liquidadas": ja_pagas, "nao_encontradas": nao_encontradas}
+
+
+@router.post("/contas-receber/receber-lote")
+def receber_lote(
+    body: _LiquidarLoteIn,
+    empresa_id: UUID = Depends(get_empresa_id),
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(get_current_user),
+):
+    """Recebe várias contas de uma vez, escolhendo uma única conta bancária para o lote."""
+    from app.infrastructure.database.models.conta_receber import ContaReceberModel
+    from app.infrastructure.database.models.banco import LancamentoBancarioModel
+
+    data_recebimento = body.data or _date.today()
+    recebidas, ja_recebidas, nao_encontradas = [], [], []
+
+    for conta_id in body.conta_ids:
+        model = db.query(ContaReceberModel).filter(
+            ContaReceberModel.empresa_id == empresa_id, ContaReceberModel.id == conta_id
+        ).first()
+        if not model:
+            nao_encontradas.append(str(conta_id))
+            continue
+        if model.lancamento_bancario_id:
+            ja_recebidas.append(str(conta_id))
+            continue
+
+        lanc = LancamentoBancarioModel(
+            id=_uuid.uuid4(), empresa_id=empresa_id, conta_id=body.conta_bancaria_id,
+            tipo="entrada", valor=model.valor, descricao=f"Recebimento: {model.descricao}",
+            data=data_recebimento, referencia=f"conta_receber:{model.id}",
+        )
+        db.add(lanc)
+        db.flush()
+
+        model.status = "liquidado"
+        model.data_recebimento = data_recebimento
+        model.lancamento_bancario_id = lanc.id
+        model.conta_bancaria_id = body.conta_bancaria_id
+        recebidas.append(str(conta_id))
+
+    db.commit()
+
+    try:
+        audit(db, usuario=current_user, modulo="financeiro", acao=AcaoAuditoria.EDITOU,
+              entidade_id=",".join(recebidas)[:255] or "lote-vazio",
+              descricao=f"Recebimento em lote: {len(recebidas)} conta(s) recebida(s).")
+    except Exception:
+        pass
+
+    return {"recebidas": recebidas, "ja_liquidadas": ja_recebidas, "nao_encontradas": nao_encontradas}

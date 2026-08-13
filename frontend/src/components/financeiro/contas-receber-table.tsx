@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Pencil, Plus, Receipt, Search, Trash2, CheckCircle, XCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import { Pagination } from "@/components/pagination";
 import { StatusContaBadge } from "@/components/financeiro/status-conta-badge";
 import { ContaReceberFormDialog } from "@/components/financeiro/conta-receber-form-dialog";
 import { PagarReceberDialog } from "@/components/financeiro/pagar-receber-dialog";
+import { LoteLiquidarDialog } from "@/components/financeiro/lote-liquidar-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { DeleteConfirmDialog } from "@/components/delete-confirm-dialog";
 import { useContasReceber, useRemoverContaReceber, useCancelarContaReceber } from "@/hooks/use-financeiro";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -37,6 +39,9 @@ export function ContasReceberTable() {
   const search = useDebounce(searchInput, 400);
   const remover = useRemoverContaReceber();
   const [recebendo, setRecebendo] = useState<ContaReceberListItem | null>(null);
+  const [selecionadas, setSelecionadas] = useState<Set<string>>(new Set());
+  const [loteOpen, setLoteOpen] = useState(false);
+  const [agrupado, setAgrupado] = useState(false);
   const cancelarRapido = useCancelarContaReceber();
 
   const { data, isLoading, isError, isFetching } = useContasReceber({
@@ -69,6 +74,36 @@ export function ContasReceberTable() {
     setPage(1);
   }
 
+  function toggleSelecao(id: string) {
+    setSelecionadas((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  const pendentesVisiveis = contas.filter((c) => c.status === "pendente");
+  const todasSelecionadas = pendentesVisiveis.length > 0 && pendentesVisiveis.every((c) => selecionadas.has(c.id));
+
+  function toggleTodas() {
+    setSelecionadas((prev) => {
+      if (todasSelecionadas) return new Set();
+      const next = new Set(prev);
+      for (const c of pendentesVisiveis) next.add(c.id);
+      return next;
+    });
+  }
+
+  const grupos = agrupado
+    ? Object.entries(
+        contas.reduce<Record<string, ContaReceberListItem[]>>((acc, c) => {
+          const chave = c.cliente_nome || "Sem cliente";
+          (acc[chave] ??= []).push(c);
+          return acc;
+        }, {})
+      ).sort((a, b) => a[0].localeCompare(b[0]))
+    : [["", contas]];
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -91,11 +126,26 @@ export function ContasReceberTable() {
             ))}
           </Select>
         </div>
-        <Button onClick={handleNovo}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nova conta
-        </Button>
+        <div className="flex gap-2">
+          <Button variant={agrupado ? "default" : "outline"} size="sm" onClick={() => setAgrupado((v) => !v)}>
+            Agrupar por cliente
+          </Button>
+          <Button onClick={handleNovo}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nova conta
+          </Button>
+        </div>
       </div>
+
+      {selecionadas.size > 0 && (
+        <div className="flex items-center justify-between rounded-lg bg-amber-500/10 px-4 py-2.5">
+          <p className="text-sm font-medium">{selecionadas.size} conta(s) selecionada(s)</p>
+          <div className="flex gap-2">
+            <Button variant="ghost" size="sm" onClick={() => setSelecionadas(new Set())}>Limpar</Button>
+            <Button size="sm" onClick={() => setLoteOpen(true)}>Receber selecionadas</Button>
+          </div>
+        </div>
+      )}
 
       {isError ? (
         <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6 text-center text-sm text-destructive">
@@ -126,6 +176,9 @@ export function ContasReceberTable() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-8">
+                  <Checkbox checked={todasSelecionadas} onCheckedChange={toggleTodas} aria-label="Selecionar todas" />
+                </TableHead>
                 <TableHead>Descrição</TableHead>
                 <TableHead>Vencimento</TableHead>
                 <TableHead>Status</TableHead>
@@ -134,8 +187,22 @@ export function ContasReceberTable() {
               </TableRow>
             </TableHeader>
             <TableBody className={isFetching ? "opacity-60 transition-opacity" : undefined}>
-              {contas.map((conta) => (
+              {grupos.map(([nomeGrupo, itensGrupo]) => (
+                <React.Fragment key={nomeGrupo || "default"}>
+                  {agrupado && (
+                    <TableRow key={`grupo-${nomeGrupo}`} className="bg-muted/40 hover:bg-muted/40">
+                      <TableCell colSpan={6} className="py-2 text-xs font-semibold text-muted-foreground">
+                        {nomeGrupo} · {formatMoeda(itensGrupo.reduce((s, c) => s + c.valor, 0))}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {itensGrupo.map((conta) => (
                 <TableRow key={conta.id}>
+                  <TableCell>
+                    {conta.status === "pendente" && (
+                      <Checkbox checked={selecionadas.has(conta.id)} onCheckedChange={() => toggleSelecao(conta.id)} aria-label={`Selecionar ${conta.descricao}`} />
+                    )}
+                  </TableCell>
                   <TableCell className="font-medium">{conta.descricao}</TableCell>
                   <TableCell className="text-muted-foreground">{formatData(conta.data_vencimento)}</TableCell>
                   <TableCell>
@@ -190,6 +257,8 @@ export function ContasReceberTable() {
                     </div>
                   </TableCell>
                 </TableRow>
+                  ))}
+                </React.Fragment>
               ))}
             </TableBody>
           </Table>
@@ -199,6 +268,13 @@ export function ContasReceberTable() {
       )}
 
       <ContaReceberFormDialog open={formOpen} onOpenChange={setFormOpen} conta={contaEditando} />
+      <LoteLiquidarDialog
+        open={loteOpen}
+        onOpenChange={setLoteOpen}
+        tipo="receber"
+        contaIds={Array.from(selecionadas)}
+        onConcluido={() => setSelecionadas(new Set())}
+      />
       {recebendo && (
         <PagarReceberDialog
           open={Boolean(recebendo)}

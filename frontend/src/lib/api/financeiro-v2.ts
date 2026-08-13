@@ -32,3 +32,32 @@ export interface AnaliseCategoria {
 
 export const obterAnaliseCategoria = (dias: number) =>
   apiFetch<AnaliseCategoria>(`/financeiro/analise-categoria?dias=${dias}`);
+
+export interface ProjecaoSaldo {
+  saldo_atual: number;
+  saldo_final_projetado: number;
+  dias: number;
+  pontos: { data: string; saldo_projetado: number }[];
+}
+
+export const obterProjecaoSaldo = (dias: number) =>
+  apiFetch<ProjecaoSaldo>(`/financeiro/projecao-saldo?dias=${dias}`);
+
+export interface LiquidarLoteInput {
+  conta_ids: string[];
+  conta_bancaria_id: string;
+  data?: string;
+}
+
+export interface LoteResultado {
+  pagas?: string[];
+  recebidas?: string[];
+  ja_liquidadas: string[];
+  nao_encontradas: string[];
+}
+
+export const pagarLote = (body: LiquidarLoteInput) =>
+  apiFetch<LoteResultado>("/contas-pagar/pagar-lote", { method: "POST", body: JSON.stringify(body) });
+
+export const receberLote = (body: LiquidarLoteInput) =>
+  apiFetch<LoteResultado>("/contas-receber/receber-lote", { method: "POST", body: JSON.stringify(body) });

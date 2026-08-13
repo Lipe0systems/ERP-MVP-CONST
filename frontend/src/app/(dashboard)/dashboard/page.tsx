@@ -17,6 +17,7 @@ import { StatCard } from "@/components/ui/stat-card";
 import { SaudeObrasWidget } from "@/components/dashboard/saude-obras-widget";
 import { LucroWidget } from "@/components/dashboard/lucro-widget";
 import { AnaliseCategoriaWidget } from "@/components/dashboard/analise-categoria-widget";
+import { ProjecaoSaldoWidget } from "@/components/dashboard/projecao-saldo-widget";
 import { createClient } from "@/lib/supabase/client";
 import { formatMoeda, formatData } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -25,7 +26,7 @@ const TODOS_WIDGETS = [
   "saldo_bancario", "obras_ativas", "obras_concluidas", "clientes",
   "contas_pagar", "contas_receber", "alerta_estoque", "alerta_vencimentos",
   "grafico_fluxo", "grafico_obras", "orcamentos", "saude_obras",
-  "lucro", "analise_categoria",
+  "lucro", "analise_categoria", "projecao_saldo",
 ] as const;
 type WidgetId = (typeof TODOS_WIDGETS)[number];
 
@@ -37,6 +38,7 @@ const WIDGET_LABELS: Record<WidgetId, string> = {
   grafico_fluxo: "Fluxo de caixa", grafico_obras: "Obras por status",
   orcamentos: "Orçamentos por status", saude_obras: "Saúde das obras",
   lucro: "Lucro realizado", analise_categoria: "Despesas por categoria",
+  projecao_saldo: "Projeção de saldo",
 };
 
 const DEFAULT_WIDGETS: WidgetId[] = [...TODOS_WIDGETS];
@@ -356,6 +358,8 @@ export default function DashboardPage() {
           {show("analise_categoria") && <AnaliseCategoriaWidget />}
         </div>
       )}
+
+      {show("projecao_saldo") && <ProjecaoSaldoWidget />}
     </div>
   );
 }
