@@ -5,6 +5,7 @@ Resumo Financeiro. Camada: Presentation.
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.application.use_cases.conta_pagar_use_cases import ContaPagarUseCases
