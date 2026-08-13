@@ -122,7 +122,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <>
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+      <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 py-4">
         {navItems.map(({ href, label, icon: Icon, cor }) => (
           <div key={href}>
             <NavItem
@@ -189,7 +189,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
       <aside className="relative hidden w-60 shrink-0 flex-col border-r border-border/60 md:flex bg-gradient-to-b from-card to-secondary/40">
         {/* Glow ambiente no topo da sidebar */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-amber-500/[0.06] to-transparent" />
-        <div className="relative flex flex-1 flex-col">
+        <div className="relative flex min-h-0 flex-1 flex-col">
           <SidebarBrand />
           <SidebarContent />
         </div>
