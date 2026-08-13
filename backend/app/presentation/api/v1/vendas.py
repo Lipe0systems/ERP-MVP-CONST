@@ -1,6 +1,6 @@
 """Endpoints REST do módulo Vendas. Camada: Presentation."""
 from uuid import UUID
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Query
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
@@ -114,11 +114,13 @@ def cancelar(
 @router.get("/{venda_id}/pdf")
 def pdf_venda(
     venda_id: UUID,
+    background_tasks: BackgroundTasks,
     empresa_id: UUID = Depends(get_empresa_id),
     uc: VendaUseCases = Depends(_uc),
     db: Session = Depends(get_db),
 ):
     from app.application.services.pdf_venda import gerar_pdf_venda
+    from app.application.services.documento_auto_service import salvar_documento_automatico
     from app.infrastructure.repositories.cliente_repository import SqlAlchemyClienteRepository
     venda = uc.obter(empresa_id, venda_id)
     cliente = SqlAlchemyClienteRepository(db).get_by_id(empresa_id, venda.cliente_id)
@@ -126,5 +128,14 @@ def pdf_venda(
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Cliente não encontrado.")
     pdf = gerar_pdf_venda(venda, cliente)
+    filename = f"venda_{venda.numero:04d}.pdf"
+
+    # Auto-save: salva na aba Documentos do cliente (V4 — "pasta do cliente")
+    background_tasks.add_task(
+        salvar_documento_automatico, db, empresa_id, filename, pdf,
+        cliente_id=venda.cliente_id, obra_id=getattr(venda, "obra_id", None),
+        descricao=f"Venda #{venda.numero:04d} gerada automaticamente.",
+    )
+
     return Response(content=pdf, media_type="application/pdf",
-                    headers={"Content-Disposition": f'attachment; filename="venda_{venda.numero:04d}.pdf"'})
+                    headers={"Content-Disposition": f'attachment; filename="{filename}"'})

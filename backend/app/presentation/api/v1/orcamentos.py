@@ -6,7 +6,7 @@ from uuid import UUID
 from datetime import date
 from pydantic import BaseModel
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.application.use_cases.orcamento_use_cases import OrcamentoUseCases
@@ -205,6 +205,7 @@ def remover_orcamento(
 @router.get("/{orcamento_id}/pdf")
 def gerar_pdf(
     orcamento_id: UUID,
+    background_tasks: BackgroundTasks,
     empresa_id: UUID = Depends(get_empresa_id),
     use_cases: OrcamentoUseCases = Depends(_get_use_cases),
     db: Session = Depends(get_db),
@@ -226,8 +227,16 @@ def gerar_pdf(
         )
 
     pdf_bytes = gerar_pdf_orcamento(orc, cliente)
-
     filename = f"orcamento_{orc.numero:04d}.pdf"
+
+    # Auto-save: salva uma cópia na aba Documentos do cliente (V4 — "pasta do cliente")
+    from app.application.services.documento_auto_service import salvar_documento_automatico
+    background_tasks.add_task(
+        salvar_documento_automatico, db, empresa_id, filename, pdf_bytes,
+        cliente_id=orc.cliente_id, obra_id=orc.obra_id, orcamento_id=orc.id,
+        descricao=f"Orçamento #{orc.numero:04d} gerado automaticamente.",
+    )
+
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",

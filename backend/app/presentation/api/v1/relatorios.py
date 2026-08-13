@@ -4,7 +4,7 @@ Camada: Presentation.
 """
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Query
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
@@ -123,12 +123,14 @@ def relatorio_compras_pdf(
 
 @router.get("/diario-obra/pdf")
 def relatorio_diario_pdf(
+    background_tasks: BackgroundTasks,
     empresa_id: UUID = Depends(get_empresa_id),
     db: Session = Depends(get_db),
     obra_id: str | None = Query(None),
 ):
     """Gera relatório PDF do Diário de Obra."""
     from app.application.services.pdf_diario_obra import gerar_pdf_diario
+    from app.application.services.documento_auto_service import salvar_documento_automatico
     from app.infrastructure.database.models.diario_obra import RegistroDiarioModel
     from app.infrastructure.database.models.obra import ObraModel
 
@@ -138,12 +140,23 @@ def relatorio_diario_pdf(
     registros = q.order_by(RegistroDiarioModel.data.desc()).all()
 
     obra_nome = "Todas as Obras"
+    obra_encontrada = None
     if obra_id:
-        obra = db.query(ObraModel).filter(ObraModel.id == obra_id).first()
-        if obra:
-            obra_nome = obra.nome
+        obra_encontrada = db.query(ObraModel).filter(ObraModel.id == obra_id).first()
+        if obra_encontrada:
+            obra_nome = obra_encontrada.nome
 
     pdf_bytes = gerar_pdf_diario(registros, obra_nome)
+
+    # Auto-save: só faz sentido quando o relatório é de UMA obra específica
+    # (com "todas as obras" não haveria uma única "pasta" para guardar).
+    if obra_encontrada:
+        background_tasks.add_task(
+            salvar_documento_automatico, db, empresa_id, "diario_obra.pdf", pdf_bytes,
+            cliente_id=obra_encontrada.cliente_id, obra_id=obra_encontrada.id,
+            descricao=f"Relatório do Diário de Obra — {obra_nome}, gerado automaticamente.",
+        )
+
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
