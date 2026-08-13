@@ -459,7 +459,7 @@ def analise_por_categoria(
 
 # ═══ Projeção de saldo futuro ════════════════════════════════════════════════
 
-@router.get("/projecao-saldo")
+@router.get("/financeiro/projecao-saldo")
 def projecao_saldo(
     empresa_id: UUID = Depends(get_empresa_id),
     db: Session = Depends(get_db),
