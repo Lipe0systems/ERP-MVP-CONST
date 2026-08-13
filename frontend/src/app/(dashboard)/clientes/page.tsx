@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Eye, Pencil, Plus, Search, Trash2, Users } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -110,7 +110,11 @@ export default function ClientesPage() {
             <TableBody className={isFetching ? "opacity-60 transition-opacity" : undefined}>
               {clientes.map((cliente) => (
                 <TableRow key={cliente.id}>
-                  <TableCell className="font-medium">{cliente.nome}</TableCell>
+                  <TableCell className="font-medium">
+                    <Link href={`/clientes/${cliente.id}`} className="hover:underline">
+                      {cliente.nome}
+                    </Link>
+                  </TableCell>
                   <TableCell>{formatCpfCnpj(cliente.documento)}</TableCell>
                   <TableCell className="hidden sm:table-cell text-muted-foreground">
                     {cliente.email || "—"}
@@ -120,6 +124,13 @@ export default function ClientesPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-1">
+                      <Link
+                        href={`/clientes/${cliente.id}`}
+                        className={buttonVariants({ variant: "ghost", size: "icon" })}
+                        aria-label={`Ver perfil de ${cliente.nome}`}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Link>
                       <Button
                         variant="ghost"
                         size="icon"
