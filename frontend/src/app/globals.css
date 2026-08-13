@@ -248,15 +248,17 @@
 .animate-float { animation: float 20s ease-in-out infinite; }
 
 /* Scrollbar */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb {
-  background: hsl(var(--border));
-  border-radius: 99px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
+/* Scrollbars discretas: a rolagem continua funcionando normalmente
+   (mouse, trackpad, teclado, touch) — só a barra visual fica oculta. */
+* {
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* Edge/IE legado */
 }
-::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); background-clip: padding-box; }
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;               /* Chrome, Safari, Edge Chromium */
+}
 
 @media (prefers-reduced-motion: reduce) {
   .page-enter, .stagger-children > *, .animate-float, .animate-glow, .shimmer {
