@@ -347,7 +347,7 @@ def receber_conta(
 
 # ═══ Lucro realizado e análise por categoria (upgrade Financeiro) ═══════════
 
-@router.get("/lucro")
+@router.get("/financeiro/lucro")
 def lucro_realizado(
     empresa_id: UUID = Depends(get_empresa_id),
     db: Session = Depends(get_db),
@@ -398,7 +398,7 @@ def lucro_realizado(
     }
 
 
-@router.get("/analise-categoria")
+@router.get("/financeiro/analise-categoria")
 def analise_por_categoria(
     empresa_id: UUID = Depends(get_empresa_id),
     db: Session = Depends(get_db),
