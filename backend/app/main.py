@@ -62,6 +62,29 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
 
+
+@app.middleware("http")
+async def security_headers_middleware(request: Request, call_next):
+    """
+    Headers de segurança aplicados a toda resposta da API.
+
+    Não inclui Content-Security-Policy: essa API só serve JSON/PDF/Excel
+    para consumo por fetch() do frontend, nunca renderiza HTML de terceiros
+    — o CSP relevante para essa proteção pertence ao Next.js (frontend),
+    não a esta API. Uma CSP genérica aqui não protegeria nada a mais e
+    poderia quebrar o /docs (Swagger UI) sem necessidade.
+    """
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    # HSTS: só faz sentido em produção servida via HTTPS (o Render já força
+    # HTTPS por padrão). Evita forçar HTTPS em ambiente local de desenvolvimento.
+    if settings.ENVIRONMENT == "production":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins_list,

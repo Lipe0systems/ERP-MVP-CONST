@@ -6,6 +6,21 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.config import get_settings
 
+# Mesma lista e limite usados na validação do frontend
+# (storage-documentos.ts) — o upload em si acontece direto do navegador
+# pro Storage, então esta é a defesa em profundidade do lado do backend:
+# mesmo que alguém chame POST /documentos diretamente (contornando a tela),
+# não consegue registrar metadados fora do que é permitido.
+TIPOS_ACEITOS = {
+    "application/pdf",
+    "image/jpeg", "image/png", "image/webp",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+}
+TAMANHO_MAXIMO_BYTES = 20 * 1024 * 1024  # 20MB
+
 
 class DocumentoRegistrarIn(BaseModel):
     nome: str = Field(min_length=1, max_length=255)
@@ -31,6 +46,20 @@ class DocumentoRegistrarIn(BaseModel):
         parsed = urlparse(v)
         if parsed.scheme != "https" or parsed.netloc != host_esperado:
             raise ValueError("A URL do arquivo precisa apontar para o armazenamento do sistema.")
+        return v
+
+    @field_validator("arquivo_tipo")
+    @classmethod
+    def _validar_tipo(cls, v: str) -> str:
+        if v not in TIPOS_ACEITOS:
+            raise ValueError("Formato de arquivo não suportado.")
+        return v
+
+    @field_validator("arquivo_tamanho")
+    @classmethod
+    def _validar_tamanho(cls, v: int) -> int:
+        if v > TAMANHO_MAXIMO_BYTES:
+            raise ValueError(f"O arquivo deve ter no máximo {TAMANHO_MAXIMO_BYTES // (1024*1024)}MB.")
         return v
 
 
