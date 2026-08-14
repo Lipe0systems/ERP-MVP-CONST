@@ -40,6 +40,13 @@ def criar_empresa_e_admin(
     """
     Cria a empresa e o primeiro usuário admin.
     Retorna o token de acesso para login automático.
+
+    Esta função é chamada pelo admin do SaaS, criando a conta EM NOME de
+    outra pessoa (o admin da nova empresa cliente) — por isso o aceite dos
+    Termos de Uso NÃO é registrado aqui: não faz sentido o admin do SaaS
+    aceitar por alguém que ele não é. Quem realmente vai usar essa conta
+    aceita os termos sozinho, no primeiro login, através do bloqueio em
+    /aceitar-termos (ver dashboard layout + endpoint /usuarios/me/termos).
     """
     # 1. Validar CNPJ único
     cnpj_limpo = "".join(c for c in empresa_cnpj if c.isdigit())
@@ -79,6 +86,9 @@ def criar_empresa_e_admin(
         email=admin_email.strip().lower(),
         papel="admin",
         ativo=True,
+        # termos_aceitos_em fica NULL de propósito — a pessoa que vai usar
+        # essa conta de verdade aceita sozinha no primeiro login, via o
+        # bloqueio em /aceitar-termos (ver docstring da função acima).
     )
     db.add(usuario)
     db.commit()

@@ -22,11 +22,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     const supabase = createClient();
 
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) {
         router.replace("/login");
         return;
       }
+
+      // Bloqueia a entrada de quem nunca aceitou os Termos de Uso/Política
+      // de Privacidade (ex.: contas criadas antes de este aceite existir).
+      // Quem cria conta agora (onboarding/convite) já aceita no próprio
+      // formulário de cadastro, então normalmente não passa por aqui.
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/usuarios/me/termos`, {
+          headers: { Authorization: `Bearer ${data.session.access_token}` },
+        });
+        if (res.ok) {
+          const status = await res.json();
+          if (status.precisa_aceitar) {
+            router.replace("/aceitar-termos");
+            return;
+          }
+        }
+      } catch {
+        // Falha ao checar não deve travar o acesso — segue normalmente.
+      }
+
       setSessaoVerificada(true);
     });
 

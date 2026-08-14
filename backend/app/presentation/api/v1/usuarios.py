@@ -200,6 +200,10 @@ def validar_token(token: str, db: Session = Depends(get_db)):
 class AceitarConviteIn(BaseModel):
     nome: str = Field(min_length=1, max_length=255)
     senha: str = Field(min_length=8, max_length=72)
+    aceitou_termos: bool = Field(
+        default=False,
+        description="Precisa ser true — a criação da conta é recusada sem o aceite explícito.",
+    )
 
 
 @router.post("/convites/{token}/aceitar", status_code=201)
@@ -225,6 +229,12 @@ def aceitar_convite(token: str, body: AceitarConviteIn, db: Session = Depends(ge
     if convite.expira_em < datetime.utcnow():
         repo.atualizar_status(convite.id, StatusConvite.EXPIRADO)
         raise HTTPException(status_code=422, detail="Convite expirado.")
+
+    if not body.aceitou_termos:
+        raise HTTPException(
+            status_code=422,
+            detail="É necessário aceitar os Termos de Uso e a Política de Privacidade para criar a conta.",
+        )
 
     ja_existe = db.query(UsuarioModel).filter(
         UsuarioModel.empresa_id == convite.empresa_id,
@@ -275,6 +285,8 @@ def aceitar_convite(token: str, body: AceitarConviteIn, db: Session = Depends(ge
         email=convite.email.strip().lower(),
         papel=convite.papel.value,
         ativo=True,
+        termos_aceitos_em=datetime.utcnow(),
+        termos_versao=VERSAO_TERMOS_ATUAL,
     )
     db.add(usuario)
     # atualizar_status faz o commit internamente, o que grava o usuário acima
@@ -320,3 +332,27 @@ def cancelar_convite(
     if not convite:
         raise HTTPException(status_code=404, detail="Convite não encontrado.")
     repo.atualizar_status(convite_id, StatusConvite.CANCELADO)
+
+
+# ═══ Aceite dos Termos de Uso / Política de Privacidade ═════════════════════
+from app.core.termos import VERSAO_TERMOS_ATUAL
+
+
+@router.get("/me/termos")
+def status_aceite_termos(current_user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Diz se o usuário logado precisa aceitar os termos (nunca aceitou, ou aceitou versão antiga)."""
+    usuario = db.query(UsuarioModel).filter(UsuarioModel.id == current_user.id).first()
+    precisa_aceitar = usuario is None or usuario.termos_versao != VERSAO_TERMOS_ATUAL
+    return {"precisa_aceitar": precisa_aceitar, "versao_atual": VERSAO_TERMOS_ATUAL}
+
+
+@router.post("/me/aceitar-termos")
+def aceitar_termos(current_user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Registra o aceite dos Termos de Uso/Política de Privacidade pelo usuário logado, com data/hora."""
+    usuario = db.query(UsuarioModel).filter(UsuarioModel.id == current_user.id).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+    usuario.termos_aceitos_em = datetime.utcnow()
+    usuario.termos_versao = VERSAO_TERMOS_ATUAL
+    db.commit()
+    return {"aceito": True, "aceito_em": usuario.termos_aceitos_em.isoformat()}

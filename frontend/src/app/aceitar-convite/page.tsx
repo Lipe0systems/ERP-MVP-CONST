@@ -27,6 +27,7 @@ function AceitarConviteConteudo() {
   const [nome, setNome] = useState("");
   const [senha, setSenha] = useState("");
   const [confirmSenha, setConfirmSenha] = useState("");
+  const [aceitouTermos, setAceitouTermos] = useState(false);
 
   useEffect(() => {
     if (!token) { setEstado("invalido"); setErroMsg("Token não encontrado."); return; }
@@ -50,6 +51,7 @@ function AceitarConviteConteudo() {
     if (!nome.trim()) { setErroMsg("Informe seu nome."); return; }
     if (senha.length < 8) { setErroMsg("A senha deve ter ao menos 8 caracteres."); return; }
     if (senha !== confirmSenha) { setErroMsg("As senhas não coincidem."); return; }
+    if (!aceitouTermos) { setErroMsg("Você precisa aceitar os Termos de Uso e a Política de Privacidade."); return; }
 
     setEstado("cadastrando");
     setErroMsg("");
@@ -62,7 +64,7 @@ function AceitarConviteConteudo() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/usuarios/convites/${token}/aceitar`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome, senha }),
+        body: JSON.stringify({ nome, senha, aceitou_termos: aceitouTermos }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail ?? "Erro ao criar conta.");
@@ -148,8 +150,27 @@ function AceitarConviteConteudo() {
               <Label htmlFor="confirm">Confirmar senha *</Label>
               <Input id="confirm" type="password" value={confirmSenha} onChange={(e) => setConfirmSenha(e.target.value)} />
             </div>
+            <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border p-3 text-sm">
+              <input
+                type="checkbox"
+                checked={aceitouTermos}
+                onChange={(e) => setAceitouTermos(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0"
+              />
+              <span>
+                Li e aceito os{" "}
+                <a href="/termos" target="_blank" className="text-amber-600 hover:underline">
+                  Termos de Uso
+                </a>{" "}
+                e a{" "}
+                <a href="/privacidade" target="_blank" className="text-amber-600 hover:underline">
+                  Política de Privacidade e Cookies
+                </a>
+                .
+              </span>
+            </label>
             {erroMsg && <p className="text-sm text-destructive">{erroMsg}</p>}
-            <Button type="submit" className="w-full" disabled={estado === "cadastrando"}>
+            <Button type="submit" className="w-full" disabled={estado === "cadastrando" || !aceitouTermos}>
               {estado === "cadastrando"
                 ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Criando conta...</>
                 : "Criar minha conta"}
