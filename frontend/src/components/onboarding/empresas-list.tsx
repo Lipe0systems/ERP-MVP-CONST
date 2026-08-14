@@ -63,8 +63,18 @@ export function EmpresasList({ refreshKey }: { refreshKey?: number }) {
   async function apagarEmpresa(empresa: EmpresaListItem) {
     setApagando(empresa.id);
     try {
-      await apiFetch(`/onboarding/${empresa.id}`, { method: "DELETE" });
-      toast.success("Empresa apagada.");
+      const resultado = await apiFetch<{
+        usuarios_removidos: number;
+        falhas_ao_remover_login: string[];
+      }>(`/onboarding/${empresa.id}`, { method: "DELETE" });
+
+      if (resultado.falhas_ao_remover_login.length > 0) {
+        toast.warning(
+          `Empresa apagada, mas ${resultado.falhas_ao_remover_login.length} conta(s) de login não puderam ser removidas: ${resultado.falhas_ao_remover_login.join(", ")}. Remova manualmente no painel do Supabase, se necessário.`
+        );
+      } else {
+        toast.success(`Empresa apagada — ${resultado.usuarios_removidos} conta(s) de login também removida(s).`);
+      }
       setConfirmarApagar(null);
       await carregar();
     } catch (err: any) {
@@ -147,8 +157,9 @@ export function EmpresasList({ refreshKey }: { refreshKey?: number }) {
               Apagar <strong>{confirmarApagar.nome}</strong> permanentemente?
             </p>
             <p className="text-xs text-muted-foreground">
-              Isso remove a empresa e TODOS os seus dados (clientes, obras, financeiro, etc.) — não pode ser desfeito.
-              Se quiser só bloquear o acesso sem perder os dados, use "Desativar" em vez disso.
+              Isso remove a empresa e TODOS os seus dados (clientes, obras, financeiro, etc.), além das
+              contas de login de todos os usuários dela — não pode ser desfeito. Se quiser só bloquear o
+              acesso sem perder os dados, use "Desativar" em vez disso.
             </p>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={() => setConfirmarApagar(null)}>

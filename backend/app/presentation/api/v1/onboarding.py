@@ -127,11 +127,19 @@ def alternar_ativo(
     )
 
 
-@router.delete("/{empresa_id}", status_code=204)
+@router.delete("/{empresa_id}")
 def deletar_empresa(
     empresa_id: UUID,
     db: Session = Depends(get_db),
     _: IdentidadeAutenticada = Depends(_exigir_admin_saas),
 ):
-    """Remove uma empresa e todos os seus dados (cascata no banco)."""
-    remover_empresa(db=db, empresa_id=empresa_id)
+    """
+    Remove uma empresa, todos os seus dados (cascata no banco) e as contas de
+    login (Supabase Auth) de todos os usuários dela.
+    """
+    resultado = remover_empresa(db=db, empresa_id=empresa_id)
+    return {
+        "mensagem": "Empresa removida.",
+        "usuarios_removidos": resultado["usuarios_removidos"],
+        "falhas_ao_remover_login": resultado["falhas_ao_remover_login"],
+    }

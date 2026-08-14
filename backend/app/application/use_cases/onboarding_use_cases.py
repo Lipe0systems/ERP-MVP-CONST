@@ -167,13 +167,27 @@ def _fazer_login_supabase(email: str, senha: str) -> dict:
     return {}
 
 
-def remover_empresa(db: Session, empresa_id: UUID) -> None:
+def remover_empresa(db: Session, empresa_id: UUID) -> dict:
     """
-    Remove uma empresa e todos os seus dados via cascata (FK ON DELETE CASCADE).
-    Não remove o usuário do Supabase Auth — isso pode ser feito manualmente
-    no painel do Supabase se necessário.
+    Remove uma empresa e todos os seus dados via cascata (FK ON DELETE
+    CASCADE), e também apaga a conta de login (Supabase Auth) de cada
+    usuário vinculado a ela — sem isso, a pessoa continuaria conseguindo
+    autenticar normalmente (só ficaria barrada por falta de vínculo com
+    empresa, mas a conta e a senha permaneceriam ativas).
+
+    A ordem importa: apaga primeiro no Auth (usando o id ainda presente na
+    tabela `usuarios`), e só depois apaga a empresa no banco — se apagasse
+    a empresa primeiro, a cascata já teria removido as linhas de `usuarios`
+    e não haveria mais como saber quais contas de Auth pertenciam a ela.
+
+    Best-effort nas exclusões do Auth: se alguma falhar (ex.: a conta já não
+    existe mais lá), a empresa e os dados no banco são removidos do mesmo
+    jeito — o retorno informa quais contas não puderam ser removidas, para
+    o admin do SaaS decidir se quer limpar manualmente no painel do
+    Supabase.
     """
     from app.infrastructure.database.models.empresa import EmpresaModel
+    from app.infrastructure.database.models.usuario import UsuarioModel
     from fastapi import HTTPException, status
 
     empresa = db.query(EmpresaModel).filter(EmpresaModel.id == empresa_id).first()
@@ -182,5 +196,29 @@ def remover_empresa(db: Session, empresa_id: UUID) -> None:
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Empresa não encontrada.",
         )
+
+    usuarios = db.query(UsuarioModel).filter(UsuarioModel.empresa_id == empresa_id).all()
+
+    falhas_auth: list[str] = []
+    for usuario in usuarios:
+        try:
+            resp = httpx.delete(
+                f"{settings.SUPABASE_URL}/auth/v1/admin/users/{usuario.id}",
+                headers={
+                    "apikey": settings.SUPABASE_SERVICE_ROLE_KEY,
+                    "Authorization": f"Bearer {settings.SUPABASE_SERVICE_ROLE_KEY}",
+                },
+                timeout=15.0,
+            )
+            # 404 é aceitável aqui: a conta já pode não existir mais no Auth
+            # (ex.: removida manualmente antes) — não é motivo pra travar a
+            # exclusão da empresa.
+            if resp.status_code not in (200, 204, 404):
+                falhas_auth.append(usuario.email)
+        except httpx.HTTPError:
+            falhas_auth.append(usuario.email)
+
     db.delete(empresa)
     db.commit()
+
+    return {"usuarios_removidos": len(usuarios), "falhas_ao_remover_login": falhas_auth}
