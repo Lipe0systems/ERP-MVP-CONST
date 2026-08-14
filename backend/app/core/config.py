@@ -18,6 +18,10 @@ class Settings(BaseSettings):
 
     ALLOWED_ORIGINS: str = "http://localhost:3000"
 
+    # Vazio em desenvolvimento local (Sentry só reporta erros quando configurado
+    # via variável de ambiente no Render — nunca hardcoded no código).
+    SENTRY_DSN: str = ""
+
     @property
     def allowed_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",")]

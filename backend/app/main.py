@@ -22,6 +22,20 @@ import app.infrastructure.database.models  # noqa: F401
 logger = logging.getLogger("uvicorn.error")
 settings = get_settings()
 
+if settings.SENTRY_DSN:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=settings.SENTRY_DSN,
+        environment=settings.ENVIRONMENT,
+        # Amostra de performance baixa — o objetivo aqui é capturar ERROS,
+        # não rastrear toda requisição em detalhe (isso consumiria a cota
+        # gratuita de 5k eventos/mês muito mais rápido sem necessidade).
+        traces_sample_rate=0.1,
+        send_default_pii=False,  # nunca envia dados pessoais dos usuários por padrão
+    )
+    logger.info("Sentry inicializado (ambiente: %s)", settings.ENVIRONMENT)
+
 app = FastAPI(
     title="Construtec API",
     description="API REST do ERP SaaS multiempresa para construtoras.",
@@ -102,7 +116,16 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
     e o navegador reporta isso como "bloqueado por CORS" em vez do erro real
     — mascarando a causa verdadeira. Aqui sempre devolvemos um 500 já com
     os cabeçalhos de CORS aplicados, e registramos o erro real nos logs.
+
+    Envia explicitamente para o Sentry (quando configurado): como este
+    handler já "trata" a exceção antes dela se propagar, a integração
+    automática do Sentry com FastAPI pode não vê-la como "não tratada" —
+    por isso a captura manual aqui, garantindo que o erro sempre chega lá.
     """
+    if settings.SENTRY_DSN:
+        import sentry_sdk
+        sentry_sdk.capture_exception(exc)
+
     logger.exception("Erro não tratado em %s %s", request.method, request.url.path)
     return JSONResponse(
         status_code=500,
