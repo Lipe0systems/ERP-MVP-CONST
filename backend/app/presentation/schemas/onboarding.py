@@ -29,3 +29,18 @@ class OnboardingOut(BaseModel):
     empresa_id: str
     access_token: str | None = None
     refresh_token: str | None = None
+
+
+class EmpresaListItem(BaseModel):
+    id: str
+    nome: str
+    cnpj: str
+    email: str | None
+    telefone: str | None
+    ativo: bool
+    qtd_usuarios: int
+    criado_em: str
+
+
+class AlternarAtivoIn(BaseModel):
+    ativo: bool

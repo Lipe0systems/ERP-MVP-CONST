@@ -138,10 +138,16 @@ def get_current_user(
     # Fonte da verdade: tabela `usuarios`, nunca o token/user_metadata.
     # Import local para evitar import circular (infrastructure -> core -> infrastructure).
     from app.infrastructure.database.models.usuario import UsuarioModel
+    from app.infrastructure.database.models.empresa import EmpresaModel
 
-    usuario = db.query(UsuarioModel).filter(UsuarioModel.id == auth_user_id).first()
+    linha = (
+        db.query(UsuarioModel, EmpresaModel.ativo)
+        .join(EmpresaModel, EmpresaModel.id == UsuarioModel.empresa_id)
+        .filter(UsuarioModel.id == auth_user_id)
+        .first()
+    )
 
-    if usuario is None:
+    if linha is None:
         # Conta autenticada no Supabase mas ainda sem vínculo com nenhuma
         # empresa neste sistema (ex.: convite ainda não foi finalizado do
         # lado do backend). Falha de forma clara em vez de confiar em
@@ -151,10 +157,21 @@ def get_current_user(
             detail="Usuário autenticado, mas sem vínculo com nenhuma empresa neste sistema.",
         )
 
+    usuario, empresa_ativa = linha
+
     if not usuario.ativo:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Este usuário foi desativado.",
+        )
+
+    if not empresa_ativa:
+        # A empresa foi desativada pelo admin do SaaS (ver onboarding.py,
+        # PATCH /onboarding/{id}/ativo) — bloqueia TODOS os usuários dela,
+        # mesmo que cada um individualmente esteja marcado como ativo.
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="O acesso desta empresa está temporariamente suspenso.",
         )
 
     empresa_id = str(usuario.empresa_id)

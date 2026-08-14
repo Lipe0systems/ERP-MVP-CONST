@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiFetch } from "@/lib/api/client";
 import { createClient } from "@/lib/supabase/client";
+import { EmpresasList } from "@/components/onboarding/empresas-list";
 
 const SAAS_ADMIN_EMAIL = "accuservpn@proton.me";
 
@@ -212,6 +213,8 @@ export default function OnboardingPage() {
           </Button>
         </div>
       </form>
+
+      <EmpresasList />
     </div>
   );
 }
