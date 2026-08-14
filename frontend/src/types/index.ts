@@ -248,6 +248,7 @@ export interface Orcamento {
   status: StatusOrcamento;
   validade?: string | null;
   observacoes?: string | null;
+  condicoes_pagamento?: string | null;
   conta_receber_id?: string | null;
   itens: OrcamentoItem[];
   valor_total: number;
@@ -259,6 +260,7 @@ export interface OrcamentoInput {
   obra_id?: string | null;
   validade?: string | null;
   observacoes?: string | null;
+  condicoes_pagamento?: string | null;
   itens: OrcamentoItemInput[];
 }
 

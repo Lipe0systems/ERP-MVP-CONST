@@ -52,6 +52,7 @@ def _entity_to_out(orc) -> OrcamentoOut:
         status=orc.status,
         validade=orc.validade,
         observacoes=orc.observacoes,
+        condicoes_pagamento=orc.condicoes_pagamento,
         conta_receber_id=orc.conta_receber_id,
         criado_em=orc.criado_em,
         itens=[
@@ -102,6 +103,7 @@ def criar_orcamento(
         obra_id=body.obra_id,
         validade=body.validade,
         observacoes=body.observacoes,
+        condicoes_pagamento=body.condicoes_pagamento,
         itens=[item.model_dump() for item in body.itens],
     )
     return _entity_to_out(orc)
@@ -121,6 +123,7 @@ def atualizar_orcamento(
         obra_id=body.obra_id,
         validade=body.validade,
         observacoes=body.observacoes,
+        condicoes_pagamento=body.condicoes_pagamento,
         itens=[item.model_dump() for item in body.itens],
     )
     return _entity_to_out(orc)
@@ -226,7 +229,23 @@ def gerar_pdf(
             detail="Cliente do orçamento não encontrado.",
         )
 
-    pdf_bytes = gerar_pdf_orcamento(orc, cliente)
+    # Dados reais da empresa emissora, para aparecer no cabeçalho/rodapé
+    # do PDF em vez do texto genérico. Best-effort: se não achar por
+    # algum motivo, o gerador cai no texto padrão sem quebrar o PDF.
+    from app.infrastructure.database.models.empresa import EmpresaModel
+    empresa = db.query(EmpresaModel).filter(EmpresaModel.id == empresa_id).first()
+
+    # Nome da obra vinculada, se houver — aparece logo abaixo dos dados
+    # do cliente no PDF.
+    obra_nome = None
+    if orc.obra_id:
+        from app.infrastructure.database.models.obra import ObraModel
+        obra = db.query(ObraModel).filter(
+            ObraModel.empresa_id == empresa_id, ObraModel.id == orc.obra_id
+        ).first()
+        obra_nome = obra.nome if obra else None
+
+    pdf_bytes = gerar_pdf_orcamento(orc, cliente, empresa=empresa, obra_nome=obra_nome)
     filename = f"orcamento_{orc.numero:04d}.pdf"
 
     # Auto-save: salva uma cópia na aba Documentos do cliente (V4 — "pasta do cliente")

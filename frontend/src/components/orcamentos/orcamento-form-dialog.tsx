@@ -59,6 +59,7 @@ export function OrcamentoFormDialog({ open, onOpenChange, orcamentoId, clienteId
   const [obraId, setObraId] = useState("");
   const [validade, setValidade] = useState("");
   const [observacoes, setObservacoes] = useState("");
+  const [condicoesPagamento, setCondicoesPagamento] = useState("");
   const [itens, setItens] = useState<ItemRow[]>([emptyItem()]);
 
   const [estoqueItems, setEstoqueItems] = useState<ItemEstoque[]>([]);
@@ -79,6 +80,7 @@ export function OrcamentoFormDialog({ open, onOpenChange, orcamentoId, clienteId
       setObraId(orcamento.obra_id ?? "");
       setValidade(orcamento.validade ?? "");
       setObservacoes(orcamento.observacoes ?? "");
+      setCondicoesPagamento(orcamento.condicoes_pagamento ?? "");
       setItens(
         orcamento.itens.map((i) => ({
           _key: crypto.randomUUID(),
@@ -94,6 +96,7 @@ export function OrcamentoFormDialog({ open, onOpenChange, orcamentoId, clienteId
       setObraId("");
       setValidade("");
       setObservacoes("");
+      setCondicoesPagamento("");
       setItens([emptyItem()]);
     }
   }, [open, isEditing, orcamento, clienteIdInicial]);
@@ -160,6 +163,7 @@ export function OrcamentoFormDialog({ open, onOpenChange, orcamentoId, clienteId
       obra_id: obraId || null,
       validade: validade || null,
       observacoes: observacoes || null,
+      condicoes_pagamento: condicoesPagamento || null,
       itens: itens.map(({ _key, ...rest }) => rest),
     };
 
@@ -317,6 +321,18 @@ export function OrcamentoFormDialog({ open, onOpenChange, orcamentoId, clienteId
             <div className="text-right text-base font-semibold">
               Total: {formatMoeda(valorTotal)}
             </div>
+          </div>
+
+          {/* Condições de pagamento */}
+          <div className="space-y-2">
+            <Label htmlFor="condicoes_pagamento">Condições de pagamento</Label>
+            <Textarea
+              id="condicoes_pagamento"
+              value={condicoesPagamento}
+              onChange={(e) => setCondicoesPagamento(e.target.value)}
+              placeholder="Ex: 30% de entrada, restante em 3x sem juros"
+              rows={2}
+            />
           </div>
 
           {/* Observações */}

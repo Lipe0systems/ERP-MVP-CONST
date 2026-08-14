@@ -87,6 +87,7 @@ class OrcamentoUseCases:
         validade: date | None,
         observacoes: str | None,
         itens: list[dict],
+        condicoes_pagamento: str | None = None,
     ) -> Orcamento:
         self._validar_cliente(empresa_id, cliente_id)
         self._validar_obra(empresa_id, obra_id)
@@ -121,6 +122,7 @@ class OrcamentoUseCases:
             obra_id=obra_id,
             validade=validade,
             observacoes=observacoes,
+            condicoes_pagamento=condicoes_pagamento,
             itens=orcamento_itens,
         )
         return self.repository.create(orcamento)
@@ -134,6 +136,7 @@ class OrcamentoUseCases:
         validade: date | None,
         observacoes: str | None,
         itens: list[dict],
+        condicoes_pagamento: str | None = None,
     ) -> Orcamento:
         existente = self.obter(empresa_id, orcamento_id)
 
@@ -171,6 +174,7 @@ class OrcamentoUseCases:
             obra_id=obra_id,
             validade=validade,
             observacoes=observacoes,
+            condicoes_pagamento=condicoes_pagamento,
             itens=novos_itens,
         )
         return self.repository.update(atualizado)

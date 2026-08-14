@@ -30,6 +30,7 @@ class OrcamentoModel(TenantModel):
     )
     validade = Column(Date)
     observacoes = Column(Text)
+    condicoes_pagamento = Column(Text)
     conta_receber_id = Column(
         PGUUID(as_uuid=True),
         ForeignKey("contas_receber.id", ondelete="SET NULL"),

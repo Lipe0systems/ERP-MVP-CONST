@@ -41,6 +41,7 @@ def _to_entity(model: OrcamentoModel) -> Orcamento:
         obra_id=model.obra_id,
         validade=model.validade,
         observacoes=model.observacoes,
+        condicoes_pagamento=model.condicoes_pagamento,
         conta_receber_id=model.conta_receber_id,
         itens=[_item_to_entity(i) for i in model.itens],
         criado_em=model.criado_em,
@@ -132,6 +133,7 @@ class SqlAlchemyOrcamentoRepository(OrcamentoRepository):
             status=orcamento.status.value,
             validade=orcamento.validade,
             observacoes=orcamento.observacoes,
+            condicoes_pagamento=orcamento.condicoes_pagamento,
             conta_receber_id=orcamento.conta_receber_id,
             itens=[
                 OrcamentoItemModel(
@@ -168,6 +170,7 @@ class SqlAlchemyOrcamentoRepository(OrcamentoRepository):
         model.status = orcamento.status.value
         model.validade = orcamento.validade
         model.observacoes = orcamento.observacoes
+        model.condicoes_pagamento = orcamento.condicoes_pagamento
         model.conta_receber_id = orcamento.conta_receber_id
 
         # Substitui itens: deleta os antigos e insere os novos (mais simples

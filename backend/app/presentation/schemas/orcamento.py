@@ -41,6 +41,7 @@ class OrcamentoCreateIn(BaseModel):
     obra_id: UUID | None = None
     validade: date | None = None
     observacoes: str | None = None
+    condicoes_pagamento: str | None = None
     itens: list[OrcamentoItemIn] = Field(min_length=1)
 
 
@@ -49,6 +50,7 @@ class OrcamentoUpdateIn(BaseModel):
     obra_id: UUID | None = None
     validade: date | None = None
     observacoes: str | None = None
+    condicoes_pagamento: str | None = None
     itens: list[OrcamentoItemIn] = Field(min_length=1)
 
 
@@ -60,6 +62,7 @@ class OrcamentoOut(BaseModel):
     status: StatusOrcamento
     validade: date | None
     observacoes: str | None
+    condicoes_pagamento: str | None
     conta_receber_id: UUID | None
     itens: list[OrcamentoItemOut]
     criado_em: datetime

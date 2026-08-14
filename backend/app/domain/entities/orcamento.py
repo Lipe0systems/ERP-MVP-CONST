@@ -52,6 +52,7 @@ class Orcamento:
     obra_id: UUID | None = None
     validade: date | None = None
     observacoes: str | None = None
+    condicoes_pagamento: str | None = None
     conta_receber_id: UUID | None = None  # gerada na aprovação
     itens: list[OrcamentoItem] = field(default_factory=list)
     criado_em: datetime = field(default_factory=datetime.utcnow)
