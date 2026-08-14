@@ -19,7 +19,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from app.core.security import get_empresa_id
+from app.core.security import get_empresa_id, exigir_admin
 from app.infrastructure.database.session import get_db
 from app.application.services import backup_service
 
@@ -43,6 +43,7 @@ def exportar(
     body: ExportarIn,
     empresa_id: UUID = Depends(get_empresa_id),
     db: Session = Depends(get_db),
+    _admin=Depends(exigir_admin),
 ):
     # Se nenhum módulo for escolhido, exporta todos
     todos = [m["chave"] for m in backup_service.modulos_disponiveis()]
@@ -89,6 +90,7 @@ def exportar(
 def backup_completo(
     empresa_id: UUID = Depends(get_empresa_id),
     db: Session = Depends(get_db),
+    _admin=Depends(exigir_admin),
 ):
     """Atalho: backup JSON completo de todas as tabelas (restaurável)."""
     conteudo = backup_service.gerar_backup_json(db, empresa_id)

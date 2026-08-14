@@ -5,8 +5,10 @@ Camada: Application.
 Fluxo:
 1. Cria a empresa no banco (tabela `empresas`)
 2. Cria o usuário no Supabase Auth via Admin API (service_role — nunca expor no frontend)
-3. Define o `user_metadata` com `empresa_id` → o backend usa isso pra autenticar
-4. Espelha o usuário na tabela `usuarios`
+3. Define o `app_metadata` com `empresa_id` (só gravável com service_role — nunca pelo
+   próprio usuário; ver core/security.py para o porquê disso importar)
+4. Espelha o usuário na tabela `usuarios` — é essa tabela, não o token, que o
+   backend consulta a cada requisição para saber empresa/papel do usuário
 
 Se qualquer etapa falhar após a criação no Auth, tenta reverter (best-effort).
 """
@@ -99,8 +101,15 @@ def _criar_usuario_supabase_auth(
         "email": email.strip().lower(),
         "password": senha,
         "email_confirm": True,  # já confirma o e-mail automaticamente
-        "user_metadata": {
+        "app_metadata": {
+            # app_metadata só é gravável com a service_role key — nunca pelo
+            # próprio usuário. É por isso que a autorização (empresa/papel)
+            # é lida da tabela `usuarios` no banco, nunca daqui diretamente,
+            # mas mesmo assim não se deve colocar esse dado num campo que o
+            # usuário logado poderia reescrever sozinho (user_metadata).
             "empresa_id": str(empresa_id),
+        },
+        "user_metadata": {
             "full_name": nome.strip(),
         },
     }

@@ -55,15 +55,28 @@ function AceitarConviteConteudo() {
     setErroMsg("");
 
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signUp({
-        email: emailConvite,
-        password: senha,
-        options: { data: { nome, convite_token: token } },
+      // A conta é criada pelo backend (POST /usuarios/convites/{token}/aceitar),
+      // não diretamente no navegador — o backend valida o convite de verdade e
+      // grava a empresa em app_metadata (só editável com a service_role key),
+      // nunca em user_metadata (que o próprio usuário logado poderia alterar).
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/usuarios/convites/${token}/aceitar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, senha }),
       });
-      if (error) throw error;
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail ?? "Erro ao criar conta.");
+
+      if (data.access_token && data.refresh_token) {
+        const supabase = createClient();
+        await supabase.auth.setSession({
+          access_token: data.access_token,
+          refresh_token: data.refresh_token,
+        });
+      }
+
       setEstado("sucesso");
-      setTimeout(() => router.push("/login"), 3000);
+      setTimeout(() => router.push("/dashboard"), 2000);
     } catch (err: any) {
       setErroMsg(err.message ?? "Erro ao criar conta.");
       setEstado("valido");
@@ -100,7 +113,7 @@ function AceitarConviteConteudo() {
           <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
             <CheckCircle2 className="h-12 w-12 text-green-500" />
             <h1 className="text-xl font-semibold">Conta criada!</h1>
-            <p className="text-sm text-muted-foreground">Redirecionando para o login...</p>
+            <p className="text-sm text-muted-foreground">Redirecionando para o sistema...</p>
           </CardContent>
         </Card>
       </div>

@@ -19,7 +19,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.core.security import get_empresa_id
+from app.core.security import get_empresa_id, exigir_admin
 from app.infrastructure.database.session import get_db
 from app.infrastructure.database.soft_delete import with_deleted, only_deleted
 
@@ -125,7 +125,11 @@ def restaurar_item(modulo: str, item_id: UUID, empresa_id: UUID = Depends(get_em
 
 
 @router.delete("/{modulo}/{item_id}", status_code=204)
-def apagar_definitivo(modulo: str, item_id: UUID, empresa_id: UUID = Depends(get_empresa_id), db: Session = Depends(get_db)):
+def apagar_definitivo(
+    modulo: str, item_id: UUID,
+    empresa_id: UUID = Depends(get_empresa_id), db: Session = Depends(get_db),
+    _admin=Depends(exigir_admin),
+):
     """Apaga o item DE VEZ (irreversível)."""
     if modulo not in MODULOS:
         raise HTTPException(404, "Módulo inválido.")
@@ -141,7 +145,10 @@ def apagar_definitivo(modulo: str, item_id: UUID, empresa_id: UUID = Depends(get
 
 
 @router.post("/expurgar")
-def expurgar_antigos(empresa_id: UUID = Depends(get_empresa_id), db: Session = Depends(get_db)):
+def expurgar_antigos(
+    empresa_id: UUID = Depends(get_empresa_id), db: Session = Depends(get_db),
+    _admin=Depends(exigir_admin),
+):
     """
     Apaga permanentemente todos os itens que estão na lixeira há mais de 30 dias.
     Pode ser chamado manualmente ou por um agendador (cron).

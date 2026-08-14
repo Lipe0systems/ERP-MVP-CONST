@@ -6,9 +6,17 @@ import logging
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from slowapi.util import get_remote_address
 
 from app.core.config import get_settings
 from app.presentation.api.v1.router import api_router
+
+# Importa todos os modelos ORM para garantir que estão registrados no Base
+# antes de qualquer operação de banco (evita erros de "table not found" em
+# módulos adicionados após o startup inicial).
 import app.infrastructure.database.models  # noqa: F401
 
 logger = logging.getLogger("uvicorn.error")
@@ -21,6 +29,38 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+def _client_ip(request: Request) -> str:
+    """
+    Identifica o cliente real para o rate limiting.
+
+    Atrás do proxy do Render, `request.client.host` é sempre o IP do próprio
+    proxy — usá-lo faria TODOS os usuários do sistema dividirem um único
+    balde de requisições, e poucos usuários simultâneos já causariam 429 em
+    tráfego legítimo (o dashboard sozinho dispara várias chamadas por carga,
+    e as notificações fazem polling a cada 20s por usuário).
+
+    Por isso lemos o primeiro IP de X-Forwarded-For, que é o cliente real.
+    O header é preenchido pelo proxy do Render; em ambiente local, onde ele
+    não existe, caímos no comportamento padrão.
+    """
+    encaminhado = request.headers.get("x-forwarded-for")
+    if encaminhado:
+        return encaminhado.split(",")[0].strip()
+    return get_remote_address(request)
+
+
+# Rate limiting: limite por IP de cliente aplicado a toda a API, para reduzir
+# a superfície de força bruta/enumeração e o custo de endpoints pesados
+# (geração de PDF, exportação de backup). O limite é generoso de propósito —
+# o objetivo é barrar automação abusiva, não atrapalhar uso normal, que é
+# naturalmente intenso (dashboard com vários widgets + polling de
+# notificações). Endpoints específicos podem receber limites mais estritos
+# individualmente com @limiter.limit("...").
+limiter = Limiter(key_func=_client_ip, default_limits=["300/minute"])
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 app.add_middleware(
     CORSMiddleware,

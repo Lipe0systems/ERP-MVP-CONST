@@ -12,6 +12,7 @@ Camada: Application.
 """
 from __future__ import annotations
 
+import re
 import uuid
 from uuid import UUID
 
@@ -22,6 +23,18 @@ from app.core.config import get_settings
 from app.infrastructure.database.models.documento import DocumentoModel
 
 BUCKET = "documentos"
+
+
+def _sanitizar_nome_arquivo(nome: str) -> str:
+    """
+    Remove qualquer caractere que não seja letra/número/ponto/hífen/underscore
+    do nome do arquivo antes de usá-lo para montar o caminho no Storage —
+    defesa em profundidade contra path traversal (ex.: nome="../../x.pdf"),
+    mesmo que hoje todos os chamadores desta função só passem nomes gerados
+    pelo próprio servidor. Mesmo padrão usado no upload manual do frontend
+    (storage-documentos.ts).
+    """
+    return re.sub(r"[^a-zA-Z0-9.\-_]", "-", nome)
 
 
 def _upload_para_storage(caminho: str, conteudo: bytes, content_type: str) -> str | None:
@@ -87,7 +100,8 @@ def salvar_documento_automatico(
     if not (cliente_id or obra_id or orcamento_id):
         return
 
-    caminho = f"gerados/{cliente_id or obra_id or orcamento_id}/{uuid.uuid4()}-{nome}"
+    nome_seguro = _sanitizar_nome_arquivo(nome)
+    caminho = f"gerados/{cliente_id or obra_id or orcamento_id}/{uuid.uuid4()}-{nome_seguro}"
     url = _upload_para_storage(caminho, conteudo_pdf, "application/pdf")
     if not url:
         return

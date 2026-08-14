@@ -142,7 +142,9 @@ def relatorio_diario_pdf(
     obra_nome = "Todas as Obras"
     obra_encontrada = None
     if obra_id:
-        obra_encontrada = db.query(ObraModel).filter(ObraModel.id == obra_id).first()
+        obra_encontrada = db.query(ObraModel).filter(
+            ObraModel.empresa_id == empresa_id, ObraModel.id == obra_id
+        ).first()
         if obra_encontrada:
             obra_nome = obra_encontrada.nome
 

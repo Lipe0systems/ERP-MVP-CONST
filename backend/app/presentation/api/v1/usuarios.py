@@ -4,9 +4,10 @@ Endpoints do módulo Usuários — listagem, convites e gestão de papéis.
 Fluxo de convite:
   1. Admin POST /usuarios/convites         → cria convite com token (7 dias)
   2. Admin vê o link de aceite no response
-  3. Novo usuário GET /usuarios/convites/{token} → valida token
+  3. Novo usuário GET /usuarios/convites/{token}/validar → valida token
   4. Novo usuário POST /usuarios/convites/{token}/aceitar → cria conta no Supabase
-     Auth via Admin API e vincula à empresa
+     Auth via Admin API (empresa_id em app_metadata, não editável pelo usuário)
+     e espelha na tabela `usuarios`
   5. Usuário faz login normalmente
 
 Papéis disponíveis: admin, membro, visualizador
@@ -20,7 +21,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
 
-from app.core.security import get_current_user, get_empresa_id, CurrentUser
+from app.core.security import get_current_user, get_empresa_id, exigir_admin, CurrentUser
 from app.domain.entities.convite import PapelUsuario, StatusConvite
 from app.infrastructure.database.session import get_db
 from app.infrastructure.database.models.usuario import UsuarioModel
@@ -59,7 +60,7 @@ class ConviteOut(BaseModel):
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
 def _exige_admin(user: CurrentUser) -> None:
-    if getattr(user, "papel", "membro") not in ("admin",):
+    if user.papel != "admin":
         raise HTTPException(status_code=403, detail="Apenas administradores podem realizar esta ação.")
 
 
@@ -193,6 +194,116 @@ def validar_token(token: str, db: Session = Depends(get_db)):
         "email": convite.email,
         "papel": convite.papel.value,
         "expira_em": convite.expira_em.isoformat(),
+    }
+
+
+class AceitarConviteIn(BaseModel):
+    nome: str = Field(min_length=1, max_length=255)
+    senha: str = Field(min_length=8, max_length=72)
+
+
+@router.post("/convites/{token}/aceitar", status_code=201)
+def aceitar_convite(token: str, body: AceitarConviteIn, db: Session = Depends(get_db)):
+    """
+    Finaliza o convite: cria a conta no Supabase Auth (via Admin API,
+    service_role — nunca exposta ao navegador) e espelha o usuário na
+    tabela `usuarios`, que é a fonte da verdade de empresa/papel usada
+    em toda autenticação (ver core/security.py). Sem autenticação prévia
+    — é a página pública que o convidado usa antes de ter conta.
+    """
+    import uuid as _uuid
+    import httpx as _httpx
+
+    from app.core.config import get_settings
+
+    repo = ConviteRepository(db)
+    convite = repo.get_by_token(token)
+    if not convite:
+        raise HTTPException(status_code=404, detail="Convite não encontrado.")
+    if convite.status != StatusConvite.PENDENTE:
+        raise HTTPException(status_code=422, detail=f"Convite {convite.status.value}.")
+    if convite.expira_em < datetime.utcnow():
+        repo.atualizar_status(convite.id, StatusConvite.EXPIRADO)
+        raise HTTPException(status_code=422, detail="Convite expirado.")
+
+    ja_existe = db.query(UsuarioModel).filter(
+        UsuarioModel.empresa_id == convite.empresa_id,
+        UsuarioModel.email == convite.email.lower(),
+        UsuarioModel.ativo == True,
+    ).first()
+    if ja_existe:
+        raise HTTPException(status_code=422, detail="Já existe um usuário ativo com este e-mail nesta empresa.")
+
+    settings = get_settings()
+
+    # Cria a conta no Supabase Auth. empresa_id vai em app_metadata (só
+    # gravável com a service_role key) — NUNCA em user_metadata, que o
+    # próprio usuário poderia reescrever depois de logado (era exatamente
+    # a falha corrigida em core/security.py).
+    try:
+        resp = _httpx.post(
+            f"{settings.SUPABASE_URL}/auth/v1/admin/users",
+            json={
+                "email": convite.email.strip().lower(),
+                "password": body.senha,
+                "email_confirm": True,
+                "app_metadata": {"empresa_id": str(convite.empresa_id)},
+                "user_metadata": {"full_name": body.nome.strip()},
+            },
+            headers={
+                "apikey": settings.SUPABASE_SERVICE_ROLE_KEY,
+                "Authorization": f"Bearer {settings.SUPABASE_SERVICE_ROLE_KEY}",
+                "Content-Type": "application/json",
+            },
+            timeout=15.0,
+        )
+    except _httpx.HTTPError as exc:
+        raise HTTPException(status_code=503, detail="Não foi possível criar a conta no serviço de autenticação.") from exc
+
+    if resp.status_code == 422:
+        data = resp.json()
+        raise HTTPException(status_code=409, detail=data.get("msg") or data.get("message") or "E-mail já cadastrado.")
+    if not resp.is_success:
+        raise HTTPException(status_code=502, detail=f"Erro ao criar usuário: {resp.text[:200]}")
+
+    auth_user_id = _uuid.UUID(resp.json()["id"])
+
+    usuario = UsuarioModel(
+        id=auth_user_id,
+        empresa_id=convite.empresa_id,
+        nome=body.nome.strip(),
+        email=convite.email.strip().lower(),
+        papel=convite.papel.value,
+        ativo=True,
+    )
+    db.add(usuario)
+    # atualizar_status faz o commit internamente, o que grava o usuário acima
+    # na MESMA transação — é justamente o que queremos: ou o usuário é criado
+    # e o convite é marcado como aceito juntos, ou nada acontece (evita que um
+    # convite fique reutilizável depois de já ter criado a conta). O commit
+    # abaixo é uma rede de segurança para o caso de atualizar_status não ter
+    # encontrado o convite (não deveria: já foi validado no início).
+    repo.atualizar_status(convite.id, StatusConvite.ACEITO)
+    db.commit()
+
+    # Login automático, igual ao onboarding — devolve os tokens para o
+    # frontend já entrar autenticado.
+    try:
+        login_resp = _httpx.post(
+            f"{settings.SUPABASE_URL}/auth/v1/token?grant_type=password",
+            json={"email": convite.email, "password": body.senha},
+            headers={"apikey": settings.SUPABASE_ANON_KEY, "Content-Type": "application/json"},
+            timeout=15.0,
+        )
+        tokens = login_resp.json() if login_resp.is_success else {}
+    except _httpx.HTTPError:
+        tokens = {}
+
+    return {
+        "mensagem": "Conta criada com sucesso.",
+        "empresa_id": str(convite.empresa_id),
+        "access_token": tokens.get("access_token"),
+        "refresh_token": tokens.get("refresh_token"),
     }
 
 
