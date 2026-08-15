@@ -66,20 +66,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="relative flex h-screen overflow-hidden bg-secondary/30">
-      {/* Camada de cor ambiente que as superfícies de vidro refratam.
-          Precisa ser um elemento próprio: no mesmo elemento, a classe de
-          cor do Tailwind (bg-secondary/30) emite `background-image: none`
-          e apagaria o mesh. */}
-      <div className="mesh-bg pointer-events-none absolute inset-0" aria-hidden />
-      <div className="relative z-10 flex h-full w-full min-h-0">
-        <Sidebar mobileOpen={mobileMenuOpen} onCloseMobile={() => setMobileMenuOpen(false)} />
-        <div className="flex flex-1 flex-col min-w-0 min-h-0">
-          <Header onMenuClick={() => setMobileMenuOpen(true)} />
-          <main className="flex-1 overflow-y-auto p-5 sm:p-7">
-            <PageTransition>{children}</PageTransition>
-          </main>
-        </div>
+    <div className="flex h-screen overflow-hidden bg-secondary/30">
+      <Sidebar mobileOpen={mobileMenuOpen} onCloseMobile={() => setMobileMenuOpen(false)} />
+      <div className="flex flex-1 flex-col min-w-0">
+        <Header onMenuClick={() => setMobileMenuOpen(true)} />
+        <main className="flex-1 overflow-y-auto p-5 sm:p-7">
+          <PageTransition>{children}</PageTransition>
+        </main>
       </div>
     </div>
   );
