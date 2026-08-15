@@ -92,7 +92,7 @@ export default function BackupPage() {
       <PageHeader icon={Database} title="Backup e Exportação" subtitle="Baixe seus dados em Excel, CSV ou backup completo" cor="cyan" />
 
       {/* Backup total em destaque */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 p-6 text-white glow-blue">
+      <div className="relative overflow-hidden rounded-2xl panel p-6">
         <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl animate-float" />
         <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
@@ -138,7 +138,7 @@ export default function BackupPage() {
                     ativo ? "border-transparent ring-2 ring-amber-500 bg-amber-500/[0.04]" : "hover:border-muted-foreground/30"
                   )}
                 >
-                  <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br text-white shadow-md", f.grad)}>
+                  <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg tint-amber")}>
                     <f.icon className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
@@ -204,7 +204,7 @@ export default function BackupPage() {
                 incluirArquivos ? "border-transparent ring-2 ring-purple-500 bg-purple-500/[0.04]" : "hover:border-muted-foreground/30"
               )}
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-fuchsia-600 text-white shadow-md">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg tint-purple">
                 <Paperclip className="h-5 w-5" />
               </div>
               <div className="min-w-0 flex-1">

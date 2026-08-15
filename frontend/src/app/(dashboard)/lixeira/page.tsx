@@ -76,7 +76,7 @@ export default function LixeiraPage() {
                   aberto && "ring-2 ring-red-500"
                 )}
               >
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-lg ring-4 ring-red-500/20">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl tint-red">
                   <Icone className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">

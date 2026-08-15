@@ -86,7 +86,7 @@ export default function WorkspacePage() {
                 className="card-vivid rounded-2xl p-5 text-left"
               >
                 <div className="flex items-start justify-between">
-                  <div className={cn("flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-md", FASE_COR[p.fase])}>
+                  <div className={cn("flex h-10 w-10 items-center justify-center rounded-xl tint-amber")}>
                     <Icon className="h-5 w-5" />
                   </div>
                   <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">

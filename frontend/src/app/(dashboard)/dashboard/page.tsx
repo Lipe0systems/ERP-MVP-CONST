@@ -348,7 +348,7 @@ export default function DashboardPage() {
           ].map((item) => (
             <div key={item.key} className="card-vivid rounded-2xl p-4">
               <p className="text-xs font-medium text-muted-foreground">Orç. {item.label}</p>
-              <p className={cn("mt-1 bg-gradient-to-br bg-clip-text text-3xl font-bold tabular-nums text-transparent", item.grad)}>
+              <p className={cn("mt-1 text-3xl font-bold tabular-nums tracking-tight")}>
                 {isLoading ? "—" : r.orcamentos[item.key]}
               </p>
             </div>
