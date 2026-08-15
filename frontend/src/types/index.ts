@@ -12,7 +12,7 @@ export interface Usuario {
   empresa_id: string;
   nome: string;
   email: string;
-  papel: "admin" | "membro" | "visualizador";
+  papel: PapelUsuario;
   ativo: boolean;
 }
 
@@ -559,11 +559,49 @@ export interface RecorrenciaUpdateInput {
 
 // === Usuários e Convites (D2) ===
 
-export const PAPEL_USUARIO = ["admin", "membro", "visualizador"] as const;
+export const PAPEL_USUARIO = ["admin", "membro", "visualizador", "instalador"] as const;
 export type PapelUsuario = (typeof PAPEL_USUARIO)[number];
 export const PAPEL_USUARIO_LABEL: Record<PapelUsuario, string> = {
-  admin: "Administrador", membro: "Membro", visualizador: "Visualizador",
+  admin: "Administrador", membro: "Membro", visualizador: "Visualizador", instalador: "Instalador",
 };
+
+// === Ordens de Serviço ===
+
+export const STATUS_ORDEM_SERVICO = ["pendente", "em_andamento", "concluida", "cancelada"] as const;
+export type StatusOrdemServico = (typeof STATUS_ORDEM_SERVICO)[number];
+export const STATUS_ORDEM_SERVICO_LABEL: Record<StatusOrdemServico, string> = {
+  pendente: "Pendente", em_andamento: "Em andamento", concluida: "Concluída", cancelada: "Cancelada",
+};
+
+export interface OrdemServico {
+  id: string;
+  numero: number;
+  titulo: string;
+  descricao?: string | null;
+  cliente_id?: string | null;
+  cliente_nome?: string | null;
+  obra_id?: string | null;
+  obra_nome?: string | null;
+  instalador_id?: string | null;
+  instalador_nome?: string | null;
+  status: StatusOrdemServico;
+  endereco?: string | null;
+  data_agendada?: string | null;
+  foto_conclusao_url?: string | null;
+  concluido_em?: string | null;
+  criado_em: string;
+}
+
+export interface OrdemServicoInput {
+  titulo: string;
+  descricao?: string | null;
+  cliente_id?: string | null;
+  obra_id?: string | null;
+  instalador_id?: string | null;
+  endereco?: string | null;
+  data_agendada?: string | null;
+  status?: StatusOrdemServico;
+}
 
 export const STATUS_CONVITE = ["pendente", "aceito", "expirado", "cancelado"] as const;
 export type StatusConvite = (typeof STATUS_CONVITE)[number];

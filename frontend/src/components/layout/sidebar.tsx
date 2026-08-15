@@ -9,11 +9,12 @@ import {
   Wallet, ShoppingCart, Boxes, NotebookPen, FileText,
   Truck, ClipboardList, ShieldCheck, ShoppingBag,
   CalendarDays, Settings, Database, Briefcase, Trash2, Workflow, X,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 const SAAS_ADMIN_EMAIL = "accuservpn@proton.me";
 
@@ -23,6 +24,7 @@ const navItems = [
   { href: "/workspace", label: "Workspace", icon: Workflow, cor: "purple" },
   { href: "/clientes", label: "Clientes", icon: Users, cor: "blue" },
   { href: "/obras", label: "Obras", icon: HardHat, cor: "amber" },
+  { href: "/ordens-servico", label: "Ordens de Serviço", icon: Wrench, cor: "amber" },
   { href: "/financeiro", label: "Financeiro", icon: Wallet, cor: "green" },
   { href: "/compras", label: "Compras", icon: ShoppingCart, cor: "purple" },
   { href: "/estoque", label: "Estoque", icon: Boxes, cor: "cyan" },
@@ -39,6 +41,15 @@ const navItems = [
   { href: "/lixeira", label: "Lixeira", icon: Trash2, cor: "amber" },
   { href: "/configuracoes", label: "Configurações", icon: Settings, cor: "amber" },
 ] as const;
+
+// Um usuário com papel "instalador" só enxerga este único módulo — o
+// backend já bloqueia qualquer outra rota para ele (core/security.py),
+// então esconder o resto do menu é sobre experiência, não sobre segurança
+// (a segurança de verdade não depende de esconder botão nenhum). Não inclui
+// /configuracoes: essa tela chama endpoints (ex.: listar usuários) que o
+// backend não libera para esse papel — mostrar o link levaria a uma tela
+// quebrada com erros 403, então nem aparece.
+const MODULOS_INSTALADOR = new Set(["/ordens-servico"]);
 
 type Cor = "amber" | "blue" | "green" | "purple" | "cyan";
 
@@ -115,6 +126,7 @@ function NavItem({ href, label, icon: Icon, cor, active, onClick, recolhida }: {
 function SidebarContent({ onNavigate, recolhida }: { onNavigate?: () => void; recolhida?: boolean }) {
   const pathname = usePathname();
   const [isAdmin, setIsAdmin] = useState(false);
+  const { isInstalador } = useCurrentUser();
 
   useEffect(() => {
     const supabase = createClient();
@@ -123,10 +135,14 @@ function SidebarContent({ onNavigate, recolhida }: { onNavigate?: () => void; re
     });
   }, []);
 
+  const itensVisiveis = isInstalador
+    ? navItems.filter((item) => MODULOS_INSTALADOR.has(item.href))
+    : navItems;
+
   return (
     <>
       <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        {navItems.map(({ href, label, icon: Icon, cor }) => (
+        {itensVisiveis.map(({ href, label, icon: Icon, cor }) => (
           <div key={href}>
             <NavItem
               href={href}
@@ -140,7 +156,7 @@ function SidebarContent({ onNavigate, recolhida }: { onNavigate?: () => void; re
           </div>
         ))}
 
-        {isAdmin && (
+        {isAdmin && !isInstalador && (
           <>
             <div className="my-3 flex items-center gap-2 px-3">
               <div className="h-px flex-1 bg-border" />

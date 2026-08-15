@@ -24,6 +24,7 @@ from app.infrastructure.database.models.orcamento_base_obra import OrcamentoBase
 from app.infrastructure.database.models.movimentacao_estoque import MovimentacaoEstoqueModel
 from app.infrastructure.database.models.processo_comercial import ProcessoComercialModel
 from app.infrastructure.database.models.historico_preco import HistoricoPrecoEstoqueModel
+from app.infrastructure.database.models.ordem_servico import OrdemServicoModel
 from app.infrastructure.database.models.recorrencia import RecorrenciaFinanceiraModel
 from app.infrastructure.database.models.auditoria import RegistroAuditoriaModel
 from app.infrastructure.database.models.venda import VendaModel, ParcelaVendaModel
@@ -54,6 +55,7 @@ __all__ = [
     "ContaBancariaModel", "LancamentoBancarioModel",
     "DocumentoModel",
     "FornecedorModel",
+    "OrdemServicoModel",
 ]
 
 # Registra os eventos de soft delete global (DEVE vir após todos os models,

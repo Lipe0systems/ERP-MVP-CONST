@@ -129,6 +129,7 @@ def _verificar_token_no_supabase(token: str) -> dict[str, Any]:
 
 
 def get_current_user(
+    request: Request,
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ) -> CurrentUser:
@@ -205,6 +206,25 @@ def get_current_user(
             usuario.id,
             empresa_id,
         )
+
+    # Restrição de módulo para o papel "instalador": só pode acessar
+    # Ordens de Serviço, mais um punhado de endpoints de conta que
+    # precisam continuar funcionando para qualquer usuário logado (ver
+    # sessão do dashboard e o gate de aceite de termos). Centralizado
+    # aqui de propósito — a alternativa seria repetir essa checagem em
+    # cada um dos ~30 routers do sistema, com risco real de esquecer um.
+    if usuario.papel == "instalador":
+        caminho = request.url.path
+        liberado_para_instalador = (
+            caminho.startswith(f"{settings.API_PREFIX}/ordens-servico")
+            or caminho == f"{settings.API_PREFIX}/auth/me"
+            or caminho.startswith(f"{settings.API_PREFIX}/usuarios/me/")
+        )
+        if not liberado_para_instalador:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Este usuário só tem acesso ao módulo de Ordens de Serviço.",
+            )
 
     return CurrentUser(
         id=str(usuario.id),

@@ -36,6 +36,7 @@ const PAPEL_COLOR: Record<PapelUsuario, string> = {
   admin: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300",
   membro: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
   visualizador: "bg-muted text-muted-foreground",
+  instalador: "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
 };
 
 const schema = z.object({
@@ -237,6 +238,7 @@ export default function ConfiguracoesPage() {
             { papel: "admin" as const, desc: "Acesso total: pode convidar usuários, alterar papéis, e gerenciar todos os módulos." },
             { papel: "membro" as const, desc: "Acesso operacional: pode criar, editar e visualizar registros em todos os módulos." },
             { papel: "visualizador" as const, desc: "Acesso somente leitura: visualiza dados mas não pode criar ou editar." },
+            { papel: "instalador" as const, desc: "Acesso restrito: só vê as Ordens de Serviço atribuídas a ele mesmo, e pode marcá-las como concluídas com foto." },
           ].map(({ papel, desc }) => (
             <div key={papel} className="flex items-start gap-3">
               <span className={cn("mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-xs font-medium", PAPEL_COLOR[papel])}>

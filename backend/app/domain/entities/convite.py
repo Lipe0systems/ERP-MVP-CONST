@@ -23,11 +23,13 @@ class PapelUsuario(str, Enum):
     ADMIN = "admin"
     MEMBRO = "membro"
     VISUALIZADOR = "visualizador"
+    INSTALADOR = "instalador"
 
 PAPEL_LABEL = {
     PapelUsuario.ADMIN: "Administrador",
     PapelUsuario.MEMBRO: "Membro",
     PapelUsuario.VISUALIZADOR: "Visualizador",
+    PapelUsuario.INSTALADOR: "Instalador",
 }
 
 
