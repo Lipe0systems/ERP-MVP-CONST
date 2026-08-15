@@ -3,8 +3,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import {
-  AlertTriangle, ArrowDownCircle, ArrowUpCircle, Boxes,
-  CheckCircle2, HardHat, Landmark, Settings, Users, TrendingUp,
+  AlertTriangle, ArrowDownCircle, ArrowUpCircle, Boxes, CalendarDays,
+  CheckCircle2, HardHat, Landmark, Settings, Users,
 } from "lucide-react";
 import {
   Area, AreaChart, CartesianGrid, Cell, Pie, PieChart,
@@ -13,7 +13,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatCard } from "@/components/ui/stat-card";
+import { KpiCard } from "@/components/ui/kpi-card";
 import { SaudeObrasWidget } from "@/components/dashboard/saude-obras-widget";
 import { LucroWidget } from "@/components/dashboard/lucro-widget";
 import { AnaliseCategoriaWidget } from "@/components/dashboard/analise-categoria-widget";
@@ -109,21 +109,23 @@ export default function DashboardPage() {
 
   return (
     <div className="relative space-y-6">
-      {/* Mesh gradient ambiente de fundo */}
-      <div className="pointer-events-none fixed inset-0 -z-10 mesh-bg" />
-
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* Header — sem mesh de fundo e sem texto em gradiente: a referência
+          usa fundo liso e deixa o destaque para os números. */}
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Olá! Aqui está seu <span className="text-gradient-brand">resumo</span>
-          </h1>
-          <p className="text-sm text-muted-foreground">Visão geral das suas obras e finanças</p>
+          <h1 className="t-page-title">Olá!</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Aqui está o resumo da sua operação</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => setConfigurando((v) => !v)}>
-          <Settings className="mr-2 h-4 w-4" />
-          {configurando ? "Feito" : "Personalizar"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <span className="hidden items-center gap-2 rounded-lg border px-3 py-1.5 text-[13px] text-muted-foreground sm:inline-flex">
+            <CalendarDays className="h-3.5 w-3.5" />
+            {new Date().toLocaleDateString("pt-BR", { day: "numeric", month: "long", year: "numeric" })}
+          </span>
+          <Button variant="outline" size="sm" onClick={() => setConfigurando((v) => !v)}>
+            <Settings className="mr-2 h-4 w-4" />
+            {configurando ? "Feito" : "Personalizar"}
+          </Button>
+        </div>
       </div>
 
       {/* Painel de personalização */}
@@ -137,9 +139,9 @@ export default function DashboardPage() {
                   key={id}
                   onClick={() => toggleWidget(id)}
                   className={cn(
-                    "rounded-full border px-3 py-1 text-xs font-medium transition-all duration-150 ease-ui",
+                    "rounded-full border px-3 py-1 text-xs font-medium transition-[background-color,color,border-color] duration-150 ease-ui",
                     widgets.includes(id)
-                      ? "border-transparent bg-grad-brand text-white shadow-sm"
+                      ? "border-transparent bg-primary text-primary-foreground"
                       : "border-muted text-muted-foreground hover:border-muted-foreground"
                   )}
                 >
@@ -151,58 +153,62 @@ export default function DashboardPage() {
         </Card>
       )}
 
-      {/* Saldo — destaque grande com gradiente */}
-      {show("saldo_bancario") && (
-        <div className="relative overflow-hidden rounded-2xl bg-grad-brand p-6 text-white glow-brand">
-          <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10 blur-2xl animate-float" />
-          <div className="pointer-events-none absolute -bottom-16 -left-8 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
-          <div className="relative flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2 text-white/90">
-                <Landmark className="h-4 w-4" />
-                <span className="text-sm font-medium">Saldo total em caixa</span>
-              </div>
-              <p className="mt-2 text-4xl font-bold tabular-nums tracking-tight">
-                {isLoading ? "—" : formatMoeda(r.saldo_bancario)}
-              </p>
-            </div>
-            <div className="hidden sm:flex h-16 w-16 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm">
-              <TrendingUp className="h-8 w-8" />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Cards de indicadores — grid vivid */}
-      {(show("obras_ativas") || show("obras_concluidas") || show("clientes") || show("contas_pagar") || show("contas_receber")) && (
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 xl:grid-cols-5 stagger-children">
-          {show("obras_ativas") && (
-            <StatCard label="Obras ativas" value={isLoading ? "—" : r.obras_ativas} icon={HardHat} cor="brand" loading={isLoading} />
-          )}
-          {show("obras_concluidas") && (
-            <StatCard label="Concluídas" value={isLoading ? "—" : r.obras_concluidas} icon={CheckCircle2} cor="green" loading={isLoading} />
-          )}
-          {show("clientes") && (
-            <StatCard label="Clientes" value={isLoading ? "—" : r.clientes} icon={Users} cor="blue" loading={isLoading} />
-          )}
-          {show("contas_pagar") && (
-            <StatCard label="A pagar" value={isLoading ? "—" : formatMoeda(r.contas_a_pagar)} icon={ArrowDownCircle} cor="red" loading={isLoading} />
+      {/* KPIs — o antigo banner laranja gigante do saldo virou o primeiro
+          KPI da faixa. Motivo (briefing): "laranja é acento, não usar
+          grandes áreas laranjas". O saldo continua sendo o dado mais
+          importante, mas agora pelo tamanho do número, não pelo tamanho
+          do bloco colorido. */}
+      {(show("saldo_bancario") || show("contas_receber") || show("contas_pagar") ||
+        show("obras_ativas") || show("clientes") || show("obras_concluidas")) && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 stagger-children">
+          {show("saldo_bancario") && (
+            <KpiCard
+              label="Saldo em caixa" icon={Landmark} tint="amber" loading={isLoading}
+              valor={isLoading ? "—" : formatMoeda(r.saldo_bancario)}
+            />
           )}
           {show("contas_receber") && (
-            <StatCard label="A receber" value={isLoading ? "—" : formatMoeda(r.contas_a_receber)} icon={ArrowUpCircle} cor="green" loading={isLoading} />
+            <KpiCard
+              label="A receber" icon={ArrowUpCircle} tint="green" loading={isLoading}
+              valor={isLoading ? "—" : formatMoeda(r.contas_a_receber)}
+            />
+          )}
+          {show("contas_pagar") && (
+            <KpiCard
+              label="A pagar" icon={ArrowDownCircle} tint="red" loading={isLoading}
+              valor={isLoading ? "—" : formatMoeda(r.contas_a_pagar)}
+            />
+          )}
+          {show("obras_ativas") && (
+            <KpiCard
+              label="Obras ativas" icon={HardHat} tint="blue" loading={isLoading}
+              valor={isLoading ? "—" : String(r.obras_ativas)}
+            />
+          )}
+          {show("clientes") && (
+            <KpiCard
+              label="Clientes" icon={Users} tint="purple" loading={isLoading}
+              valor={isLoading ? "—" : String(r.clientes)}
+            />
+          )}
+          {show("obras_concluidas") && (
+            <KpiCard
+              label="Obras concluídas" icon={CheckCircle2} tint="green" loading={isLoading}
+              valor={isLoading ? "—" : String(r.obras_concluidas)}
+            />
           )}
         </div>
       )}
 
       {/* Alertas */}
       {show("alerta_estoque") && !isLoading && r.estoque_abaixo_minimo > 0 && (
-        <div className="flex items-center justify-between overflow-hidden rounded-2xl border border-red-500/20 bg-gradient-to-r from-red-500/10 to-rose-500/5 p-4">
+        <div className="panel flex items-center justify-between gap-3 p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-lg">
+            <div className="tint-red flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
               <Boxes className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-red-700 dark:text-red-400">Estoque abaixo do mínimo</p>
+              <p className="text-sm font-medium">Estoque abaixo do mínimo</p>
               <p className="text-xs text-muted-foreground">{r.estoque_abaixo_minimo} item{r.estoque_abaixo_minimo > 1 ? "ns" : ""} precisam de reposição</p>
             </div>
           </div>
@@ -211,10 +217,10 @@ export default function DashboardPage() {
       )}
 
       {show("alerta_vencimentos") && !isLoading && totalAlerts > 0 && (
-        <Card className="overflow-hidden border-amber-500/20 bg-gradient-to-r from-amber-500/[0.07] to-orange-500/[0.03]">
+        <Card className="overflow-hidden">
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm text-amber-700 dark:text-amber-400">
-              <AlertTriangle className="h-4 w-4" />
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <AlertTriangle className="h-4 w-4 text-amber-500" />
               {totalAlerts} conta{totalAlerts > 1 ? "s" : ""} vencendo em 7 dias
             </CardTitle>
           </CardHeader>
