@@ -97,7 +97,7 @@ function NavItem({ href, label, icon: Icon, cor, active, onClick, recolhida }: {
       {/* Pílula indicadora à esquerda, com gradiente */}
       <span
         className={cn(
-          "absolute left-0 top-1/2 h-6 -translate-y-1/2 rounded-r-full bg-grad-brand transition-all duration-200 [transition-timing-function:cubic-bezier(0.23,1,0.32,1)]",
+          "absolute left-0 top-1/2 h-6 -translate-y-1/2 rounded-r-full bg-grad-brand transition-[width,opacity] duration-200 [transition-timing-function:cubic-bezier(0.23,1,0.32,1)]",
           active ? "w-1 opacity-100" : "w-0 opacity-0"
         )}
       />
@@ -105,7 +105,7 @@ function NavItem({ href, label, icon: Icon, cor, active, onClick, recolhida }: {
       {/* Ícone em mini-cápsula que ganha glow quando ativo */}
       <span
         className={cn(
-          "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-all duration-150",
+          "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-[background-color,box-shadow] duration-150",
           active
             ? cn("bg-card", GLOW_ATIVO[cor])
             : "group-hover:bg-card/60"

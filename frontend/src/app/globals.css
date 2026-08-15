@@ -28,6 +28,17 @@
   --ring: 24 95% 53%;
   --radius: 0.875rem;
 
+  /* Escala de raio — o protótipo usa cantos generosos nos painéis e
+     um pouco menos nos itens internos, criando hierarquia sutil. */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+
+  /* Superfícies em camadas (equivalente light do que existe no .dark) */
+  --surface-1: 0 0% 100%;
+  --surface-2: 240 15% 98%;
+  --surface-hover: 240 15% 95%;
+
   /* ── Cores dos módulos (para glow / accent por área) ───────────────────── */
   --c-amber: 24 95% 53%;
   --c-blue: 217 91% 60%;
@@ -58,25 +69,71 @@
 }
 
 .dark {
-  --background: 240 25% 6%;
-  --foreground: 240 15% 96%;
-  --card: 240 20% 9%;
-  --card-foreground: 240 15% 96%;
+  /* Grafite neutro, não azulado. O protótipo usa cinza-carvão quase sem
+     matiz — a paleta antiga (hue 240, sat 25%) puxava para o roxo/azul e
+     deixava a interface com cara de "dashboard gamer" em vez de ERP
+     premium. Saturação baixa (8-13%) mantém neutro sem ficar chapado. */
+  --background: 220 13% 6%;
+  --foreground: 220 14% 96%;
+  --card: 220 12% 10%;
+  --card-foreground: 220 14% 96%;
   --primary: 24 95% 55%;
-  --primary-foreground: 240 25% 6%;
-  --secondary: 240 15% 14%;
-  --secondary-foreground: 240 15% 96%;
-  --muted: 240 15% 14%;
-  --muted-foreground: 240 10% 60%;
-  --accent: 24 60% 16%;
-  --accent-foreground: 24 95% 70%;
+  --primary-foreground: 220 13% 6%;
+  --secondary: 220 11% 14%;
+  --secondary-foreground: 220 14% 96%;
+  --muted: 220 11% 14%;
+  --muted-foreground: 220 9% 60%;
+  --accent: 24 45% 15%;
+  --accent-foreground: 24 95% 68%;
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
-  --border: 240 15% 18%;
-  --input: 240 15% 18%;
+  /* Bordas quase invisíveis — no protótipo elas só insinuam a separação;
+     a hierarquia vem da diferença de superfície, não de linhas marcadas. */
+  --border: 220 10% 16%;
+  --input: 220 10% 18%;
   --ring: 24 95% 55%;
 
+  /* Superfícies em camadas: é assim que o protótipo cria profundidade sem
+     empilhar card dentro de card. surface-1 = painel; surface-2 = item
+     dentro do painel (linha de lista, KPI aninhado). */
+  --surface-1: 220 12% 10%;
+  --surface-2: 220 11% 13%;
+  --surface-hover: 220 11% 16%;
+
   --grad-brand-soft: linear-gradient(135deg, hsl(38 95% 55% / 0.16), hsl(20 90% 52% / 0.16));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TINTS DE ACENTO — o padrão de cor do protótipo
+   ═══════════════════════════════════════════════════════════════════════════
+   As cores além do laranja (azul, roxo, verde, vermelho) NÃO desapareceram,
+   mas mudaram de papel: deixaram de ser gradientes e áreas grandes, e viraram
+   apenas fundo tingido + ícone colorido em quadradinhos pequenos, e badges de
+   status. É o que mantém a interface legível sem virar arco-íris.
+
+   Uso: <div class="tint-blue"> → fundo suave + cor do ícone já aplicados.  */
+@layer components {
+  .tint-amber  { background: hsl(24 95% 53% / 0.12);  color: hsl(24 95% 58%); }
+  .tint-blue   { background: hsl(217 91% 60% / 0.12); color: hsl(217 91% 66%); }
+  .tint-green  { background: hsl(142 71% 45% / 0.12); color: hsl(142 66% 52%); }
+  .tint-purple { background: hsl(262 83% 63% / 0.12); color: hsl(262 83% 70%); }
+  .tint-red    { background: hsl(0 84% 60% / 0.12);   color: hsl(0 84% 66%); }
+  .tint-neutral{ background: hsl(var(--muted));       color: hsl(var(--muted-foreground)); }
+
+  /* Superfícies — substituem o uso indiscriminado de .card-vivid.
+     .panel  = bloco de conteúdo de primeiro nível (o "card" do protótipo)
+     .row-surface = item dentro de um painel, sem virar card aninhado */
+  .panel {
+    background: hsl(var(--surface-1));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius-lg);
+  }
+  .row-surface {
+    background: hsl(var(--surface-2));
+    border-radius: var(--radius-md);
+    transition: background-color var(--duration-fast) var(--ease-out);
+  }
+  .row-surface:hover { background: hsl(var(--surface-hover)); }
 }
 
 @layer base {
@@ -91,6 +148,25 @@
   h1 { letter-spacing: -0.025em; }
   h2 { letter-spacing: -0.02em; }
   h3 { letter-spacing: -0.015em; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HIERARQUIA TIPOGRÁFICA
+   ═══════════════════════════════════════════════════════════════════════════
+   Regra do redesign: o VALOR domina, o label serve. No protótipo, o número
+   financeiro é ~3x o tamanho do rótulo e muito mais pesado — é o número que
+   a pessoa veio ver, não a palavra "Saldo em caixa".
+
+   Números usam tabular-nums (já global) + tracking negativo: dígitos largos
+   com espaçamento apertado leem como dado financeiro, não como texto.       */
+@layer components {
+  .t-page-title   { font-size: 1.75rem; font-weight: 600; letter-spacing: -0.025em; line-height: 1.2; }
+  .t-section      { font-size: 1.0625rem; font-weight: 600; letter-spacing: -0.015em; }
+  .t-label        { font-size: 0.8125rem; font-weight: 500; color: hsl(var(--muted-foreground)); }
+  .t-value        { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1.15; }
+  .t-value-sm     { font-size: 1.25rem;  font-weight: 700; letter-spacing: -0.02em; }
+  .t-caption      { font-size: 0.75rem; color: hsl(var(--muted-foreground)); }
+  .t-trend        { font-size: 0.75rem; font-weight: 600; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

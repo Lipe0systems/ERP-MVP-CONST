@@ -32,7 +32,7 @@ export function StatCard({ label, value, icon: Icon, cor = "brand", hint, loadin
     )}>
       {/* Blob decorativo no canto */}
       <div className={cn(
-        "pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-[0.08] blur-2xl transition-opacity duration-500 group-hover:opacity-20",
+        "pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-[0.08] blur-2xl transition-opacity duration-300 group-hover:opacity-20",
         c.grad
       )} />
 
