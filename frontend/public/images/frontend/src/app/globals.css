@@ -1,0 +1,382 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CONSTRUTEC — Design System "Vivid"
+   Gradientes, cores vivas, profundidade (glow + sombras coloridas)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Base ──────────────────────────────────────────────────────────────── */
+  --background: 240 20% 99%;
+  --foreground: 224 20% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 224 20% 12%;
+  --primary: 24 95% 53%;               /* âmbar/laranja marca */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 15% 96%;
+  --secondary-foreground: 224 20% 12%;
+  --muted: 240 15% 96%;
+  --muted-foreground: 224 10% 46%;
+  --accent: 24 95% 96%;
+  --accent-foreground: 24 95% 30%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 240 12% 90%;
+  --input: 240 12% 90%;
+  --ring: 24 95% 53%;
+  --radius: 0.875rem;
+
+  /* ── Cores dos módulos (para glow / accent por área) ───────────────────── */
+  --c-amber: 24 95% 53%;
+  --c-blue: 217 91% 60%;
+  --c-green: 142 71% 45%;
+  --c-purple: 262 83% 63%;
+  --c-pink: 330 81% 60%;
+  --c-cyan: 189 94% 43%;
+  --c-red: 0 84% 60%;
+  --c-indigo: 243 75% 59%;
+
+  /* ── Gradientes de marca ───────────────────────────────────────────────── */
+  --grad-brand: linear-gradient(135deg, hsl(38 95% 55%), hsl(20 90% 52%));
+  --grad-brand-soft: linear-gradient(135deg, hsl(38 95% 55% / 0.12), hsl(20 90% 52% / 0.12));
+  --grad-blue: linear-gradient(135deg, hsl(217 91% 60%), hsl(243 75% 59%));
+  --grad-green: linear-gradient(135deg, hsl(142 71% 45%), hsl(160 84% 39%));
+  --grad-purple: linear-gradient(135deg, hsl(262 83% 63%), hsl(330 81% 60%));
+  --grad-cyan: linear-gradient(135deg, hsl(189 94% 43%), hsl(217 91% 60%));
+
+  /* ── Easing ────────────────────────────────────────────────────────────── */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --duration-fast: 120ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+}
+
+.dark {
+  --background: 240 25% 6%;
+  --foreground: 240 15% 96%;
+  --card: 240 20% 9%;
+  --card-foreground: 240 15% 96%;
+  --primary: 24 95% 55%;
+  --primary-foreground: 240 25% 6%;
+  --secondary: 240 15% 14%;
+  --secondary-foreground: 240 15% 96%;
+  --muted: 240 15% 14%;
+  --muted-foreground: 240 10% 60%;
+  --accent: 24 60% 16%;
+  --accent-foreground: 24 95% 70%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 240 15% 18%;
+  --input: 240 15% 18%;
+  --ring: 24 95% 55%;
+
+  --grad-brand-soft: linear-gradient(135deg, hsl(38 95% 55% / 0.16), hsl(20 90% 52% / 0.16));
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1, "tnum" 1;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1 { letter-spacing: -0.025em; }
+  h2 { letter-spacing: -0.02em; }
+  h3 { letter-spacing: -0.015em; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UTILITIES VISUAIS
+   ═══════════════════════════════════════════════════════════════════════════ */
+@layer utilities {
+
+  /* ── Texto com gradiente ───────────────────────────────────────────────── */
+  .text-gradient-brand {
+    background: var(--grad-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .text-gradient-blue {
+    background: var(--grad-blue);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+  .text-gradient-green {
+    background: var(--grad-green);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+  .text-gradient-purple {
+    background: var(--grad-purple);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+
+  /* ── Fundo gradiente de marca ──────────────────────────────────────────── */
+  .bg-grad-brand { background: var(--grad-brand); }
+  .bg-grad-blue { background: var(--grad-blue); }
+  .bg-grad-green { background: var(--grad-green); }
+  .bg-grad-purple { background: var(--grad-purple); }
+  .bg-grad-cyan { background: var(--grad-cyan); }
+  .bg-grad-brand-soft { background: var(--grad-brand-soft); }
+
+  /* ── Glow (sombra colorida) ────────────────────────────────────────────── */
+  .glow-brand { box-shadow: 0 8px 32px -8px hsl(var(--c-amber) / 0.45); }
+  .glow-blue { box-shadow: 0 8px 32px -8px hsl(var(--c-blue) / 0.45); }
+  .glow-green { box-shadow: 0 8px 32px -8px hsl(var(--c-green) / 0.45); }
+  .glow-purple { box-shadow: 0 8px 32px -8px hsl(var(--c-purple) / 0.45); }
+  .glow-sm { box-shadow: 0 4px 16px -4px hsl(var(--c-amber) / 0.3); }
+
+  /* ── Card premium com hover elevado ────────────────────────────────────── */
+  /* Agora é um material de vidro (mesma linguagem de .glass): refrata o
+     mesh colorido do fundo em vez de ser um retângulo branco sólido.
+     Todos os cards do sistema usam esta classe, então a mudança é
+     consistente em todos os módulos de uma vez. */
+  .card-vivid {
+    position: relative;
+    /* !important necessário: vários lugares usam <Card className="card-vivid">,
+       e o componente Card do shadcn já traz `bg-card` (sólido). Sem isto, qual
+       das duas vence dependeria da ordem no CSS final — o card apareceria
+       sólido em uns lugares e de vidro em outros, de forma imprevisível. */
+    background: linear-gradient(
+      180deg,
+      hsl(var(--card) / 0.72) 0%,
+      hsl(var(--card) / 0.52) 100%
+    ) !important;
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid hsl(0 0% 100% / 0.55);
+    box-shadow:
+      0 8px 32px hsl(240 20% 12% / 0.10),
+      inset 0 1px 1px hsl(0 0% 100% / 0.75);
+    transition: transform var(--duration-normal) var(--ease-out),
+                box-shadow var(--duration-normal) var(--ease-out);
+  }
+  /* Reflexo de luz na aresta superior (ver comentário em .glass) */
+  .card-vivid::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 12%;
+    right: 12%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(0 0% 100% / 0.9),
+      transparent
+    );
+    pointer-events: none;
+  }
+  .card-vivid:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 16px 48px hsl(240 20% 12% / 0.18),
+      inset 0 1px 1px hsl(0 0% 100% / 0.8);
+  }
+
+  /* ── Mesh gradient de fundo (decoração ambiente) ───────────────────────── */
+  /* Intensidade elevada de propósito: as superfícies de vidro (.glass-*)
+     refratam ESTE fundo. Com as opacidades antigas (0.06-0.10) o vidro
+     ficava sobre quase-branco e o efeito não aparecia — vidro sobre fundo
+     liso não lê como vidro. */
+  .mesh-bg {
+    background-image:
+      radial-gradient(at 15% 15%, hsl(24 95% 60% / 0.22) 0px, transparent 55%),
+      radial-gradient(at 85% 10%, hsl(217 91% 60% / 0.18) 0px, transparent 55%),
+      radial-gradient(at 75% 85%, hsl(262 83% 63% / 0.16) 0px, transparent 55%),
+      radial-gradient(at 10% 90%, hsl(142 71% 45% / 0.12) 0px, transparent 55%);
+    background-attachment: fixed;
+  }
+
+  /* ── Materiais de vidro (padrão Apple: peso comunica hierarquia) ────────
+     Duas classes, de propósito:
+       .glass       → material LEVE, para superfícies de conteúdo (cards,
+                      painéis). Deixa o mesh colorido atravessar e clarear.
+       .glass-heavy → material PESADO, para regiões ESTRUTURAIS (sidebar,
+                      header). Mais opaco e com blur maior, separa a região
+                      do conteúdo.
+     Regra importante da linguagem: NUNCA empilhar .glass dentro de .glass —
+     vidro claro sobre vidro claro destrói a legibilidade. Dentro de um card
+     de vidro, use fundos sólidos sutis (bg-white/40), não outra camada.  */
+  .glass {
+    position: relative;
+    background: linear-gradient(
+      180deg,
+      hsl(var(--card) / 0.72) 0%,
+      hsl(var(--card) / 0.52) 100%
+    );
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid hsl(0 0% 100% / 0.55);
+    box-shadow:
+      0 8px 32px hsl(240 20% 12% / 0.10),
+      inset 0 1px 1px hsl(0 0% 100% / 0.75);
+  }
+  /* Reflexo de luz na aresta superior — é o detalhe que faz ler como vidro
+     físico em vez de "retângulo desfocado". Vem da própria documentação de
+     materiais da Apple (aresta clara = luz batendo no material). */
+  .glass::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 12%;
+    right: 12%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(0 0% 100% / 0.9),
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  .glass-heavy {
+    position: relative;
+    background: linear-gradient(
+      180deg,
+      hsl(var(--card) / 0.9) 0%,
+      hsl(var(--card) / 0.78) 100%
+    );
+    backdrop-filter: blur(32px) saturate(150%);
+    -webkit-backdrop-filter: blur(32px) saturate(150%);
+    border: 1px solid hsl(0 0% 100% / 0.35);
+    /* Superfície maior lê como mais espessa: blur e sombra mais fortes. */
+    box-shadow:
+      0 12px 40px hsl(240 20% 12% / 0.14),
+      inset 0 1px 1px hsl(0 0% 100% / 0.4);
+  }
+
+  /* Acessibilidade — o vidro é decorativo, nunca pode custar legibilidade.
+     Quem pede menos transparência recebe superfície sólida; quem pede mais
+     contraste recebe borda definida. */
+  @media (prefers-reduced-transparency: reduce) {
+    .glass,
+    .glass-heavy,
+    .card-vivid {
+      background: hsl(var(--card)) !important;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border-color: hsl(var(--border));
+    }
+    .glass::before,
+    .card-vivid::before { display: none; }
+    .mesh-bg { background-image: none; }
+  }
+  @media (prefers-contrast: more) {
+    .glass,
+    .glass-heavy,
+    .card-vivid {
+      background: hsl(var(--card)) !important;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border-color: hsl(var(--foreground) / 0.5);
+    }
+  }
+
+  /* ── Borda com gradiente ───────────────────────────────────────────────── */
+  .border-gradient {
+    position: relative;
+    background: hsl(var(--card));
+    border-radius: var(--radius);
+  }
+  .border-gradient::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: var(--grad-brand);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .ease-ui { transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1); }
+  .ease-spring { transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ANIMAÇÕES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.page-enter { animation: page-in var(--duration-slow) var(--ease-out) both; }
+
+@keyframes item-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.stagger-children > * { animation: item-in 300ms var(--ease-out) both; }
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 40ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 80ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 160ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 200ms; }
+.stagger-children > *:nth-child(n+7) { animation-delay: 240ms; }
+
+/* Glow pulsante suave para elementos de destaque */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+.animate-glow { animation: glow-pulse 3s ease-in-out infinite; }
+
+/* Shimmer para skeletons premium */
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg,
+    hsl(var(--muted)) 0%,
+    hsl(var(--muted) / 0.5) 50%,
+    hsl(var(--muted)) 100%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+/* Blob flutuante animado (decoração de fundo) */
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -30px) scale(1.05); }
+  66% { transform: translate(-20px, 20px) scale(0.95); }
+}
+.animate-float { animation: float 20s ease-in-out infinite; }
+
+/* Scrollbar */
+/* Scrollbars discretas: a rolagem continua funcionando normalmente
+   (mouse, trackpad, teclado, touch) — só a barra visual fica oculta. */
+* {
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* Edge/IE legado */
+}
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;               /* Chrome, Safari, Edge Chromium */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter, .stagger-children > *, .animate-float, .animate-glow, .shimmer {
+    animation: none; opacity: 1; transform: none;
+  }
+  .card-vivid:hover { transform: none; }
+  * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
