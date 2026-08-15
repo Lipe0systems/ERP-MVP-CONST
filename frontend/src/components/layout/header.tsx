@@ -22,7 +22,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   }
 
   return (
-    <header className="flex h-14 items-center justify-between border-b bg-card/80 backdrop-blur-sm px-5 sticky top-0 z-30">
+    <header className="glass-heavy flex h-14 items-center justify-between border-x-0 border-t-0 px-5 sticky top-0 z-30">
       <div className="flex items-center gap-3">
         <Button
           variant="ghost"

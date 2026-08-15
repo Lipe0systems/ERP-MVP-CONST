@@ -186,7 +186,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
   return (
     <>
       {/* Desktop — fundo com gradiente vertical sutil + mesh no topo */}
-      <aside className="relative hidden w-60 shrink-0 flex-col border-r border-border/60 md:flex bg-gradient-to-b from-card to-secondary/40">
+      <aside className="glass-heavy relative hidden w-60 shrink-0 flex-col border-y-0 border-l-0 md:flex">
         {/* Glow ambiente no topo da sidebar */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-amber-500/[0.06] to-transparent" />
         <div className="relative flex min-h-0 flex-1 flex-col">
@@ -203,7 +203,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
             onClick={onCloseMobile}
             aria-hidden="true"
           />
-          <aside className="absolute inset-y-0 left-0 flex w-60 flex-col border-r border-border/60 bg-gradient-to-b from-card to-secondary/40 animate-in slide-in-from-left duration-300 [animation-timing-function:cubic-bezier(0.32,0.72,0,1)]">
+          <aside className="glass-heavy absolute inset-y-0 left-0 flex w-60 flex-col border-y-0 border-l-0 animate-in slide-in-from-left duration-300 [animation-timing-function:cubic-bezier(0.32,0.72,0,1)]">
             <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-amber-500/[0.06] to-transparent" />
             <div className="relative flex h-14 items-center justify-between gap-2 border-b border-border/60 px-5">
               <div className="flex items-center gap-2.5">

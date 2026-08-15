@@ -138,38 +138,151 @@
   .glow-sm { box-shadow: 0 4px 16px -4px hsl(var(--c-amber) / 0.3); }
 
   /* ── Card premium com hover elevado ────────────────────────────────────── */
+  /* Agora é um material de vidro (mesma linguagem de .glass): refrata o
+     mesh colorido do fundo em vez de ser um retângulo branco sólido.
+     Todos os cards do sistema usam esta classe, então a mudança é
+     consistente em todos os módulos de uma vez. */
   .card-vivid {
     position: relative;
-    background: hsl(var(--card));
-    border: 1px solid hsl(var(--border));
+    /* !important necessário: vários lugares usam <Card className="card-vivid">,
+       e o componente Card do shadcn já traz `bg-card` (sólido). Sem isto, qual
+       das duas vence dependeria da ordem no CSS final — o card apareceria
+       sólido em uns lugares e de vidro em outros, de forma imprevisível. */
+    background: linear-gradient(
+      180deg,
+      hsl(var(--card) / 0.72) 0%,
+      hsl(var(--card) / 0.52) 100%
+    ) !important;
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid hsl(0 0% 100% / 0.55);
     box-shadow:
-      0 1px 3px hsl(240 20% 12% / 0.04),
-      0 8px 24px -12px hsl(240 20% 12% / 0.08);
+      0 8px 32px hsl(240 20% 12% / 0.10),
+      inset 0 1px 1px hsl(0 0% 100% / 0.75);
     transition: transform var(--duration-normal) var(--ease-out),
                 box-shadow var(--duration-normal) var(--ease-out);
+  }
+  /* Reflexo de luz na aresta superior (ver comentário em .glass) */
+  .card-vivid::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 12%;
+    right: 12%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(0 0% 100% / 0.9),
+      transparent
+    );
+    pointer-events: none;
   }
   .card-vivid:hover {
     transform: translateY(-2px);
     box-shadow:
-      0 1px 3px hsl(240 20% 12% / 0.05),
-      0 16px 40px -16px hsl(240 20% 12% / 0.16);
+      0 16px 48px hsl(240 20% 12% / 0.18),
+      inset 0 1px 1px hsl(0 0% 100% / 0.8);
   }
 
   /* ── Mesh gradient de fundo (decoração ambiente) ───────────────────────── */
+  /* Intensidade elevada de propósito: as superfícies de vidro (.glass-*)
+     refratam ESTE fundo. Com as opacidades antigas (0.06-0.10) o vidro
+     ficava sobre quase-branco e o efeito não aparecia — vidro sobre fundo
+     liso não lê como vidro. */
   .mesh-bg {
     background-image:
-      radial-gradient(at 20% 20%, hsl(24 95% 60% / 0.10) 0px, transparent 50%),
-      radial-gradient(at 80% 10%, hsl(217 91% 60% / 0.08) 0px, transparent 50%),
-      radial-gradient(at 70% 80%, hsl(262 83% 63% / 0.07) 0px, transparent 50%),
-      radial-gradient(at 10% 90%, hsl(142 71% 45% / 0.06) 0px, transparent 50%);
+      radial-gradient(at 12% 12%, hsl(24 95% 58% / 0.38) 0px, transparent 50%),
+      radial-gradient(at 88% 8%, hsl(217 91% 60% / 0.32) 0px, transparent 50%),
+      radial-gradient(at 78% 88%, hsl(262 83% 63% / 0.30) 0px, transparent 50%),
+      radial-gradient(at 8% 92%, hsl(142 71% 45% / 0.22) 0px, transparent 50%),
+      radial-gradient(at 50% 50%, hsl(38 92% 55% / 0.18) 0px, transparent 60%);
   }
 
-  /* ── Glassmorphism ─────────────────────────────────────────────────────── */
+  /* ── Materiais de vidro (padrão Apple: peso comunica hierarquia) ────────
+     Duas classes, de propósito:
+       .glass       → material LEVE, para superfícies de conteúdo (cards,
+                      painéis). Deixa o mesh colorido atravessar e clarear.
+       .glass-heavy → material PESADO, para regiões ESTRUTURAIS (sidebar,
+                      header). Mais opaco e com blur maior, separa a região
+                      do conteúdo.
+     Regra importante da linguagem: NUNCA empilhar .glass dentro de .glass —
+     vidro claro sobre vidro claro destrói a legibilidade. Dentro de um card
+     de vidro, use fundos sólidos sutis (bg-white/40), não outra camada.  */
   .glass {
-    background: hsl(var(--card) / 0.65);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid hsl(0 0% 100% / 0.12);
+    position: relative;
+    background: linear-gradient(
+      180deg,
+      hsl(var(--card) / 0.72) 0%,
+      hsl(var(--card) / 0.52) 100%
+    );
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid hsl(0 0% 100% / 0.55);
+    box-shadow:
+      0 8px 32px hsl(240 20% 12% / 0.10),
+      inset 0 1px 1px hsl(0 0% 100% / 0.75);
+  }
+  /* Reflexo de luz na aresta superior — é o detalhe que faz ler como vidro
+     físico em vez de "retângulo desfocado". Vem da própria documentação de
+     materiais da Apple (aresta clara = luz batendo no material). */
+  .glass::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 12%;
+    right: 12%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(0 0% 100% / 0.9),
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  .glass-heavy {
+    position: relative;
+    background: linear-gradient(
+      180deg,
+      hsl(var(--card) / 0.9) 0%,
+      hsl(var(--card) / 0.78) 100%
+    );
+    backdrop-filter: blur(32px) saturate(150%);
+    -webkit-backdrop-filter: blur(32px) saturate(150%);
+    border: 1px solid hsl(0 0% 100% / 0.35);
+    /* Superfície maior lê como mais espessa: blur e sombra mais fortes. */
+    box-shadow:
+      0 12px 40px hsl(240 20% 12% / 0.14),
+      inset 0 1px 1px hsl(0 0% 100% / 0.4);
+  }
+
+  /* Acessibilidade — o vidro é decorativo, nunca pode custar legibilidade.
+     Quem pede menos transparência recebe superfície sólida; quem pede mais
+     contraste recebe borda definida. */
+  @media (prefers-reduced-transparency: reduce) {
+    .glass,
+    .glass-heavy,
+    .card-vivid {
+      background: hsl(var(--card)) !important;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border-color: hsl(var(--border));
+    }
+    .glass::before,
+    .card-vivid::before { display: none; }
+    .mesh-bg { background-image: none; }
+  }
+  @media (prefers-contrast: more) {
+    .glass,
+    .glass-heavy,
+    .card-vivid {
+      background: hsl(var(--card)) !important;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border-color: hsl(var(--foreground) / 0.5);
+    }
   }
 
   /* ── Borda com gradiente ───────────────────────────────────────────────── */
