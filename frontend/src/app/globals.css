@@ -174,61 +174,61 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 @layer utilities {
 
-  /* ── Texto com gradiente ───────────────────────────────────────────────── */
-  .text-gradient-brand {
-    background: var(--grad-brand);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-  }
-  .text-gradient-blue {
-    background: var(--grad-blue);
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent; color: transparent;
-  }
-  .text-gradient-green {
-    background: var(--grad-green);
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent; color: transparent;
-  }
-  .text-gradient-purple {
-    background: var(--grad-purple);
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent; color: transparent;
-  }
+  /* ═══════════════════════════════════════════════════════════════════════
+     CLASSES LEGADAS — REDEFINIDAS PELO REDESIGN
+     ═══════════════════════════════════════════════════════════════════════
+     Estas classes estão espalhadas por ~18 arquivos do sistema. Em vez de
+     editar cada arquivo (lento e fácil de esquecer um, deixando a interface
+     inconsistente), os NOMES foram mantidos e só o que elas PRODUZEM mudou.
+     Resultado: todos os módulos migram para a nova linguagem visual de uma
+     vez só, de forma consistente.
 
-  /* ── Fundo gradiente de marca ──────────────────────────────────────────── */
-  .bg-grad-brand { background: var(--grad-brand); }
-  .bg-grad-blue { background: var(--grad-blue); }
-  .bg-grad-green { background: var(--grad-green); }
-  .bg-grad-purple { background: var(--grad-purple); }
-  .bg-grad-cyan { background: var(--grad-cyan); }
-  .bg-grad-brand-soft { background: var(--grad-brand-soft); }
+     Direção do briefing aplicada aqui:
+       • gradiente em texto  → cor sólida da marca
+       • gradiente em fundo  → cor sólida / tint suave
+       • glow colorido       → sombra neutra discreta
+     ═════════════════════════════════════════════════════════════════════ */
 
-  /* ── Glow (sombra colorida) ────────────────────────────────────────────── */
-  .glow-brand { box-shadow: 0 8px 32px -8px hsl(var(--c-amber) / 0.45); }
-  .glow-blue { box-shadow: 0 8px 32px -8px hsl(var(--c-blue) / 0.45); }
-  .glow-green { box-shadow: 0 8px 32px -8px hsl(var(--c-green) / 0.45); }
-  .glow-purple { box-shadow: 0 8px 32px -8px hsl(var(--c-purple) / 0.45); }
-  .glow-sm { box-shadow: 0 4px 16px -4px hsl(var(--c-amber) / 0.3); }
+  /* Texto: sem gradiente. O laranja continua marcando a palavra-chave,
+     mas como cor sólida — gradiente em texto pequeno prejudica leitura. */
+  .text-gradient-brand  { color: hsl(var(--primary)); }
+  .text-gradient-blue   { color: hsl(var(--c-blue)); }
+  .text-gradient-green  { color: hsl(var(--c-green)); }
+  .text-gradient-purple { color: hsl(var(--c-purple)); }
 
-  /* ── Card premium com hover elevado ────────────────────────────────────── */
+  /* Fundos: cor sólida no lugar do gradiente. */
+  .bg-grad-brand  { background: hsl(var(--primary)); }
+  .bg-grad-blue   { background: hsl(var(--c-blue)); }
+  .bg-grad-green  { background: hsl(var(--c-green)); }
+  .bg-grad-purple { background: hsl(var(--c-purple)); }
+  .bg-grad-cyan   { background: hsl(var(--c-cyan)); }
+  .bg-grad-brand-soft { background: hsl(var(--primary) / 0.12); }
+
+  /* Glow: a referência não tem brilho colorido em lugar nenhum. Vira uma
+     sombra neutra sutil, que ainda dá elevação sem parecer neon. */
+  .glow-brand,
+  .glow-blue,
+  .glow-green,
+  .glow-purple { box-shadow: 0 4px 16px -6px hsl(220 20% 4% / 0.18); }
+  .glow-sm     { box-shadow: 0 2px 8px -3px hsl(220 20% 4% / 0.14); }
+
+
+  /* ── Card premium ──────────────────────────────────────────────────────── */
+  /* Usada em ~18 arquivos. Alinhada ao .panel do redesign: superfície limpa,
+     borda sutil e sombra quase imperceptível. O hover deixou de "levantar"
+     o card (translateY + sombra grande chamavam atenção demais para um
+     elemento que é só um contêiner) e passou a apenas realçar a borda. */
   .card-vivid {
     position: relative;
-    background: hsl(var(--card));
+    background: hsl(var(--surface-1));
     border: 1px solid hsl(var(--border));
-    box-shadow:
-      0 1px 3px hsl(240 20% 12% / 0.04),
-      0 8px 24px -12px hsl(240 20% 12% / 0.08);
-    transition: transform var(--duration-normal) var(--ease-out),
-                box-shadow var(--duration-normal) var(--ease-out);
+    box-shadow: 0 1px 2px hsl(220 20% 4% / 0.04);
+    transition: border-color var(--duration-fast) var(--ease-out),
+                box-shadow var(--duration-fast) var(--ease-out);
   }
   .card-vivid:hover {
-    transform: translateY(-2px);
-    box-shadow:
-      0 1px 3px hsl(240 20% 12% / 0.05),
-      0 16px 40px -16px hsl(240 20% 12% / 0.16);
+    border-color: hsl(var(--border) / 1.6);
+    box-shadow: 0 2px 8px hsl(220 20% 4% / 0.06);
   }
 
   /* ── Mesh gradient de fundo (decoração ambiente) ───────────────────────── */
@@ -345,6 +345,5 @@
   .page-enter, .stagger-children > *, .animate-float, .animate-glow, .shimmer {
     animation: none; opacity: 1; transform: none;
   }
-  .card-vivid:hover { transform: none; }
   * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }
