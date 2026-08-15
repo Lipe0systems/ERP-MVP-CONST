@@ -136,16 +136,6 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
 app.include_router(api_router, prefix=settings.API_PREFIX)
 
 
-@app.get("/_teste-sentry")
-async def _teste_sentry():
-    """
-    ⚠️ TEMPORÁRIO — remover depois de confirmar que o Sentry está capturando
-    erros do backend em produção. Não exige login de propósito, pra ser
-    fácil de testar só acessando a URL no navegador.
-    """
-    raise Exception("Teste Sentry backend — pode ignorar, é só verificação.")
-
-
 @app.get("/health", tags=["Health"])
 def health_check():
     return {"status": "ok", "environment": settings.ENVIRONMENT}
