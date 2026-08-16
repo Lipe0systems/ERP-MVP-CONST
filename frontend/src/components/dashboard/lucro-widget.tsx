@@ -19,7 +19,7 @@ export function LucroWidget() {
     <Card className="card-vivid">
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
-          <DollarSign className="h-4 w-4 text-green-600" />
+          <span className="tint-green flex h-7 w-7 items-center justify-center rounded-lg"><DollarSign className="h-4 w-4" /></span>
           Lucro realizado
         </CardTitle>
         <PeriodoSelect value={dias} onChange={setDias} />
