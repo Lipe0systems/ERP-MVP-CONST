@@ -78,10 +78,17 @@ const PIE_COLORS: Record<string, string> = {
   concluida: "#22c55e", cancelada: "#ef4444",
 };
 
-async function fetchResumo(): Promise<DashboardResumo> {
+type PeriodoFluxo = "7d" | "15d" | "30d" | "60d" | "90d" | "6m" | "12m";
+const OPCOES_PERIODO: { valor: PeriodoFluxo; label: string }[] = [
+  { valor: "7d", label: "7D" }, { valor: "15d", label: "15D" }, { valor: "30d", label: "30D" },
+  { valor: "60d", label: "60D" }, { valor: "90d", label: "90D" },
+  { valor: "6m", label: "6M" }, { valor: "12m", label: "12M" },
+];
+
+async function fetchResumo(periodoFluxo: string): Promise<DashboardResumo> {
   const supabase = createClient();
   const { data: { session } } = await supabase.auth.getSession();
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/dashboard/resumo`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/dashboard/resumo?periodo_fluxo=${periodoFluxo}`, {
     headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
   });
   if (!res.ok) throw new Error("Falha ao carregar dashboard");
@@ -89,7 +96,12 @@ async function fetchResumo(): Promise<DashboardResumo> {
 }
 
 export default function DashboardPage() {
-  const { data, isLoading } = useQuery({ queryKey: ["dashboard-resumo"], queryFn: fetchResumo, retry: 1 });
+  const [periodoFluxo, setPeriodoFluxo] = useState<PeriodoFluxo>("6m");
+  const { data, isLoading } = useQuery({
+    queryKey: ["dashboard-resumo", periodoFluxo],
+    queryFn: () => fetchResumo(periodoFluxo),
+    retry: 1,
+  });
   const r = data ?? FALLBACK;
 
   const [widgets, setWidgets] = useState<WidgetId[]>(DEFAULT_WIDGETS);
@@ -268,8 +280,24 @@ export default function DashboardPage() {
         <div className="grid gap-4 lg:grid-cols-3">
           {show("grafico_fluxo") && (
             <Card className={cn("card-vivid overflow-hidden", show("grafico_obras") ? "lg:col-span-2" : "lg:col-span-3")}>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle className="text-base font-semibold text-foreground">Fluxo de caixa</CardTitle>
+                <div className="flex flex-wrap gap-1">
+                  {OPCOES_PERIODO.map((op) => (
+                    <button
+                      key={op.valor}
+                      onClick={() => setPeriodoFluxo(op.valor)}
+                      className={cn(
+                        "rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors",
+                        periodoFluxo === op.valor
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground hover:bg-muted/70"
+                      )}
+                    >
+                      {op.label}
+                    </button>
+                  ))}
+                </div>
               </CardHeader>
               <CardContent className="h-64">
                 <ResponsiveContainer width="100%" height="100%">

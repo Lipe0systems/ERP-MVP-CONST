@@ -128,14 +128,19 @@ def _indicadores_orcamentos(db: Session, empresa_id: UUID) -> dict:
 
 
 @router.get("/resumo")
-def get_resumo(empresa_id: UUID = Depends(get_empresa_id), db: Session = Depends(get_db), dias: int = 7):
+def get_resumo(
+    empresa_id: UUID = Depends(get_empresa_id),
+    db: Session = Depends(get_db),
+    dias: int = 7,
+    periodo_fluxo: str = "6m",  # 7d,15d,30d,60d,90d,6m,12m — ver FinanceiroResumoUseCase
+):
     obras_ativas, obras_concluidas = SqlAlchemyObraRepository(db).contar_ativas_e_concluidas(empresa_id)
     total_clientes = SqlAlchemyClienteRepository(db).contar(empresa_id)
 
     resumo_financeiro = FinanceiroResumoUseCase(
         pagar_repository=SqlAlchemyContaPagarRepository(db),
         receber_repository=SqlAlchemyContaReceberRepository(db),
-    ).obter_resumo(empresa_id)
+    ).obter_resumo(empresa_id, periodo=periodo_fluxo)
 
     return {
         # Indicadores originais (V1)

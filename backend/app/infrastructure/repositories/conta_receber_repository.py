@@ -179,3 +179,19 @@ class SqlAlchemyContaReceberRepository(ContaReceberRepository):
             .all()
         )
         return {mes: _to_float(valor) or 0.0 for mes, valor in rows}
+
+    def fluxo_diario(self, empresa_id: UUID, dias: list[str]) -> dict[str, float]:
+        """Mesma ideia de fluxo_mensal, mas agrupado por DIA (YYYY-MM-DD) —
+        usado nos filtros de período mais curtos (7D a 90D)."""
+        dia_expr = func.to_char(ContaReceberModel.data_recebimento, "YYYY-MM-DD")
+        rows = (
+            self.db.query(dia_expr.label("dia"), func.coalesce(func.sum(ContaReceberModel.valor), 0))
+            .filter(
+                ContaReceberModel.empresa_id == empresa_id,
+                ContaReceberModel.status == StatusConta.LIQUIDADO.value,
+                dia_expr.in_(dias),
+            )
+            .group_by(dia_expr)
+            .all()
+        )
+        return {dia: _to_float(valor) or 0.0 for dia, valor in rows}

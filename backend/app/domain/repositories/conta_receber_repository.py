@@ -50,3 +50,7 @@ class ContaReceberRepository(ABC):
     @abstractmethod
     def fluxo_mensal(self, empresa_id: UUID, meses: list[str]) -> dict[str, float]:
         """Soma de valores LIQUIDADOS por mês ('YYYY-MM') — usado no fluxo de caixa."""
+
+    @abstractmethod
+    def fluxo_diario(self, empresa_id: UUID, dias: list[str]) -> dict[str, float]:
+        """Soma de valores LIQUIDADOS por dia ('YYYY-MM-DD') — filtros de período curtos (7D-90D)."""
