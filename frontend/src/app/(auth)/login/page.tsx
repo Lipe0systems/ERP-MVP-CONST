@@ -54,12 +54,16 @@ export default function LoginPage() {
   return (
     <div className="w-full rounded-3xl border border-white/10 bg-white/[0.04] p-8 shadow-2xl backdrop-blur-xl sm:p-10">
       {/* Marca */}
-      <div className="mb-8 flex items-center gap-3">
-        <div className="relative"><div className="absolute inset-0 rounded-2xl bg-amber-500/40 blur-lg" /><Image src="/images/logo-icone.png" alt="" width={48} height={48} className="relative h-12 w-12 shrink-0 object-contain" /></div>
-        <div>
-          <p className="text-lg font-bold leading-tight text-white">Inovak</p>
-          <p className="text-xs text-white/50">ERP para Construtoras</p>
-        </div>
+      <div className="mb-8">
+        <Image
+          src="/images/logo-completa.png"
+          alt="Inovak Serviços"
+          width={779}
+          height={227}
+          className="h-14 w-auto object-contain"
+          priority
+        />
+        <p className="mt-1.5 text-xs text-white/50">Gestão para empresas</p>
       </div>
 
       <h1 className="text-2xl font-bold text-white">Bem-vindo de <span className="bg-gradient-to-r from-amber-300 to-orange-400 bg-clip-text text-transparent">volta!</span></h1>
