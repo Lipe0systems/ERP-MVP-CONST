@@ -40,7 +40,7 @@ export function FuncionarioFormDialog({ open, onOpenChange, funcionario }: Props
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<F>({
     resolver: zodResolver(schema),
-    defaultValues: { nome: "", salario: 0, tipo_contratacao: "clt" },
+    defaultValues: { nome: "", salario: "" as unknown as number, tipo_contratacao: "clt" },
   });
 
   useEffect(() => {
@@ -55,7 +55,7 @@ export function FuncionarioFormDialog({ open, onOpenChange, funcionario }: Props
         telefone: funcionario.telefone ?? "",
         email: funcionario.email ?? "",
         observacoes: funcionario.observacoes ?? "",
-      } : { nome: "", salario: 0, tipo_contratacao: "clt", cpf: "", cargo: "", data_admissao: "", telefone: "", email: "", observacoes: "" });
+      } : { nome: "", salario: "" as unknown as number, tipo_contratacao: "clt", cpf: "", cargo: "", data_admissao: "", telefone: "", email: "", observacoes: "" });
     }
   }, [open, funcionario, reset]);
 
@@ -108,7 +108,7 @@ export function FuncionarioFormDialog({ open, onOpenChange, funcionario }: Props
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="salario">Salário / diária (R$)</Label>
-              <Input id="salario" type="number" step="0.01" min={0} {...register("salario")} />
+              <Input id="salario" type="number" step="0.01" min={0} placeholder="0,00" {...register("salario")} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="data_admissao">Admissão</Label>
