@@ -120,6 +120,8 @@ def pdf_venda(
     db: Session = Depends(get_db),
 ):
     from app.application.services.pdf_venda import gerar_pdf_venda
+    from app.application.services.logo_helper import resolver_logo_pdf
+    from app.infrastructure.database.models.empresa import EmpresaModel
     from app.application.services.documento_auto_service import salvar_documento_automatico
     from app.infrastructure.repositories.cliente_repository import SqlAlchemyClienteRepository
     venda = uc.obter(empresa_id, venda_id)
@@ -127,7 +129,8 @@ def pdf_venda(
     if not cliente:
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Cliente não encontrado.")
-    pdf = gerar_pdf_venda(venda, cliente)
+    _empresa = db.query(EmpresaModel).filter(EmpresaModel.id == empresa_id).first()
+    pdf = gerar_pdf_venda(venda, cliente, logo_path=resolver_logo_pdf(_empresa.logo_path if _empresa else None))
     filename = f"venda_{venda.numero:04d}.pdf"
 
     # Auto-save: salva na aba Documentos do cliente (V4 — "pasta do cliente")

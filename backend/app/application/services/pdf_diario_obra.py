@@ -29,7 +29,7 @@ def _fmt_data(d) -> str:
     return d.strftime("%d/%m/%Y")
 
 
-def gerar_pdf_diario(registros: list, obra_nome: str) -> bytes:
+def gerar_pdf_diario(registros: list, obra_nome: str, logo_path: str | None = None) -> bytes:
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4,
         leftMargin=15*mm, rightMargin=15*mm, topMargin=15*mm, bottomMargin=15*mm)
@@ -41,7 +41,8 @@ def gerar_pdf_diario(registros: list, obra_nome: str) -> bytes:
     style_h = ParagraphStyle("H", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=11, textColor=DARK_NAVY, spaceBefore=5*mm, spaceAfter=3*mm)
     page_w = A4[0] - 30*mm
 
-    logo = Image(LOGO_PATH, width=45*mm, height=13*mm) if os.path.exists(LOGO_PATH) else Paragraph("<b>Inovak</b>", styles["Title"])
+    caminho_logo_final = logo_path if logo_path else (LOGO_PATH if os.path.exists(LOGO_PATH) else None)
+    logo = Image(caminho_logo_final, width=45*mm, height=13*mm) if caminho_logo_final else Paragraph("<b>Inovak</b>", styles["Title"])
     title = Paragraph(
         f"<b>DIARIO DE OBRA</b><br/><font size=8 color='#64748B'>{obra_nome}<br/>Gerado em {_fmt_data(date.today())}</font>",
         ParagraphStyle("T", parent=style_n, alignment=TA_RIGHT, fontSize=13))

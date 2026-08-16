@@ -22,6 +22,10 @@ def relatorio_financeiro_pdf(
 ):
     """Gera relatório PDF do financeiro (contas a pagar e receber)."""
     from app.application.services.pdf_financeiro import gerar_pdf_financeiro
+    from app.application.services.logo_helper import resolver_logo_pdf
+    from app.infrastructure.database.models.empresa import EmpresaModel
+    _empresa = db.query(EmpresaModel).filter(EmpresaModel.id == empresa_id).first()
+    _logo = resolver_logo_pdf(_empresa.logo_path if _empresa else None)
     from app.infrastructure.database.models.conta_pagar import ContaPagarModel
     from app.infrastructure.database.models.conta_receber import ContaReceberModel
     from app.infrastructure.database.models.cliente import ClienteModel
@@ -65,7 +69,7 @@ def relatorio_financeiro_pdf(
     contas_pagar = [CPItem(m) for m in cp_rows]
     total_pagar = sum(float(cp.valor) for cp in contas_pagar if cp.status != "cancelado")
 
-    pdf_bytes = gerar_pdf_financeiro(contas_pagar, contas_receber, total_pagar, total_receber)
+    pdf_bytes = gerar_pdf_financeiro(contas_pagar, contas_receber, total_pagar, total_receber, logo_path=_logo)
 
     return Response(
         content=pdf_bytes,
@@ -82,6 +86,10 @@ def relatorio_orcamentos_pdf(
 ):
     """Gera relatório PDF consolidado de orçamentos."""
     from app.application.services.pdf_orcamentos_relatorio import gerar_pdf_orcamentos_relatorio
+    from app.application.services.logo_helper import resolver_logo_pdf
+    from app.infrastructure.database.models.empresa import EmpresaModel
+    _empresa = db.query(EmpresaModel).filter(EmpresaModel.id == empresa_id).first()
+    _logo = resolver_logo_pdf(_empresa.logo_path if _empresa else None)
     from app.infrastructure.repositories.orcamento_repository import SqlAlchemyOrcamentoRepository
     from app.domain.entities.orcamento import StatusOrcamento
 
@@ -89,7 +97,7 @@ def relatorio_orcamentos_pdf(
     status_filtro = StatusOrcamento(status) if status else None
     items, _ = repo.list_with_relacionamentos(empresa_id, None, status_filtro, 1, 1000)
 
-    pdf_bytes = gerar_pdf_orcamentos_relatorio(items)
+    pdf_bytes = gerar_pdf_orcamentos_relatorio(items, logo_path=_logo)
 
     return Response(
         content=pdf_bytes,
@@ -106,6 +114,10 @@ def relatorio_compras_pdf(
 ):
     """Gera relatório PDF de compras."""
     from app.application.services.pdf_compras import gerar_pdf_compras
+    from app.application.services.logo_helper import resolver_logo_pdf
+    from app.infrastructure.database.models.empresa import EmpresaModel
+    _empresa = db.query(EmpresaModel).filter(EmpresaModel.id == empresa_id).first()
+    _logo = resolver_logo_pdf(_empresa.logo_path if _empresa else None)
     from app.infrastructure.database.models.compra import CompraModel
 
     q = db.query(CompraModel).filter(CompraModel.empresa_id == empresa_id)
@@ -113,7 +125,7 @@ def relatorio_compras_pdf(
         q = q.filter(CompraModel.status == status)
     compras = q.order_by(CompraModel.data_compra.desc()).all()
 
-    pdf_bytes = gerar_pdf_compras(compras)
+    pdf_bytes = gerar_pdf_compras(compras, logo_path=_logo)
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
@@ -130,6 +142,10 @@ def relatorio_diario_pdf(
 ):
     """Gera relatório PDF do Diário de Obra."""
     from app.application.services.pdf_diario_obra import gerar_pdf_diario
+    from app.application.services.logo_helper import resolver_logo_pdf
+    from app.infrastructure.database.models.empresa import EmpresaModel
+    _empresa = db.query(EmpresaModel).filter(EmpresaModel.id == empresa_id).first()
+    _logo = resolver_logo_pdf(_empresa.logo_path if _empresa else None)
     from app.application.services.documento_auto_service import salvar_documento_automatico
     from app.infrastructure.database.models.diario_obra import RegistroDiarioModel
     from app.infrastructure.database.models.obra import ObraModel
@@ -148,7 +164,7 @@ def relatorio_diario_pdf(
         if obra_encontrada:
             obra_nome = obra_encontrada.nome
 
-    pdf_bytes = gerar_pdf_diario(registros, obra_nome)
+    pdf_bytes = gerar_pdf_diario(registros, obra_nome, logo_path=_logo)
 
     # Auto-save: só faz sentido quando o relatório é de UMA obra específica
     # (com "todas as obras" não haveria uma única "pasta" para guardar).

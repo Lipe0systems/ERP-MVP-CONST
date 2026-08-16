@@ -46,7 +46,7 @@ def _status_label(s: str) -> str:
     return {"rascunho": "Rascunho", "aprovado": "Aprovado", "recusado": "Recusado", "cancelado": "Cancelado"}.get(s, s)
 
 
-def gerar_pdf_orcamentos_relatorio(orcamentos: list[dict]) -> bytes:
+def gerar_pdf_orcamentos_relatorio(orcamentos: list[dict], logo_path: str | None = None) -> bytes:
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer, pagesize=A4,
@@ -64,8 +64,9 @@ def gerar_pdf_orcamentos_relatorio(orcamentos: list[dict]) -> bytes:
     page_width = A4[0] - 30 * mm
 
     # === CABEÇALHO ===
-    if os.path.exists(LOGO_PATH):
-        logo = Image(LOGO_PATH, width=45 * mm, height=13 * mm)
+    caminho_logo_final = logo_path if logo_path else (LOGO_PATH if os.path.exists(LOGO_PATH) else None)
+    if caminho_logo_final:
+        logo = Image(caminho_logo_final, width=45 * mm, height=13 * mm)
         logo.hAlign = "LEFT"
     else:
         logo = Paragraph("<b>Inovak</b>", styles["Title"])
