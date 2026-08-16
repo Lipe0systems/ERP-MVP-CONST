@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-export const metadata = { title: "Termos de Uso — Construtec" };
+export const metadata = { title: "Termos de Uso — Inovak" };
 
 export default function TermosPage() {
   return (
@@ -11,7 +11,7 @@ export default function TermosPage() {
       </Link>
 
       <article className="prose prose-sm max-w-none dark:prose-invert">
-        <h1>Termos de Uso — Construtec</h1>
+        <h1>Termos de Uso — Inovak</h1>
         <p className="text-sm text-muted-foreground">Última atualização: 14/08/2026</p>
 
         <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm">
@@ -20,14 +20,14 @@ export default function TermosPage() {
 
         <h2>1. Aceitação dos termos</h2>
         <p>
-          Ao criar uma conta e utilizar o Construtec ("Sistema", "Plataforma"), você ("Cliente", "Usuário")
+          Ao criar uma conta e utilizar o Inovak ("Sistema", "Plataforma"), você ("Cliente", "Usuário")
           concorda integralmente com estes Termos de Uso. Se você está aceitando este documento em nome de
           uma empresa, declara ter poderes para vinculá-la a estes termos.
         </p>
 
-        <h2>2. O que é o Construtec</h2>
+        <h2>2. O que é o Inovak</h2>
         <p>
-          O Construtec é um sistema de gestão (ERP) em nuvem, voltado para empresas do setor de construção
+          O Inovak é um sistema de gestão (ERP) em nuvem, voltado para empresas do setor de construção
           civil, oferecendo módulos de gestão de clientes, obras, orçamentos, vendas, compras, estoque,
           financeiro, recursos humanos, documentos e funcionalidades correlatas, no modelo SaaS (Software as
           a Service).
@@ -54,7 +54,7 @@ export default function TermosPage() {
         <h2>5. Dados inseridos pelo Cliente</h2>
         <p>
           Todo o conteúdo inserido no Sistema pelo Cliente é de propriedade e responsabilidade exclusiva do
-          Cliente. O Construtec atua como operador desses dados. O Cliente é o único responsável por garantir
+          Cliente. O Inovak atua como operador desses dados. O Cliente é o único responsável por garantir
           base legal adequada para inserir dados pessoais de terceiros no Sistema.
         </p>
 
@@ -66,7 +66,7 @@ export default function TermosPage() {
 
         <h2>7. Disponibilidade do serviço</h2>
         <p>
-          O Construtec envida esforços razoáveis para manter o Sistema disponível continuamente, mas não
+          O Inovak envida esforços razoáveis para manter o Sistema disponível continuamente, mas não
           garante disponibilidade ininterrupta. Manutenções e eventuais indisponibilidades de terceiros
           podem ocorrer.
         </p>
@@ -79,28 +79,28 @@ export default function TermosPage() {
 
         <h2>9. Propriedade intelectual</h2>
         <p>
-          O Sistema, seu código-fonte, design e marca são de propriedade do Construtec. Estes Termos não
+          O Sistema, seu código-fonte, design e marca são de propriedade do Inovak. Estes Termos não
           transferem ao Cliente nenhum direito de propriedade intelectual — apenas uma licença de uso, não
           exclusiva e intransferível, limitada à vigência da conta.
         </p>
 
         <h2>10. Limitação de responsabilidade</h2>
         <p>
-          O Sistema é fornecido "como está". Na máxima extensão permitida pela lei, o Construtec não se
+          O Sistema é fornecido "como está". Na máxima extensão permitida pela lei, o Inovak não se
           responsabiliza por danos indiretos, lucros cessantes ou perda de dados decorrentes do uso do
           Sistema.
         </p>
 
         <h2>11. Rescisão</h2>
         <p>
-          O Cliente pode encerrar sua conta a qualquer momento. O Construtec pode suspender contas que
+          O Cliente pode encerrar sua conta a qualquer momento. O Inovak pode suspender contas que
           violem estes Termos. Após o encerramento, os dados poderão ser mantidos por período razoável e
           depois excluídos, exceto quando a retenção for exigida por lei.
         </p>
 
         <h2>12. Alterações destes termos</h2>
         <p>
-          O Construtec pode atualizar estes Termos periodicamente, comunicando alterações relevantes com
+          O Inovak pode atualizar estes Termos periodicamente, comunicando alterações relevantes com
           antecedência razoável.
         </p>
 
@@ -108,7 +108,7 @@ export default function TermosPage() {
         <p>Estes Termos são regidos pelas leis da República Federativa do Brasil.</p>
 
         <h2>14. Contato</h2>
-        <p>Em caso de dúvidas: contato@construtec.com.br</p>
+        <p>Em caso de dúvidas: contato@inovak.com.br</p>
       </article>
     </div>
   );

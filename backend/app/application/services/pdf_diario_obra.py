@@ -1,4 +1,4 @@
-"""Gerador de PDF para relatório do Diário de Obra da Construtec."""
+"""Gerador de PDF para relatório do Diário de Obra da Inovak Serviços."""
 import io, os
 from datetime import date
 
@@ -16,7 +16,7 @@ LIGHT_BG = colors.HexColor("#F8FAFC")
 BORDER_COLOR = colors.HexColor("#E2E8F0")
 
 ASSETS_DIR = os.path.join(os.path.dirname(__file__), "..", "assets")
-LOGO_PATH = os.path.join(ASSETS_DIR, "logo-construtec.png")
+LOGO_PATH = os.path.join(ASSETS_DIR, "logo-inovak.png")
 
 CLIMA_LABEL = {
     "ensolarado": "Ensolarado", "parcialmente_nublado": "Parcialmente nublado",
@@ -41,7 +41,7 @@ def gerar_pdf_diario(registros: list, obra_nome: str) -> bytes:
     style_h = ParagraphStyle("H", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=11, textColor=DARK_NAVY, spaceBefore=5*mm, spaceAfter=3*mm)
     page_w = A4[0] - 30*mm
 
-    logo = Image(LOGO_PATH, width=45*mm, height=13*mm) if os.path.exists(LOGO_PATH) else Paragraph("<b>Construtec</b>", styles["Title"])
+    logo = Image(LOGO_PATH, width=45*mm, height=13*mm) if os.path.exists(LOGO_PATH) else Paragraph("<b>Inovak</b>", styles["Title"])
     title = Paragraph(
         f"<b>DIARIO DE OBRA</b><br/><font size=8 color='#64748B'>{obra_nome}<br/>Gerado em {_fmt_data(date.today())}</font>",
         ParagraphStyle("T", parent=style_n, alignment=TA_RIGHT, fontSize=13))
@@ -86,7 +86,7 @@ def gerar_pdf_diario(registros: list, obra_nome: str) -> bytes:
     fl = Table([[""]], colWidths=[page_w])
     fl.setStyle(TableStyle([("LINEBELOW",(0,0),(0,0),0.5,BORDER_COLOR)]))
     elements.append(fl); elements.append(Spacer(1,2*mm))
-    elements.append(Paragraph("Construtec - ERP para Construtoras",
+    elements.append(Paragraph("Inovak Serviços",
         ParagraphStyle("F", parent=style_s, alignment=TA_CENTER)))
 
     doc.build(elements)

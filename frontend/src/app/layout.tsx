@@ -11,7 +11,7 @@ const ibmPlexSans = IBM_Plex_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Construtec",
+  title: "Inovak",
   description: "ERP SaaS multiempresa para construtoras",
 };
 

@@ -128,7 +128,7 @@ function AceitarConviteConteudo() {
         <CardHeader className="text-center">
           <CardTitle>Você foi convidado!</CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            Crie sua conta para acessar o Construtec como{" "}
+            Crie sua conta para acessar o Inovak como{" "}
             <strong>{PAPEL_LABEL[papelConvite] ?? papelConvite}</strong>.
           </p>
         </CardHeader>

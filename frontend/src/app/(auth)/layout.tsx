@@ -16,7 +16,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="relative hidden md:block md:w-1/2 lg:w-3/5">
         <Image
           src="/images/login-hero.png"
-          alt="Construtec — Gestão completa para construir o futuro. O ERP feito para construtoras que buscam eficiência, organização e resultados."
+          alt="Inovak — Gestão completa para construir o futuro. O ERP feito para construtoras que buscam eficiência, organização e resultados."
           fill
           priority
           sizes="(min-width: 1024px) 60vw, 50vw"

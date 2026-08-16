@@ -57,7 +57,7 @@ export default function LoginPage() {
       <div className="mb-8 flex items-center gap-3">
         <div className="relative"><div className="absolute inset-0 rounded-2xl bg-amber-500/40 blur-lg" /><Image src="/images/logo-icone.png" alt="" width={48} height={48} className="relative h-12 w-12 shrink-0 object-contain" /></div>
         <div>
-          <p className="text-lg font-bold leading-tight text-white">Construtec</p>
+          <p className="text-lg font-bold leading-tight text-white">Inovak</p>
           <p className="text-xs text-white/50">ERP para Construtoras</p>
         </div>
       </div>
@@ -145,7 +145,7 @@ export default function LoginPage() {
       </form>
 
       <p className="mt-8 text-center text-xs text-white/30">
-        © {new Date().getFullYear()} Construtec ERP. Todos os direitos reservados.
+        © {new Date().getFullYear()} Inovak Serviços. Todos os direitos reservados.
       </p>
     </div>
   );

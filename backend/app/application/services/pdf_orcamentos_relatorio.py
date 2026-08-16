@@ -1,5 +1,5 @@
 """
-Gerador de PDF para relatório consolidado de orçamentos da Construtec.
+Gerador de PDF para relatório consolidado de orçamentos da Inovak Serviços.
 Lista todos os orçamentos com totais por status.
 """
 import io
@@ -27,7 +27,7 @@ LIGHT_BG = colors.HexColor("#F8FAFC")
 BORDER_COLOR = colors.HexColor("#E2E8F0")
 
 ASSETS_DIR = os.path.join(os.path.dirname(__file__), "..", "assets")
-LOGO_PATH = os.path.join(ASSETS_DIR, "logo-construtec.png")
+LOGO_PATH = os.path.join(ASSETS_DIR, "logo-inovak.png")
 
 
 def _fmt_moeda(valor: float) -> str:
@@ -68,7 +68,7 @@ def gerar_pdf_orcamentos_relatorio(orcamentos: list[dict]) -> bytes:
         logo = Image(LOGO_PATH, width=45 * mm, height=13 * mm)
         logo.hAlign = "LEFT"
     else:
-        logo = Paragraph("<b>Construtec</b>", styles["Title"])
+        logo = Paragraph("<b>Inovak</b>", styles["Title"])
 
     title_info = Paragraph(
         f"<b>RELATORIO DE ORCAMENTOS</b><br/>"
@@ -163,7 +163,7 @@ def gerar_pdf_orcamentos_relatorio(orcamentos: list[dict]) -> bytes:
     foot_line.setStyle(TableStyle([("LINEBELOW", (0, 0), (0, 0), 0.5, BORDER_COLOR)]))
     elements.append(foot_line)
     elements.append(Spacer(1, 2 * mm))
-    elements.append(Paragraph("Construtec - ERP para Construtoras", ParagraphStyle("F", parent=style_small, alignment=TA_CENTER)))
+    elements.append(Paragraph("Inovak Serviços", ParagraphStyle("F", parent=style_small, alignment=TA_CENTER)))
 
     doc.build(elements)
     result = buffer.getvalue()

@@ -288,7 +288,7 @@ function SidebarRodape({ recolhida }: { recolhida?: boolean }) {
           V4
         </span>
         {!recolhida && (
-          <span className="text-[11px] tracking-wide text-muted-foreground/60">Construtec ERP</span>
+          <span className="text-[11px] tracking-wide text-muted-foreground/60">Inovak Serviços</span>
         )}
       </div>
     </div>
@@ -301,7 +301,7 @@ function SidebarBrand({ recolhida }: { recolhida?: boolean }) {
       <Image src="/images/logo-icone.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />
       {!recolhida && (
         <div className="leading-tight">
-          <p className="text-[15px] font-semibold tracking-tight">Construtec</p>
+          <p className="text-[15px] font-semibold tracking-tight">Inovak</p>
           <p className="text-[10px] tracking-wide text-muted-foreground">ERP</p>
         </div>
       )}
@@ -375,7 +375,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
               <div className="flex items-center gap-2.5">
                 <Image src="/images/logo-icone.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />
                 <div className="leading-tight">
-                  <p className="text-[15px] font-semibold tracking-tight">Construtec</p>
+                  <p className="text-[15px] font-semibold tracking-tight">Inovak</p>
                   <p className="text-[10px] tracking-wide text-muted-foreground">ERP</p>
                 </div>
               </div>

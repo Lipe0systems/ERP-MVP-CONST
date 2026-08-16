@@ -37,7 +37,7 @@ if settings.SENTRY_DSN:
     logger.info("Sentry inicializado (ambiente: %s)", settings.ENVIRONMENT)
 
 app = FastAPI(
-    title="Construtec API",
+    title="Inovak Serviços API",
     description="API REST do ERP SaaS multiempresa para construtoras.",
     version="0.1.0",
     docs_url="/docs",

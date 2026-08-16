@@ -1,4 +1,4 @@
-"""Gerador de PDF para venda da Construtec."""
+"""Gerador de PDF para venda da Inovak Serviços."""
 import io, os
 from datetime import date
 
@@ -20,7 +20,7 @@ BORDER_COLOR = colors.HexColor("#E2E8F0")
 GREEN = colors.HexColor("#16A34A")
 
 ASSETS_DIR = os.path.join(os.path.dirname(__file__), "..", "assets")
-LOGO_PATH = os.path.join(ASSETS_DIR, "logo-construtec.png")
+LOGO_PATH = os.path.join(ASSETS_DIR, "logo-inovak.png")
 
 def _fmt(v: float) -> str:
     return f"R$ {v:,.2f}".replace(",","X").replace(".",",").replace("X",".")
@@ -44,7 +44,7 @@ def gerar_pdf_venda(venda: Venda, cliente: Cliente) -> bytes:
     page_w = A4[0] - 30*mm
 
     # Cabeçalho
-    logo = Image(LOGO_PATH, width=45*mm, height=13*mm) if os.path.exists(LOGO_PATH) else Paragraph("<b>Construtec</b>", styles["Title"])
+    logo = Image(LOGO_PATH, width=45*mm, height=13*mm) if os.path.exists(LOGO_PATH) else Paragraph("<b>Inovak</b>", styles["Title"])
     title = Paragraph(f"<b>CONFIRMACAO DE VENDA #{venda.numero:04d}</b><br/><font size=8 color='#64748B'>Data: {_fmt_data(venda.criado_em)}</font>",
         ParagraphStyle("T", parent=style_n, alignment=TA_RIGHT, fontSize=13))
     h = Table([[logo, title]], colWidths=[page_w*0.5, page_w*0.5])
@@ -124,7 +124,7 @@ def gerar_pdf_venda(venda: Venda, cliente: Cliente) -> bytes:
     fl = Table([[""]], colWidths=[page_w])
     fl.setStyle(TableStyle([("LINEBELOW",(0,0),(0,0),0.5,BORDER_COLOR)]))
     elements.append(fl); elements.append(Spacer(1,2*mm))
-    elements.append(Paragraph("Construtec - ERP para Construtoras",
+    elements.append(Paragraph("Inovak Serviços",
         ParagraphStyle("F", parent=style_s, alignment=TA_CENTER)))
 
     doc.build(elements)
