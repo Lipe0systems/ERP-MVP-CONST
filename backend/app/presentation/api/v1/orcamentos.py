@@ -217,6 +217,7 @@ def gerar_pdf(
     from fastapi.responses import Response
 
     from app.application.services.pdf_orcamento import gerar_pdf_orcamento
+    from app.application.services.logo_helper import resolver_logo_pdf
     from app.infrastructure.repositories.cliente_repository import SqlAlchemyClienteRepository
 
     orc = use_cases.obter(empresa_id, orcamento_id)
@@ -245,7 +246,10 @@ def gerar_pdf(
         ).first()
         obra_nome = obra.nome if obra else None
 
-    pdf_bytes = gerar_pdf_orcamento(orc, cliente, empresa=empresa, obra_nome=obra_nome)
+    pdf_bytes = gerar_pdf_orcamento(
+        orc, cliente, empresa=empresa, obra_nome=obra_nome,
+        logo_path=resolver_logo_pdf(empresa.logo_path if empresa else None),
+    )
     filename = f"orcamento_{orc.numero:04d}.pdf"
 
     # Auto-save: salva uma cópia na aba Documentos do cliente (V4 — "pasta do cliente")

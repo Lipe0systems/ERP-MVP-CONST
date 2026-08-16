@@ -12,6 +12,7 @@ Usa reportlab para criar um documento profissional com:
 """
 import io
 import os
+from PIL import Image as PILImage
 from datetime import date
 
 from reportlab.lib import colors
@@ -105,11 +106,18 @@ def gerar_pdf_orcamento(
     cliente: Cliente,
     empresa=None,
     obra_nome: str | None = None,
+    logo_path: str | None = None,
 ) -> bytes:
     """
     empresa: objeto/linha com nome, cnpj, email, telefone da construtora
              emissora (opcional — sem ele, cai no texto genérico anterior).
     obra_nome: nome da obra vinculada, se o orçamento tiver obra_id.
+    logo_path: caminho LOCAL da imagem de logo já resolvida (ver
+             logo_helper.resolver_logo_pdf) — já vem com o fallback da
+             plataforma aplicado quando a empresa não tem logo própria.
+             None só acontece se nem a logo da plataforma existir no disco,
+             caso em que cai pro texto do nome da empresa (comportamento
+             anterior, preservado).
     """
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -141,8 +149,19 @@ def gerar_pdf_orcamento(
     page_width = A4[0] - 40 * mm
 
     # === CABEÇALHO ===
-    if os.path.exists(LOGO_PATH):
-        logo = Image(LOGO_PATH, width=50 * mm, height=15 * mm)
+    # Usa a logo já resolvida por quem chamou (logo_helper.resolver_logo_pdf):
+    # real da empresa quando existe, senão a da plataforma, senão texto.
+    caminho_logo_final = logo_path if logo_path is not None else (LOGO_PATH if os.path.exists(LOGO_PATH) else None)
+    if caminho_logo_final and os.path.exists(caminho_logo_final):
+        # Respeita a proporção original da imagem em vez de esticar pra um
+        # tamanho fixo (briefing: "não distorcer a logo") — a altura fica
+        # travada em 15mm e a largura é calculada a partir da proporção
+        # real do arquivo, com um teto de 60mm pra não invadir o orc_info.
+        with PILImage.open(caminho_logo_final) as im:
+            proporcao = im.width / im.height
+        altura_pdf = 15 * mm
+        largura_pdf = min(altura_pdf * proporcao, 60 * mm)
+        logo = Image(caminho_logo_final, width=largura_pdf, height=altura_pdf)
         logo.hAlign = "LEFT"
     elif empresa is not None:
         logo = Paragraph(f"<b>{empresa.nome}</b>", styles["Title"])

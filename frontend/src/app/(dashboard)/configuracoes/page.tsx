@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
+import { LogoEmpresaCard } from "@/components/configuracoes/logo-empresa-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -132,6 +133,8 @@ export default function ConfiguracoesPage() {
   return (
     <div className="space-y-8">
       <PageHeader icon={Settings} title="Configurações" subtitle="Gerencie os usuários e acessos da sua empresa" cor="brand" />
+
+      <LogoEmpresaCard />
 
       {/* Usuários ativos */}
       <Card>
