@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Moon, Sun, Target, Wrench, TrendingUp, Bot } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
 
@@ -28,57 +28,29 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           {children}
         </div>
 
-        {/* Painel de destaque — conteúdo diferente por tema, não é a mesma
-            imagem clareada/escurecida: no claro é uma composição de ícones
-            (vetorial, sempre nítida em qualquer tela); no escuro é a foto
-            noturna já usada antes, que o próprio usuário já validou. */}
+        {/* Painel de destaque — duas fotos diferentes por tema (não é a
+            mesma imagem clareada/escurecida): cada uma já traz o texto
+            "Soluções inteligentes..." desenhado nela mesma, então não
+            sobrepomos texto em HTML por cima de nenhuma das duas. */}
         <div className="relative hidden overflow-hidden md:block md:w-1/2 lg:w-2/5">
-          {/* ── Tema claro: ilustração vetorial (tint-amber, mesma linguagem do resto do sistema) ── */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-secondary p-10 dark:hidden">
-            <div className="grid grid-cols-2 gap-5">
-              <div className="tint-amber flex h-20 w-20 items-center justify-center rounded-2xl">
-                <TrendingUp className="h-9 w-9" />
-              </div>
-              <div className="tint-blue flex h-20 w-20 items-center justify-center rounded-2xl">
-                <Target className="h-9 w-9" />
-              </div>
-              <div className="tint-green flex h-20 w-20 items-center justify-center rounded-2xl">
-                <Wrench className="h-9 w-9" />
-              </div>
-              <div className="tint-purple flex h-20 w-20 items-center justify-center rounded-2xl">
-                <Bot className="h-9 w-9" />
-              </div>
-            </div>
-            <div className="text-center">
-              <p className="t-section">Gestão para empresas</p>
-              <p className="mt-1.5 max-w-[240px] text-sm text-muted-foreground">
-                Mais eficiência, controle e resultados para o seu negócio.
-              </p>
-            </div>
-          </div>
-
-          {/* ── Tema escuro: foto (já validada, qualidade ajustada anteriormente) ── */}
-          <div className="absolute inset-0 hidden dark:block">
-            <Image
-              src="/images/login-hero.png"
-              alt="Inovak Serviços — soluções inteligentes para o seu negócio"
-              fill
-              priority
-              quality={92}
-              sizes="(min-width: 1024px) 40vw, 50vw"
-              className="object-cover"
-            />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-            <div className="absolute bottom-10 left-8 right-8">
-              <p className="text-xl font-semibold leading-tight text-white">
-                Soluções inteligentes<br />para o seu negócio
-              </p>
-              <p className="mt-2 text-sm text-white/70">
-                Mais eficiência, controle e resultados para a sua empresa.
-              </p>
-              <div className="mt-3 h-0.5 w-10 bg-primary" />
-            </div>
-          </div>
+          <Image
+            src="/images/login-hero-light.png"
+            alt="Inovak Serviços — soluções inteligentes para o seu negócio. Mais eficiência, controle e resultados para a sua empresa."
+            fill
+            priority
+            quality={92}
+            sizes="(min-width: 1024px) 40vw, 50vw"
+            className="object-cover object-left dark:hidden"
+          />
+          <Image
+            src="/images/login-hero-dark.png"
+            alt="Inovak Serviços — soluções inteligentes para o seu negócio. Mais eficiência, controle e resultados para a sua empresa."
+            fill
+            priority
+            quality={92}
+            sizes="(min-width: 1024px) 40vw, 50vw"
+            className="hidden object-cover object-left dark:block"
+          />
         </div>
       </div>
     </div>
