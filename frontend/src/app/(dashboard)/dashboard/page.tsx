@@ -4,8 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import {
   AlertTriangle, ArrowDownCircle, ArrowUpCircle, Boxes, CalendarDays,
-  CheckCircle2, HardHat, Landmark, Settings, Users,
+  CheckCircle2, HardHat, Landmark, Settings, Users, TrendingUp,
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Area, AreaChart, CartesianGrid, Cell, Pie, PieChart,
   ResponsiveContainer, Tooltip, XAxis, YAxis,
@@ -103,6 +104,18 @@ export default function DashboardPage() {
     retry: 1,
   });
   const r = data ?? FALLBACK;
+
+  // Resumo do fluxo de caixa no período selecionado — soma tudo pra exibir
+  // no cabeçalho do card, e decide se mostra o empty state elegante
+  // (nenhum dado real, não é loading).
+  const totalFluxoPeriodo = r.fluxo_de_caixa.reduce(
+    (acc, item) => ({
+      entrada: acc.entrada + item.entrada,
+      saida: acc.saida + item.saida,
+      temDados: acc.temDados || item.entrada > 0 || item.saida > 0,
+    }),
+    { entrada: 0, saida: 0, temDados: false }
+  );
 
   const [widgets, setWidgets] = useState<WidgetId[]>(DEFAULT_WIDGETS);
   const [configurando, setConfigurando] = useState(false);
@@ -281,7 +294,23 @@ export default function DashboardPage() {
           {show("grafico_fluxo") && (
             <Card className={cn("card-vivid overflow-hidden", show("grafico_obras") ? "lg:col-span-2" : "lg:col-span-3")}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-base font-semibold text-foreground">Fluxo de caixa</CardTitle>
+                <div>
+                  <CardTitle className="text-base font-semibold text-foreground">Fluxo de caixa</CardTitle>
+                  {/* Resumo de tendência do período — entradas x saídas somadas,
+                      dá contexto antes mesmo de olhar o gráfico. */}
+                  {!isLoading && totalFluxoPeriodo.temDados && (
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                        +{formatMoeda(totalFluxoPeriodo.entrada)}
+                      </span>
+                      {" · "}
+                      <span className="font-medium text-red-500">
+                        -{formatMoeda(totalFluxoPeriodo.saida)}
+                      </span>
+                      {" no período"}
+                    </p>
+                  )}
+                </div>
                 <div className="flex flex-wrap gap-1">
                   {OPCOES_PERIODO.map((op) => (
                     <button
@@ -300,8 +329,19 @@ export default function DashboardPage() {
                 </div>
               </CardHeader>
               <CardContent className="h-64">
+                {isLoading ? (
+                  <Skeleton className="h-full w-full rounded-lg" />
+                ) : !totalFluxoPeriodo.temDados ? (
+                  <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
+                    <TrendingUp className="h-8 w-8 text-muted-foreground/40" />
+                    <p className="text-sm font-medium text-foreground">Nenhuma movimentação neste período</p>
+                    <p className="text-xs text-muted-foreground">
+                      Contas liquidadas aparecem aqui automaticamente.
+                    </p>
+                  </div>
+                ) : (
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={r.fluxo_de_caixa.length ? r.fluxo_de_caixa : [{ mes: "—", entrada: 0, saida: 0 }]}>
+                  <AreaChart data={r.fluxo_de_caixa}>
                     <defs>
                       <linearGradient id="gEntrada" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#22c55e" stopOpacity={0.3} />
@@ -323,6 +363,7 @@ export default function DashboardPage() {
                     <Area type="monotone" dataKey="saida" name="Saída" stroke="#ef4444" strokeWidth={2.5} fill="url(#gSaida)" />
                   </AreaChart>
                 </ResponsiveContainer>
+                )}
               </CardContent>
             </Card>
           )}
