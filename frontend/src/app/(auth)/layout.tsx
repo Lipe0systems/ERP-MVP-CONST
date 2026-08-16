@@ -40,7 +40,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             priority
             quality={92}
             sizes="(min-width: 1024px) 40vw, 50vw"
-            className="object-cover object-left dark:hidden"
+            className="object-cover object-left-top dark:hidden"
           />
           <Image
             src="/images/login-hero-dark.png"
@@ -49,7 +49,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             priority
             quality={92}
             sizes="(min-width: 1024px) 40vw, 50vw"
-            className="hidden object-cover object-left dark:block"
+            className="hidden object-cover object-left-top dark:block"
           />
         </div>
       </div>
