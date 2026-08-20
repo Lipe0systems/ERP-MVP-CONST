@@ -59,14 +59,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!sessaoVerificada) {
     return (
-      <div className="flex h-screen items-center justify-center bg-secondary/50">
+      <div className="flex h-screen items-center justify-center bg-[hsl(var(--content-backdrop))]">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-secondary/50">
+    <div className="flex h-screen overflow-hidden bg-[hsl(var(--content-backdrop))]">
       <Sidebar mobileOpen={mobileMenuOpen} onCloseMobile={() => setMobileMenuOpen(false)} />
       <div className="flex flex-1 flex-col min-w-0">
         <Header onMenuClick={() => setMobileMenuOpen(true)} />

@@ -35,6 +35,7 @@
   --radius-lg: 1rem;
 
   /* Superfícies em camadas (equivalente light do que existe no .dark) */
+  --content-backdrop: 240 20% 97%;
   --surface-1: 0 0% 100%;
   --surface-2: 240 15% 98%;
   --surface-hover: 240 15% 95%;
@@ -95,9 +96,15 @@
   --ring: 24 95% 55%;
 
   /* Hierarquia de superfícies (fundo → secundário → card → hover) */
-  --surface-1: 222 33% 9%;
-  --surface-2: 222 30% 12%;
-  --surface-hover: 222 28% 16%;
+  /* Gap ampliado de propósito: com surface-1 a 9% e o fundo de conteúdo
+     (antes bg-secondary/50, que diluía pra ~9%) praticamente iguais, o
+     card se perdia matematicamente no fundo. Agora background=5%,
+     conteúdo=7% (token novo abaixo), card=13% — cada camada precisa ser
+     claramente distinguível da vizinha, não só "um pouco diferente". */
+  --content-backdrop: 222 36% 7%;
+  --surface-1: 222 26% 13%;
+  --surface-2: 222 24% 17%;
+  --surface-hover: 222 22% 21%;
 
   --grad-brand-soft: linear-gradient(135deg, hsl(38 95% 55% / 0.16), hsl(20 90% 52% / 0.16));
 }
@@ -126,6 +133,13 @@
     background: hsl(var(--surface-1));
     border: 1px solid hsl(var(--border));
     border-radius: var(--radius-lg);
+    /* Mesma linguagem de profundidade do card-vivid — consistência entre
+       as duas classes de card que o sistema usa. */
+    box-shadow:
+      0 1px 1px hsl(222 45% 2% / 0.35),
+      0 4px 12px hsl(222 45% 2% / 0.35),
+      0 16px 40px -12px hsl(222 45% 2% / 0.55),
+      inset 0 1px 0 hsl(210 40% 90% / 0.05);
   }
   .row-surface {
     background: hsl(var(--surface-2));
@@ -230,18 +244,36 @@
   .kpi-vivid {
     position: relative;
     border-radius: var(--radius-lg);
-    border: 1px solid hsl(var(--kpi-cor) / 0.25);
+    border: 1px solid hsl(var(--kpi-cor) / 0.22);
     border-left: 3px solid hsl(var(--kpi-cor));
     background:
-      linear-gradient(135deg, hsl(var(--kpi-cor) / 0.14), hsl(var(--kpi-cor) / 0.03)),
+      linear-gradient(135deg, hsl(var(--kpi-cor) / 0.13), hsl(var(--kpi-cor) / 0.03)),
       hsl(var(--surface-1));
-    box-shadow: 0 4px 24px -12px hsl(var(--kpi-cor) / 0.4);
+    /* 4 camadas: sombra neutra de contato (separa do fundo mesmo sem
+       cor) + halo colorido difuso concentrado embaixo (o "glow Vivid" do
+       documento — offset vertical grande, blur grande, opacidade baixa,
+       nunca a caixa inteira) + realce no topo. */
+    box-shadow:
+      0 1px 1px hsl(222 45% 2% / 0.35),
+      0 4px 12px hsl(222 45% 2% / 0.35),
+      0 22px 36px -16px hsl(var(--kpi-cor) / 0.38),
+      inset 0 1px 0 hsl(210 40% 90% / 0.06);
     transition: box-shadow var(--duration-normal) var(--ease-out),
-                border-color var(--duration-normal) var(--ease-out);
+                border-color var(--duration-normal) var(--ease-out),
+                transform var(--duration-normal) var(--ease-out),
+                background-color var(--duration-normal) var(--ease-out);
   }
   .kpi-vivid:hover {
-    border-color: hsl(var(--kpi-cor) / 0.45);
-    box-shadow: 0 8px 32px -10px hsl(var(--kpi-cor) / 0.55);
+    transform: translateY(-2px);
+    background:
+      linear-gradient(135deg, hsl(var(--kpi-cor) / 0.16), hsl(var(--kpi-cor) / 0.04)),
+      hsl(var(--surface-2));
+    border-color: hsl(var(--kpi-cor) / 0.4);
+    box-shadow:
+      0 1px 1px hsl(222 45% 2% / 0.4),
+      0 6px 16px hsl(222 45% 2% / 0.4),
+      0 28px 44px -16px hsl(var(--kpi-cor) / 0.5),
+      inset 0 1px 0 hsl(210 40% 90% / 0.08);
   }
   .kpi-amber  { --kpi-cor: var(--c-amber); }
   .kpi-green  { --kpi-cor: var(--c-green); }
@@ -298,20 +330,32 @@
     position: relative;
     background: hsl(var(--surface-1));
     border: 1px solid hsl(var(--border));
-    /* Sombra com matiz azulada (não cinza neutro): num fundo navy, sombra
-       cinza suja a cor. Elevação discreta, mas presente. */
+    /* Sombra em 3 camadas (padrão Linear/Vercel/Stripe, não Material
+       Design): contato + elevação média + halo difuso longo. Matiz
+       azulada (não cinza neutro) — num fundo navy, sombra cinza suja a
+       cor. Um realce claro no topo (inset) simula luz batendo na aresta
+       superior, o detalhe que faz ler como objeto físico elevado, não um
+       retângulo com borda. */
     box-shadow:
-      0 1px 2px hsl(222 40% 3% / 0.3),
-      0 8px 24px -12px hsl(222 40% 3% / 0.45);
+      0 1px 1px hsl(222 45% 2% / 0.35),
+      0 4px 12px hsl(222 45% 2% / 0.35),
+      0 16px 40px -12px hsl(222 45% 2% / 0.55),
+      inset 0 1px 0 hsl(210 40% 90% / 0.05);
     transition: border-color var(--duration-normal) var(--ease-out),
                 box-shadow var(--duration-normal) var(--ease-out),
-                transform var(--duration-normal) var(--ease-out);
+                transform var(--duration-normal) var(--ease-out),
+                background-color var(--duration-normal) var(--ease-out);
   }
   .card-vivid:hover {
-    border-color: hsl(var(--primary) / 0.28);
+    /* "Salta" levemente — translateY sutil, sombra e fundo respondem junto */
+    transform: translateY(-2px);
+    background: hsl(var(--surface-2));
+    border-color: hsl(var(--primary) / 0.25);
     box-shadow:
-      0 1px 2px hsl(222 40% 3% / 0.3),
-      0 12px 32px -14px hsl(222 40% 3% / 0.6);
+      0 1px 1px hsl(222 45% 2% / 0.4),
+      0 6px 16px hsl(222 45% 2% / 0.4),
+      0 24px 48px -14px hsl(222 45% 2% / 0.65),
+      inset 0 1px 0 hsl(210 40% 90% / 0.07);
   }
 
   /* ── Mesh gradient de fundo (decoração ambiente) ───────────────────────── */
