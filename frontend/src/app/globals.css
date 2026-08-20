@@ -8,23 +8,29 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* ── Base ──────────────────────────────────────────────────────────────── */
-  --background: 240 20% 99%;
-  --foreground: 224 20% 12%;
+  /* ── Base — Light Mode Premium ────────────────────────────────────────────
+     Reescrito com a hierarquia tipográfica e de superfície pedida (valores
+     convertidos de hex para HSL, mantendo fidelidade aos hex originais):
+       título #111827, texto #1F2937, secundário #64748B, auxiliar #94A3B8
+       fundo #F7F8FA (off-white, nunca branco puro), borda #E5E7EB
+     Antes o fundo era 99% de luminosidade — quase indistinguível de branco
+     puro, o que fazia o card (100%) se misturar visualmente com a página. */
+  --background: 220 23% 97%;
+  --foreground: 221 39% 11%;           /* título — máximo contraste */
   --card: 0 0% 100%;
-  --card-foreground: 224 20% 12%;
+  --card-foreground: 221 39% 11%;
   --primary: 24 95% 53%;               /* âmbar/laranja marca */
   --primary-foreground: 0 0% 100%;
-  --secondary: 240 15% 96%;
-  --secondary-foreground: 224 20% 12%;
-  --muted: 240 15% 96%;
-  --muted-foreground: 224 10% 46%;
+  --secondary: 220 18% 95%;
+  --secondary-foreground: 215 28% 17%;
+  --muted: 220 18% 95%;
+  --muted-foreground: 215 16% 47%;     /* texto secundário */
   --accent: 24 95% 96%;
   --accent-foreground: 24 95% 30%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
-  --border: 240 12% 90%;
-  --input: 240 12% 90%;
+  --border: 220 13% 91%;               /* acabamento discreto, não separador principal */
+  --input: 220 13% 89%;
   --ring: 24 95% 53%;
   --radius: 0.875rem;
 
@@ -35,10 +41,34 @@
   --radius-lg: 1rem;
 
   /* Superfícies em camadas (equivalente light do que existe no .dark) */
-  --content-backdrop: 240 20% 97%;
+  --content-backdrop: 220 20% 96%;
   --surface-1: 0 0% 100%;
-  --surface-2: 240 15% 98%;
-  --surface-hover: 240 15% 95%;
+  --surface-2: 220 20% 98%;
+  --surface-hover: 220 16% 95%;
+
+  /* Texto auxiliar (terceiro nível — o mais claro da hierarquia pedida) */
+  --muted-foreground-subtle: 215 20% 65%;
+
+  /* ── Sombra por tema ───────────────────────────────────────────────────
+     A MESMA regra de card (.card-vivid, .panel, .kpi-vivid) usa estas
+     variáveis em vez de cor fixa — assim ela se adapta automaticamente
+     por tema, sem duplicar CSS. No claro: cor neutra azul-acinzentada
+     (não preta), opacidade bem baixa, blur grande — profundidade que não
+     chama atenção, como o documento pediu. No escuro: navy quase preto,
+     opacidade mais alta — profundidade com presença. */
+  --shadow-color: 220 40% 30%;
+  --shadow-op-1: 0.04;
+  --shadow-op-2: 0.05;
+  --shadow-op-3: 0.07;
+  --shadow-highlight: 0 0% 100% / 0.6;
+
+  /* KPI Vivid — no claro o documento pede EXPLICITAMENTE que o glow do
+     escuro não seja copiado: aqui é só uma tonalidade muito sutil, não
+     brilho. Fundo quase branco com um toque de cor, borda quase
+     imperceptível. */
+  --kpi-tint-op: 0.05;
+  --kpi-border-op: 0.14;
+  --kpi-glow-op: 0.05;
 
   /* ── Cores dos módulos (para glow / accent por área) ───────────────────── */
   --c-amber: 24 95% 53%;
@@ -107,6 +137,19 @@
   --surface-hover: 222 22% 21%;
 
   --grad-brand-soft: linear-gradient(135deg, hsl(38 95% 55% / 0.16), hsl(20 90% 52% / 0.16));
+
+  /* Sombra do dark — ver explicação completa no :root. Aqui o valor é
+     bem mais forte de propósito: no fundo navy escuro, uma sombra sutil
+     como a do light simplesmente não apareceria. */
+  --shadow-color: 222 45% 2%;
+  --shadow-op-1: 0.35;
+  --shadow-op-2: 0.35;
+  --shadow-op-3: 0.55;
+  --shadow-highlight: 210 40% 90% / 0.05;
+
+  --kpi-tint-op: 0.13;
+  --kpi-border-op: 0.22;
+  --kpi-glow-op: 0.38;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -133,13 +176,14 @@
     background: hsl(var(--surface-1));
     border: 1px solid hsl(var(--border));
     border-radius: var(--radius-lg);
-    /* Mesma linguagem de profundidade do card-vivid — consistência entre
-       as duas classes de card que o sistema usa. */
+    /* Usa as variáveis de sombra do tema ativo (--shadow-color etc,
+       definidas em :root e .dark) — mesma regra funciona nos dois temas,
+       com peso de sombra adequado a cada um. Ver explicação em :root. */
     box-shadow:
-      0 1px 1px hsl(222 45% 2% / 0.35),
-      0 4px 12px hsl(222 45% 2% / 0.35),
-      0 16px 40px -12px hsl(222 45% 2% / 0.55),
-      inset 0 1px 0 hsl(210 40% 90% / 0.05);
+      0 1px 1px hsl(var(--shadow-color) / var(--shadow-op-1)),
+      0 4px 16px hsl(var(--shadow-color) / var(--shadow-op-2)),
+      0 16px 32px -12px hsl(var(--shadow-color) / var(--shadow-op-3)),
+      inset 0 1px 0 hsl(var(--shadow-highlight));
   }
   .row-surface {
     background: hsl(var(--surface-2));
@@ -244,20 +288,20 @@
   .kpi-vivid {
     position: relative;
     border-radius: var(--radius-lg);
-    border: 1px solid hsl(var(--kpi-cor) / 0.22);
+    /* Opacidades de borda/tint/glow vêm de variáveis por tema — no claro
+       são bem baixas ("tonalidade muito sutil", não cor forte); no escuro
+       têm presença. Mesma regra, adaptada por tema via variável, não
+       CSS duplicado. */
+    border: 1px solid hsl(var(--kpi-cor) / var(--kpi-border-op));
     border-left: 3px solid hsl(var(--kpi-cor));
     background:
-      linear-gradient(135deg, hsl(var(--kpi-cor) / 0.13), hsl(var(--kpi-cor) / 0.03)),
+      linear-gradient(135deg, hsl(var(--kpi-cor) / var(--kpi-tint-op)), hsl(var(--kpi-cor) / calc(var(--kpi-tint-op) * 0.25))),
       hsl(var(--surface-1));
-    /* 4 camadas: sombra neutra de contato (separa do fundo mesmo sem
-       cor) + halo colorido difuso concentrado embaixo (o "glow Vivid" do
-       documento — offset vertical grande, blur grande, opacidade baixa,
-       nunca a caixa inteira) + realce no topo. */
     box-shadow:
-      0 1px 1px hsl(222 45% 2% / 0.35),
-      0 4px 12px hsl(222 45% 2% / 0.35),
-      0 22px 36px -16px hsl(var(--kpi-cor) / 0.38),
-      inset 0 1px 0 hsl(210 40% 90% / 0.06);
+      0 1px 1px hsl(var(--shadow-color) / var(--shadow-op-1)),
+      0 4px 12px hsl(var(--shadow-color) / var(--shadow-op-2)),
+      0 22px 36px -16px hsl(var(--kpi-cor) / var(--kpi-glow-op)),
+      inset 0 1px 0 hsl(var(--shadow-highlight));
     transition: box-shadow var(--duration-normal) var(--ease-out),
                 border-color var(--duration-normal) var(--ease-out),
                 transform var(--duration-normal) var(--ease-out),
@@ -266,14 +310,14 @@
   .kpi-vivid:hover {
     transform: translateY(-2px);
     background:
-      linear-gradient(135deg, hsl(var(--kpi-cor) / 0.16), hsl(var(--kpi-cor) / 0.04)),
+      linear-gradient(135deg, hsl(var(--kpi-cor) / calc(var(--kpi-tint-op) * 1.25)), hsl(var(--kpi-cor) / calc(var(--kpi-tint-op) * 0.3))),
       hsl(var(--surface-2));
-    border-color: hsl(var(--kpi-cor) / 0.4);
+    border-color: hsl(var(--kpi-cor) / calc(var(--kpi-border-op) * 1.7));
     box-shadow:
-      0 1px 1px hsl(222 45% 2% / 0.4),
-      0 6px 16px hsl(222 45% 2% / 0.4),
-      0 28px 44px -16px hsl(var(--kpi-cor) / 0.5),
-      inset 0 1px 0 hsl(210 40% 90% / 0.08);
+      0 2px 2px hsl(var(--shadow-color) / calc(var(--shadow-op-1) * 1.3)),
+      0 6px 16px hsl(var(--shadow-color) / calc(var(--shadow-op-2) * 1.3)),
+      0 28px 44px -16px hsl(var(--kpi-cor) / calc(var(--kpi-glow-op) * 1.3)),
+      inset 0 1px 0 hsl(var(--shadow-highlight));
   }
   .kpi-amber  { --kpi-cor: var(--c-amber); }
   .kpi-green  { --kpi-cor: var(--c-green); }
@@ -337,10 +381,10 @@
        superior, o detalhe que faz ler como objeto físico elevado, não um
        retângulo com borda. */
     box-shadow:
-      0 1px 1px hsl(222 45% 2% / 0.35),
-      0 4px 12px hsl(222 45% 2% / 0.35),
-      0 16px 40px -12px hsl(222 45% 2% / 0.55),
-      inset 0 1px 0 hsl(210 40% 90% / 0.05);
+      0 1px 1px hsl(var(--shadow-color) / var(--shadow-op-1)),
+      0 4px 16px hsl(var(--shadow-color) / var(--shadow-op-2)),
+      0 16px 32px -12px hsl(var(--shadow-color) / var(--shadow-op-3)),
+      inset 0 1px 0 hsl(var(--shadow-highlight));
     transition: border-color var(--duration-normal) var(--ease-out),
                 box-shadow var(--duration-normal) var(--ease-out),
                 transform var(--duration-normal) var(--ease-out),
@@ -352,10 +396,10 @@
     background: hsl(var(--surface-2));
     border-color: hsl(var(--primary) / 0.25);
     box-shadow:
-      0 1px 1px hsl(222 45% 2% / 0.4),
-      0 6px 16px hsl(222 45% 2% / 0.4),
-      0 24px 48px -14px hsl(222 45% 2% / 0.65),
-      inset 0 1px 0 hsl(210 40% 90% / 0.07);
+      0 2px 2px hsl(var(--shadow-color) / calc(var(--shadow-op-1) * 1.3)),
+      0 8px 20px hsl(var(--shadow-color) / calc(var(--shadow-op-2) * 1.3)),
+      0 24px 40px -14px hsl(var(--shadow-color) / calc(var(--shadow-op-3) * 1.2)),
+      inset 0 1px 0 hsl(var(--shadow-highlight));
   }
 
   /* ── Mesh gradient de fundo (decoração ambiente) ───────────────────────── */

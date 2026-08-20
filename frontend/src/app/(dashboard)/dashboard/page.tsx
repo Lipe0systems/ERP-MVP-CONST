@@ -311,16 +311,16 @@ export default function DashboardPage() {
                     </p>
                   )}
                 </div>
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-0.5 rounded-lg border border-border bg-muted/60 p-0.5">
                   {OPCOES_PERIODO.map((op) => (
                     <button
                       key={op.valor}
                       onClick={() => setPeriodoFluxo(op.valor)}
                       className={cn(
-                        "rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors",
+                        "rounded-[6px] px-2.5 py-1 text-[11px] font-medium transition-colors",
                         periodoFluxo === op.valor
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground hover:bg-muted/70"
+                          ? "bg-card text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
                       )}
                     >
                       {op.label}
@@ -352,12 +352,15 @@ export default function DashboardPage() {
                         <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
-                    <XAxis dataKey="mes" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis fontSize={12} tickLine={false} axisLine={false} />
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
+                    <XAxis dataKey="mes" fontSize={12} tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--muted-foreground))" }} />
+                    <YAxis fontSize={12} tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--muted-foreground))" }} />
                     <Tooltip
                       formatter={(v: number) => formatMoeda(v)}
-                      contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }}
+                      contentStyle={{
+                        borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))",
+                        boxShadow: "0 4px 20px hsl(var(--shadow-color) / 0.12)",
+                      }}
                     />
                     <Area type="monotone" dataKey="entrada" name="Entrada" stroke="#22c55e" strokeWidth={2.5} fill="url(#gEntrada)" />
                     <Area type="monotone" dataKey="saida" name="Saída" stroke="#ef4444" strokeWidth={2.5} fill="url(#gSaida)" />
