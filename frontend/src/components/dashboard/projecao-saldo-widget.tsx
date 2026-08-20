@@ -19,7 +19,7 @@ export function ProjecaoSaldoWidget() {
     <Card className="card-vivid">
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
-          <span className="tint-blue flex h-7 w-7 items-center justify-center rounded-lg"><Activity className="h-4 w-4" /></span>
+          <span className="icon-vivid kpi-blue h-7 w-7 shrink-0"><Activity className="h-4 w-4" /></span>
           Projeção de saldo
         </CardTitle>
         <PeriodoSelect value={dias} onChange={setDias} />

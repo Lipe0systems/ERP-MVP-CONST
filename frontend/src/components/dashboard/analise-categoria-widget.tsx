@@ -22,7 +22,7 @@ export function AnaliseCategoriaWidget() {
     <Card className="card-vivid">
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
-          <span className="tint-purple flex h-7 w-7 items-center justify-center rounded-lg"><PieChart className="h-4 w-4" /></span>
+          <span className="icon-vivid kpi-purple h-7 w-7 shrink-0"><PieChart className="h-4 w-4" /></span>
           Despesas por categoria
         </CardTitle>
         <PeriodoSelect value={dias} onChange={setDias} />

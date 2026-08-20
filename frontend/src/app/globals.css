@@ -250,6 +250,33 @@
   .kpi-purple { --kpi-cor: var(--c-purple); }
   .kpi-cyan   { --kpi-cor: var(--c-cyan); }
 
+  /* ── Badges de status (padrão global) ─────────────────────────────────
+     Antes cada módulo usava cores fixas do Tailwind (bg-green-900 etc.),
+     que num fundo navy ficam opacas e destoantes. Estas classes usam
+     transparência sobre a cor viva, então funcionam nos dois temas e
+     acompanham qualquer mudança futura de fundo.                          */
+  .badge-status {
+    display: inline-flex; align-items: center;
+    border-radius: 9999px;
+    padding: 0.125rem 0.625rem;
+    font-size: 0.75rem; font-weight: 500;
+    border: 1px solid transparent;
+  }
+  .badge-success { background: hsl(var(--c-green) / 0.15);  color: hsl(142 71% 42%);  border-color: hsl(var(--c-green) / 0.3); }
+  .badge-info    { background: hsl(var(--c-blue) / 0.15);   color: hsl(217 91% 55%);  border-color: hsl(var(--c-blue) / 0.3); }
+  .badge-warning { background: hsl(var(--c-amber) / 0.15);  color: hsl(24 95% 45%);   border-color: hsl(var(--c-amber) / 0.3); }
+  .badge-danger  { background: hsl(0 84% 60% / 0.15);       color: hsl(0 84% 50%);    border-color: hsl(0 84% 60% / 0.3); }
+  .badge-purple  { background: hsl(var(--c-purple) / 0.15); color: hsl(262 83% 58%);  border-color: hsl(var(--c-purple) / 0.3); }
+  .badge-neutral { background: hsl(var(--muted));           color: hsl(var(--muted-foreground)); border-color: hsl(var(--border)); }
+
+  /* No dark, o texto precisa ser mais claro que a cor base para contrastar
+     com o fundo escuro — senão fica ilegível. */
+  .dark .badge-success { color: hsl(142 66% 62%); }
+  .dark .badge-info    { color: hsl(217 91% 70%); }
+  .dark .badge-warning { color: hsl(38 95% 65%); }
+  .dark .badge-danger  { color: hsl(0 84% 70%); }
+  .dark .badge-purple  { color: hsl(262 83% 74%); }
+
   /* Container de ícone Vivid — o brilho fica no CONTAINER, nunca no ícone.
      Regra do projeto: o desenho do ícone em si nunca é alterado.          */
   .icon-vivid {

@@ -41,7 +41,7 @@ export function SaudeObrasWidget() {
     <Card className="card-vivid">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
-          <span className="tint-amber flex h-7 w-7 items-center justify-center rounded-lg"><HardHat className="h-4 w-4" /></span>
+          <span className="icon-vivid kpi-amber h-7 w-7 shrink-0"><HardHat className="h-4 w-4" /></span>
           Saúde das obras
         </CardTitle>
       </CardHeader>
