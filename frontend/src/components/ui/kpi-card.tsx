@@ -27,17 +27,13 @@ interface KpiCardProps {
 // Gradiente escrito direto (mesmo motivo documentado em page-header.tsx e
 // stat-card.tsx: as classes bg-grad-* foram redefinidas para cor sólida em
 // outros 18 arquivos do redesign, então não são reaproveitadas aqui).
-const GRAD_CLASS: Record<Tint, string> = {
-  amber: "bg-gradient-to-br from-amber-500 to-orange-600",
-  blue: "bg-gradient-to-br from-blue-500 to-indigo-600",
-  green: "bg-gradient-to-br from-green-500 to-emerald-600",
-  purple: "bg-gradient-to-br from-purple-500 to-fuchsia-600",
-  red: "bg-gradient-to-br from-red-500 to-rose-600",
-  neutral: "bg-gradient-to-br from-slate-400 to-slate-500",
-};
-const RING_CLASS: Record<Tint, string> = {
-  amber: "ring-amber-500/20", blue: "ring-blue-500/20", green: "ring-green-500/20",
-  purple: "ring-purple-500/20", red: "ring-red-500/20", neutral: "ring-slate-400/20",
+const KPI_COR: Record<Tint, string> = {
+  amber: "kpi-amber",
+  blue: "kpi-blue",
+  green: "kpi-green",
+  purple: "kpi-purple",
+  red: "kpi-red",
+  neutral: "kpi-blue",
 };
 
 export function KpiCard({
@@ -50,12 +46,13 @@ export function KpiCard({
   const SetaIcon = subiu ? TrendingUp : TrendingDown;
 
   return (
-    <div className="panel p-5">
+    // kpi-vivid: fundo com tint da cor + borda esquerda acentuada + glow,
+    // como na referência. A cor vem da classe kpi-* (variável CSS).
+    <div className={cn("kpi-vivid p-5", KPI_COR[tint])}>
       <div className="flex items-center gap-3">
-        <div className={cn(
-          "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-md ring-4",
-          GRAD_CLASS[tint], RING_CLASS[tint]
-        )}>
+        {/* O ÍCONE em si não muda — só o container ganha o tratamento
+            Vivid (fundo tingido, borda e glow). Regra do projeto. */}
+        <div className="icon-vivid h-10 w-10 shrink-0">
           <Icon className="h-[18px] w-[18px]" />
         </div>
         <div className="min-w-0 flex-1">
