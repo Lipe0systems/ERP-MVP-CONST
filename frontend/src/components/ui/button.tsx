@@ -19,8 +19,9 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        // Primary Vivid: gradiente da marca + glow sutil, como na referência.
         default:
-          "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:shadow-md",
+          "bg-grad-brand text-white shadow-sm hover:brightness-110 hover:shadow-[0_6px_20px_-6px_hsl(var(--c-amber)/0.55)]",
         outline:
           "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground/20",
         ghost:

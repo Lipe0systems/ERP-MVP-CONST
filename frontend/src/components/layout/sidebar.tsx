@@ -152,12 +152,16 @@ function NavItem({ href, label, icon: Icon, cor, active, onClick, recolhida }: {
       title={recolhida ? label : undefined}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-[13.5px] font-medium",
+        // Espaçamento mais generoso (py-2.5) e cantos maiores, seguindo a
+        // referência. Ícone e navegação permanecem intocados.
+        "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium",
         "transition-[background-color,color] duration-150 [transition-timing-function:cubic-bezier(0.23,1,0.32,1)]",
         recolhida && "justify-center px-0",
         active
-          ? "bg-primary/[0.10] text-foreground"
-          : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+          // Estado ativo com mais presença: gradiente lateral suave da cor
+          // da marca, que esvai para a direita (como na referência).
+          ? "bg-gradient-to-r from-primary/[0.16] via-primary/[0.06] to-transparent text-foreground"
+          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
       )}
     >
       {/* Barra indicadora à esquerda */}
@@ -337,7 +341,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
       {/* Desktop — fundo com gradiente vertical sutil + mesh no topo */}
       <aside
         className={cn(
-          "relative hidden shrink-0 flex-col border-r border-border/60 md:flex bg-gradient-to-b from-card to-secondary/40",
+          "relative hidden shrink-0 flex-col border-r border-border/60 md:flex bg-background",
           "transition-[width] duration-200 [transition-timing-function:cubic-bezier(0.23,1,0.32,1)]",
           recolhida ? "w-[68px]" : "w-60",
           // Evita a transição de largura rodar no primeiro render (antes de
@@ -370,7 +374,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
             onClick={onCloseMobile}
             aria-hidden="true"
           />
-          <aside className="absolute inset-y-0 left-0 flex w-60 flex-col border-r border-border/60 bg-gradient-to-b from-card to-secondary/40 animate-in slide-in-from-left duration-300 [animation-timing-function:cubic-bezier(0.32,0.72,0,1)]">
+          <aside className="absolute inset-y-0 left-0 flex w-60 flex-col border-r border-border/60 bg-background animate-in slide-in-from-left duration-300 [animation-timing-function:cubic-bezier(0.32,0.72,0,1)]">
                         <div className="relative flex h-14 items-center justify-between gap-2 border-b border-border/60 px-5">
               <div className="flex items-center gap-2.5">
                 <Image src="/images/logo-icone.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />

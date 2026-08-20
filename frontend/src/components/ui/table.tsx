@@ -46,7 +46,9 @@ const TableHead = React.forwardRef<HTMLTableCellElement, React.ThHTMLAttributes<
     <th
       ref={ref}
       className={cn(
-        "h-11 px-4 text-left align-middle text-xs font-medium text-muted-foreground tracking-wide",
+        // Cabeçalho com mais presença: maiúsculas discretas e peso maior,
+        // separando visualmente do corpo da tabela (padrão da referência).
+        "h-11 px-4 text-left align-middle text-[11px] font-semibold uppercase tracking-wider text-muted-foreground",
         "[&:has([role=checkbox])]:pr-0",
         className
       )}
