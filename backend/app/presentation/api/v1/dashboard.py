@@ -182,34 +182,74 @@ def saude_das_obras(empresa_id: UUID = Depends(get_empresa_id), db: Session = De
     obras = db.query(ObraModel).filter(
         ObraModel.empresa_id == empresa_id, ObraModel.status == "em_andamento",
     ).all()
+    if not obras:
+        return []
+
+    obra_ids = [o.id for o in obras]
+
+    # ── OTIMIZAÇÃO N+1 ────────────────────────────────────────────────────
+    # Antes: 4 queries POR OBRA dentro de um loop (com 20 obras em
+    # andamento = 81 idas ao banco numa única requisição). Agora: 4 queries
+    # agregadas no total, agrupadas por obra_id, independentemente da
+    # quantidade de obras.
+    #
+    # O resultado final é idêntico — só a forma de buscar mudou. O filtro
+    # por empresa_id foi preservado em TODAS as queries (isolamento
+    # multi-tenant é inegociável).
+
+    bases = dict(
+        db.query(OrcamentoBaseObraModel.obra_id, OrcamentoBaseObraModel.valor_previsto)
+        .filter(
+            OrcamentoBaseObraModel.empresa_id == empresa_id,
+            OrcamentoBaseObraModel.obra_id.in_(obra_ids),
+        ).all()
+    )
+
+    materiais = dict(
+        db.query(
+            MovimentacaoEstoqueModel.obra_id,
+            func.coalesce(func.sum(MovimentacaoEstoqueModel.quantidade * ItemEstoqueModel.valor_medio), 0),
+        )
+        .join(ItemEstoqueModel, ItemEstoqueModel.id == MovimentacaoEstoqueModel.estoque_id)
+        .filter(
+            MovimentacaoEstoqueModel.empresa_id == empresa_id,
+            MovimentacaoEstoqueModel.obra_id.in_(obra_ids),
+            MovimentacaoEstoqueModel.tipo.in_(["entrada", "transferencia", "consumo"]),
+        )
+        .group_by(MovimentacaoEstoqueModel.obra_id).all()
+    )
+
+    pagares = dict(
+        db.query(ContaPagarModel.obra_id, func.coalesce(func.sum(ContaPagarModel.valor), 0))
+        .filter(
+            ContaPagarModel.empresa_id == empresa_id,
+            ContaPagarModel.obra_id.in_(obra_ids),
+        )
+        .group_by(ContaPagarModel.obra_id).all()
+    )
+
+    mao_de_obra = dict(
+        db.query(AlocacaoObraModel.obra_id, func.coalesce(func.sum(FuncionarioModel.salario), 0))
+        .join(FuncionarioModel, FuncionarioModel.id == AlocacaoObraModel.funcionario_id)
+        .filter(
+            AlocacaoObraModel.empresa_id == empresa_id,
+            AlocacaoObraModel.obra_id.in_(obra_ids),
+            AlocacaoObraModel.ativa == True,  # noqa: E712 — comparação SQL, não Python
+            FuncionarioModel.ativo == True,   # noqa: E712
+        )
+        .group_by(AlocacaoObraModel.obra_id).all()
+    )
 
     resultado = []
     for obra in obras:
-        base = db.query(OrcamentoBaseObraModel).filter(
-            OrcamentoBaseObraModel.empresa_id == empresa_id, OrcamentoBaseObraModel.obra_id == obra.id
-        ).first()
-        custo_previsto = float(base.valor_previsto) if base else float(obra.valor_previsto or 0)
+        base_valor = bases.get(obra.id)
+        custo_previsto = float(base_valor) if base_valor is not None else float(obra.valor_previsto or 0)
 
-        custo_material = db.query(
-            func.coalesce(func.sum(MovimentacaoEstoqueModel.quantidade * ItemEstoqueModel.valor_medio), 0)
-        ).join(ItemEstoqueModel, ItemEstoqueModel.id == MovimentacaoEstoqueModel.estoque_id).filter(
-            MovimentacaoEstoqueModel.empresa_id == empresa_id,
-            MovimentacaoEstoqueModel.obra_id == obra.id,
-            MovimentacaoEstoqueModel.tipo.in_(["entrada", "transferencia", "consumo"]),
-        ).scalar() or 0
-
-        custo_pagar = db.query(func.coalesce(func.sum(ContaPagarModel.valor), 0)).filter(
-            ContaPagarModel.empresa_id == empresa_id, ContaPagarModel.obra_id == obra.id,
-        ).scalar() or 0
-
-        custo_mo = db.query(func.coalesce(func.sum(FuncionarioModel.salario), 0)).join(
-            AlocacaoObraModel, AlocacaoObraModel.funcionario_id == FuncionarioModel.id
-        ).filter(
-            AlocacaoObraModel.empresa_id == empresa_id, AlocacaoObraModel.obra_id == obra.id,
-            AlocacaoObraModel.ativa == True, FuncionarioModel.ativo == True,
-        ).scalar() or 0
-
-        custo_realizado = float(custo_material) + float(custo_pagar) + float(custo_mo)
+        custo_realizado = (
+            float(materiais.get(obra.id, 0))
+            + float(pagares.get(obra.id, 0))
+            + float(mao_de_obra.get(obra.id, 0))
+        )
         pct = (custo_realizado / custo_previsto * 100) if custo_previsto else 0
 
         if pct < 80:

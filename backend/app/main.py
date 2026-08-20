@@ -2,6 +2,7 @@
 Ponto de entrada da aplicação FastAPI.
 """
 import logging
+import time
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -75,6 +76,35 @@ limiter = Limiter(key_func=_client_ip, default_limits=["300/minute"])
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
+
+
+@app.middleware("http")
+async def timing_middleware(request: Request, call_next):
+    """
+    Mede o tempo real de cada requisição e o expõe de duas formas:
+
+      • header `X-Process-Time` (em ms) — visível na aba Network do
+        navegador, permite comparar "tempo total do browser" contra
+        "tempo gasto dentro da API". Se o total for 3s mas este header
+        disser 200ms, o gargalo está na REDE/cold start, não no código.
+
+      • log de aviso quando passa de 1s — deixa os endpoints lentos
+        visíveis nos logs do Render sem precisar instrumentar cada rota.
+
+    Custo desprezível (uma subtração por requisição) e serve de base de
+    medição contínua, então fica em produção em vez de ser temporário.
+    """
+    inicio = time.perf_counter()
+    response = await call_next(request)
+    duracao_ms = (time.perf_counter() - inicio) * 1000
+
+    response.headers["X-Process-Time"] = f"{duracao_ms:.0f}"
+    if duracao_ms > 1000:
+        logger.warning(
+            "Requisição lenta: %s %s levou %.0fms",
+            request.method, request.url.path, duracao_ms,
+        )
+    return response
 
 
 @app.middleware("http")
