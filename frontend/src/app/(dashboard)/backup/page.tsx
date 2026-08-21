@@ -134,7 +134,7 @@ export default function BackupPage() {
                   key={f.id}
                   onClick={() => setFormato(f.id)}
                   className={cn(
-                    "relative flex items-start gap-3 rounded-xl border p-4 text-left transition-all duration-150 ease-ui",
+                    "relative flex items-start gap-3 rounded-xl border p-4 text-left transition-[background-color,border-color,color] duration-150 ease-ui",
                     ativo ? "border-transparent ring-2 ring-amber-500 bg-amber-500/[0.04]" : "hover:border-muted-foreground/30"
                   )}
                 >
@@ -200,7 +200,7 @@ export default function BackupPage() {
             <button
               onClick={() => setIncluirArquivos((v) => !v)}
               className={cn(
-                "flex w-full items-center gap-3 rounded-xl border p-4 text-left transition-all duration-150 ease-ui",
+                "flex w-full items-center gap-3 rounded-xl border p-4 text-left transition-[background-color,border-color,color] duration-150 ease-ui",
                 incluirArquivos ? "border-transparent ring-2 ring-purple-500 bg-purple-500/[0.04]" : "hover:border-muted-foreground/30"
               )}
             >

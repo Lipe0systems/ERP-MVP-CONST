@@ -73,17 +73,26 @@ export function SearchableSelect({
   useEffect(() => {
     if (!open) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    // Mesma proteção de race condition da busca global: sem a flag, uma
+    // resposta lenta de um termo antigo pode chegar depois e sobrescrever
+    // a lista do termo atual — o usuário veria opções que não batem com
+    // o que digitou (e poderia selecionar o registro errado).
+    let atual = true;
+
     debounceRef.current = setTimeout(async () => {
       setLoading(true);
       try {
         const results = await onSearch(term);
+        if (!atual) return;
         setOptions(results);
       } finally {
-        setLoading(false);
+        if (atual) setLoading(false);
       }
     }, 300);
 
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+    return () => {
+      atual = false; if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [term, open, onSearch]);
 
   function handleOpen() {

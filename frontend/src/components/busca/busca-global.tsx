@@ -65,12 +65,33 @@ export function BuscaGlobal() {
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (query.length < 2) { setResultados([]); return; }
+
+    // RACE CONDITION: o debounce cancelava o timer, mas não a requisição
+    // JÁ EM VOO. Digitando rápido ("obra" → "obras"), se a resposta de
+    // "obra" chegasse depois da de "obras", ela sobrescrevia o resultado
+    // correto — o usuário via resultados de um texto que já não estava
+    // mais no campo. A flag `atual` faz respostas obsoletas serem
+    // descartadas ao chegar.
+    let atual = true;
+
     debounceRef.current = setTimeout(async () => {
       setLoading(true);
-      try { const r = await buscar(query); setResultados(r); setSelecionado(0); }
-      finally { setLoading(false); }
+      try {
+        const r = await buscar(query);
+        if (!atual) return;
+        setResultados(r);
+        setSelecionado(0);
+      } finally {
+        // Só mexe no loading se esta ainda é a busca vigente — senão uma
+        // resposta antiga desligaria o loading de uma busca em andamento.
+        if (atual) setLoading(false);
+      }
     }, 280);
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+
+    return () => {
+      atual = false;
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, [query]);
 
   function navegar(link: string) { router.push(link); setOpen(false); }

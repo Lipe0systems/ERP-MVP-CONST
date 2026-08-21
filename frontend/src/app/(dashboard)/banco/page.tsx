@@ -94,7 +94,7 @@ export default function BancoPage() {
           {contas.map((conta) => (
             <Card
               key={conta.id}
-              className={`cursor-pointer transition-all ${contaSelecionada === conta.id ? "ring-2 ring-amber-500" : "hover:border-muted-foreground/30"}`}
+              className={`cursor-pointer transition-[background-color,border-color,box-shadow] ${contaSelecionada === conta.id ? "ring-2 ring-amber-500" : "hover:border-muted-foreground/30"}`}
               onClick={() => { setContaSelecionada(conta.id === contaSelecionada ? undefined : conta.id); setPage(1); }}
             >
               <CardHeader className="pb-2">

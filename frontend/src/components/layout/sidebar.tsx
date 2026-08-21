@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { useNavPrefetch } from "@/hooks/use-nav-prefetch";
 
 const SAAS_ADMIN_EMAIL = "accuservpn@proton.me";
 
@@ -145,10 +146,17 @@ function NavItem({ href, label, icon: Icon, cor, active, onClick, recolhida }: {
   href: string; label: string; icon: React.ElementType; cor: Cor;
   active: boolean; onClick?: () => void; recolhida?: boolean;
 }) {
+  // Prefetch dos DADOS ao passar o mouse (o <Link> já faz prefetch da
+  // rota). Ver comentários em use-nav-prefetch.ts.
+  const { prefetch, cancelar } = useNavPrefetch();
+
   return (
     <Link
       href={href}
       onClick={onClick}
+      onMouseEnter={() => prefetch(href)}
+      onMouseLeave={cancelar}
+      onFocus={() => prefetch(href)}
       title={recolhida ? label : undefined}
       aria-current={active ? "page" : undefined}
       className={cn(

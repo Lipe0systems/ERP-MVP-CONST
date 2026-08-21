@@ -72,7 +72,7 @@ export default function LixeiraPage() {
                 key={m.modulo}
                 onClick={() => setModuloAberto(aberto ? null : m.modulo)}
                 className={cn(
-                  "card-vivid flex items-center gap-3 rounded-2xl p-4 text-left transition-all",
+                  "card-vivid flex items-center gap-3 rounded-2xl p-4 text-left transition-[background-color,border-color]",
                   aberto && "ring-2 ring-red-500"
                 )}
               >

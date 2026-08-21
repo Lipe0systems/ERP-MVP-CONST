@@ -49,7 +49,7 @@ export default function RhPage() {
               key={a.id}
               onClick={() => setAba(a.id)}
               className={cn(
-                "flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 ease-ui",
+                "flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-[background-color,border-color,color] duration-150 ease-ui",
                 ativo ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
               )}
             >

@@ -92,7 +92,7 @@ export function PontoTab() {
                         key={s}
                         onClick={() => setStatus(f.id, s)}
                         className={cn(
-                          "rounded-md px-2.5 py-1 text-xs font-medium transition-all duration-100",
+                          "rounded-md px-2.5 py-1 text-xs font-medium transition-[background-color,border-color] duration-100",
                           marcacoes[f.id] === s ? STATUS_COR[s] : "bg-muted text-muted-foreground hover:bg-muted/70"
                         )}
                       >
