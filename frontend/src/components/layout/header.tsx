@@ -2,6 +2,7 @@
 
 import { Moon, Sun, LogOut, Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/theme-provider";
 import { NotificacoesPopover } from "@/components/notificacoes/notificacoes-popover";
@@ -22,12 +23,20 @@ function iniciais(nome: string): string {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const { theme, setTheme } = useTheme();
+  const queryClient = useQueryClient();
   const router = useRouter();
   const { me } = useCurrentUser();
 
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
+    // Limpa TODO o cache do React Query no logout. Sem isto, os dados da
+    // empresa anterior continuariam em memória — e se outra pessoa
+    // logasse na mesma aba sem recarregar a página, poderia ver dados
+    // cacheados de outro tenant antes da primeira revalidação chegar.
+    // Isolamento multi-tenant precisa valer no cache do cliente também,
+    // não só no backend.
+    queryClient.clear();
     router.push("/login");
     router.refresh();
   }

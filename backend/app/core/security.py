@@ -32,6 +32,9 @@ from typing import Any
 from uuid import UUID
 import logging
 
+import hashlib
+import time
+
 import httpx
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -82,6 +85,43 @@ class CurrentUser:
         self.raw = raw
 
 
+# ── Cliente HTTP reutilizável ────────────────────────────────────────────
+# Antes: httpx.Client() era criado e destruído a CADA requisição, forçando
+# um handshake TCP + TLS novo toda vez (100-300ms de custo puro antes de
+# qualquer byte útil trafegar). Um cliente de módulo mantém o pool de
+# conexões vivo entre requisições, reaproveitando a conexão já estabelecida.
+_http_client = httpx.Client(
+    timeout=httpx.Timeout(10.0, connect=5.0),
+    limits=httpx.Limits(max_keepalive_connections=20, max_connections=50),
+)
+
+
+# ── Cache de validação de token ──────────────────────────────────────────
+# O ponto mais caro do sistema: toda requisição autenticada fazia uma
+# chamada HTTP EXTERNA ao Supabase antes de qualquer trabalho útil. Numa
+# tela que dispara 4 requisições, são 4 idas ao Supabase só para revalidar
+# o MESMO token, repetidamente.
+#
+# SEGURANÇA — por que este cache é seguro:
+#   • A chave é o hash SHA-256 do token, nunca o token em texto claro
+#     (evita vazar credencial em dump de memória ou log).
+#   • TTL curto (60s). Um token revogado continua aceito no máximo por
+#     esse período — janela deliberadamente pequena.
+#   • Cacheia SOMENTE a autenticação (o token é válido e pertence a este
+#     usuário). A AUTORIZAÇÃO — empresa, papel, se a conta está ativa,
+#     se a empresa foi bloqueada — continua sendo lida do banco a cada
+#     requisição, sem cache nenhum. Ou seja: revogar acesso, trocar papel
+#     ou desativar empresa continua tendo efeito IMEDIATO.
+#   • Respostas de erro nunca são cacheadas.
+_token_cache: dict[str, tuple[float, dict[str, Any]]] = {}
+_TOKEN_CACHE_TTL = 60.0
+_TOKEN_CACHE_MAX = 1000
+
+
+def _cache_key(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
 def _verificar_token_no_supabase(token: str) -> dict[str, Any]:
     """
     Pede para o próprio Supabase Auth confirmar que o token é válido e
@@ -94,16 +134,24 @@ def _verificar_token_no_supabase(token: str) -> dict[str, Any]:
     NOTA: este passo autentica (confirma identidade). A autorização
     (empresa/papel) acontece depois, em get_current_user, consultando o
     nosso próprio banco — nunca a partir dos metadados devolvidos aqui.
+
+    Resultado positivo fica em cache por 60s (ver bloco acima).
     """
+    chave = _cache_key(token)
+    agora = time.monotonic()
+
+    em_cache = _token_cache.get(chave)
+    if em_cache and (agora - em_cache[0]) < _TOKEN_CACHE_TTL:
+        return em_cache[1]
+
     try:
-        with httpx.Client(timeout=10.0) as client:
-            response = client.get(
-                f"{settings.SUPABASE_URL}/auth/v1/user",
-                headers={
-                    "Authorization": f"Bearer {token}",
-                    "apikey": settings.SUPABASE_ANON_KEY,
-                },
-            )
+        response = _http_client.get(
+            f"{settings.SUPABASE_URL}/auth/v1/user",
+            headers={
+                "Authorization": f"Bearer {token}",
+                "apikey": settings.SUPABASE_ANON_KEY,
+            },
+        )
     except Exception as exc:  # noqa: BLE001 — qualquer falha vira 401 controlado,
         # nunca deixamos uma exceção crua escapar da dependency (isso poderia
         # gerar uma resposta sem os cabeçalhos de CORS, que o navegador então
@@ -120,12 +168,27 @@ def _verificar_token_no_supabase(token: str) -> dict[str, Any]:
         )
 
     try:
-        return response.json()
+        dados = response.json()
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Resposta inesperada do servidor de autenticação.",
         ) from exc
+
+    # Só chega aqui se o token é válido (erros já lançaram acima) — nunca
+    # cacheamos falha. Limpeza simples por tamanho: se o dicionário crescer
+    # demais, descarta as entradas já expiradas; se ainda assim estiver
+    # cheio, zera. Evita crescimento indefinido de memória sem precisar de
+    # uma dependência externa só para isso.
+    if len(_token_cache) >= _TOKEN_CACHE_MAX:
+        expirados = [k for k, (t, _) in _token_cache.items() if (agora - t) >= _TOKEN_CACHE_TTL]
+        for k in expirados:
+            _token_cache.pop(k, None)
+        if len(_token_cache) >= _TOKEN_CACHE_MAX:
+            _token_cache.clear()
+
+    _token_cache[chave] = (agora, dados)
+    return dados
 
 
 def get_current_user(
