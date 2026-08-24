@@ -76,7 +76,7 @@ export function ResultadoObraCard({ obraId }: { obraId: string }) {
       </div>
 
       {/* Detalhamento de custos */}
-      <Card className="card-vivid">
+      <Card>
         <CardHeader>
           <CardTitle>Composição do custo</CardTitle>
         </CardHeader>

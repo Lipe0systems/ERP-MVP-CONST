@@ -58,7 +58,7 @@ export function PontoTab() {
 
   return (
     <div className="space-y-4">
-      <Card className="card-vivid">
+      <Card>
         <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-2">
             <Label htmlFor="data-ponto">Data</Label>
@@ -73,12 +73,12 @@ export function PontoTab() {
       </Card>
 
       {loadFunc || loadPonto ? (
-        <Card className="card-vivid"><CardContent className="space-y-2 p-4">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-14 w-full" />)}</CardContent></Card>
+        <Card><CardContent className="space-y-2 p-4">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-14 w-full" />)}</CardContent></Card>
       ) : funcionarios.length === 0 ? (
-        <Card className="card-vivid"><CardContent><EmptyState icon={CalendarCheck} title="Nenhum funcionário ativo" description="Cadastre funcionários para registrar a folha de ponto." /></CardContent></Card>
+        <Card><CardContent><EmptyState icon={CalendarCheck} title="Nenhum funcionário ativo" description="Cadastre funcionários para registrar a folha de ponto." /></CardContent></Card>
       ) : (
         <>
-          <Card className="card-vivid">
+          <Card>
             <CardContent className="divide-y p-0">
               {funcionarios.map((f) => (
                 <div key={f.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">

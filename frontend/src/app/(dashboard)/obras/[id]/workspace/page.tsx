@@ -104,7 +104,7 @@ export default function WorkspaceObraPage() {
       {/* Conteúdo */}
       {aba === "visao" && (
         <div className="space-y-4">
-          <Card className="card-vivid">
+          <Card>
             <CardContent className="grid gap-3 p-5 sm:grid-cols-2">
               <Info label="Responsável" value={obra.responsavel} />
               <Info label="Endereço" value={obra.endereco} />
@@ -117,7 +117,7 @@ export default function WorkspaceObraPage() {
       )}
 
       {aba === "planejamento" && (
-        <Card className="card-vivid">
+        <Card>
           <CardContent className="grid gap-3 p-5 sm:grid-cols-2">
             <Info label="Responsável" value={obra.responsavel} />
             <Info label="Valor previsto" value={formatMoeda(obra.valor_previsto)} />
@@ -216,13 +216,13 @@ export default function WorkspaceObraPage() {
       {aba === "financeiro" && (
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Card className="card-vivid">
+            <Card>
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground">A receber</p>
                 <p className="text-2xl font-bold text-gradient-green">{formatMoeda(data.financeiro.total_a_receber)}</p>
               </CardContent>
             </Card>
-            <Card className="card-vivid">
+            <Card>
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground">A pagar</p>
                 <p className="text-2xl font-bold text-gradient-purple">{formatMoeda(data.financeiro.total_a_pagar)}</p>
@@ -306,7 +306,7 @@ interface SecaoListaProps {
 
 function SecaoLista({ vazio, iconeVazio, tituloVazio, descVazio, acaoLabel, onAcao, children }: SecaoListaProps) {
   return (
-    <Card className="card-vivid">
+    <Card>
       <CardContent className={cn(vazio ? "" : "space-y-2 p-4")}>
         {vazio ? (
           <EmptyState icon={iconeVazio} title={tituloVazio} description={descVazio} actionLabel={acaoLabel} onAction={onAcao} />

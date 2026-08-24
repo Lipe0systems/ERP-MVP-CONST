@@ -66,7 +66,7 @@ export default function ObraDetalhePage() {
         </Button>
       </div>
 
-      <Card className="card-vivid">
+      <Card>
         <CardContent className="grid gap-3 p-5 sm:grid-cols-2">
           <InfoRow icon={MapPin} label="Endereço" value={obra.endereco} />
           <InfoRow icon={User} label="Responsável" value={obra.responsavel} />

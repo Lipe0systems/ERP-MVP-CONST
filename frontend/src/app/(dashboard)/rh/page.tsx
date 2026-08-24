@@ -95,7 +95,7 @@ function FuncionariosTab() {
         </Button>
       </div>
 
-      <Card className="card-vivid">
+      <Card>
         <CardContent className="p-0">
           {isLoading ? (
             <div className="space-y-2 p-4">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>

@@ -45,7 +45,7 @@ export default function AceitarTermosPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary/30 p-6">
-      <Card className="w-full max-w-lg card-vivid">
+      <Card className="w-full max-w-lg">
         <CardContent className="space-y-5 p-8">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-grad-brand text-white">

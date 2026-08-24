@@ -19,7 +19,7 @@ export function AnaliseCategoriaWidget() {
   const totalDespesas = despesas.reduce((s, d) => s + d.total, 0);
 
   return (
-    <Card className="card-vivid">
+    <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
           <span className="icon-vivid kpi-purple h-7 w-7 shrink-0"><PieChart className="h-4 w-4" /></span>

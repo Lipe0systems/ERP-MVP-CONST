@@ -371,7 +371,7 @@ export default function DashboardPage() {
             </Card>
           )}
           {show("grafico_obras") && (
-            <Card className="card-vivid">
+            <Card>
               <CardHeader>
                 <CardTitle className="text-base font-semibold text-foreground">Obras por status</CardTitle>
               </CardHeader>

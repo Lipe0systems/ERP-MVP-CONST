@@ -57,7 +57,7 @@ export default function LixeiraPage() {
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-2xl" />)}
         </div>
       ) : modulos.length === 0 ? (
-        <Card className="card-vivid">
+        <Card>
           <CardContent>
             <EmptyState icon={Inbox} title="Lixeira vazia" description="Nada foi excluído recentemente. Itens que você apagar aparecerão aqui e poderão ser restaurados." />
           </CardContent>
@@ -91,7 +91,7 @@ export default function LixeiraPage() {
 
       {/* Lista de itens do módulo aberto */}
       {moduloAberto && (
-        <Card className="card-vivid">
+        <Card>
           <CardContent className="p-0">
             {loadingLista ? (
               <div className="space-y-2 p-4">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 w-full" />)}</div>

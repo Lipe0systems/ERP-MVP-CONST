@@ -118,7 +118,7 @@ export default function BackupPage() {
       </div>
 
       {/* Exportação seletiva */}
-      <Card className="card-vivid">
+      <Card>
         <CardContent className="space-y-6 p-6">
           <div>
             <h3 className="text-base font-semibold">Exportação personalizada</h3>

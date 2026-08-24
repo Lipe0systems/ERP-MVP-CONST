@@ -13,11 +13,11 @@ export function CustoObraTab() {
   const total = custos.reduce((s, c) => s + c.custo_mensal_estimado, 0);
 
   if (isLoading) {
-    return <Card className="card-vivid"><CardContent className="space-y-2 p-4">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}</CardContent></Card>;
+    return <Card><CardContent className="space-y-2 p-4">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}</CardContent></Card>;
   }
 
   if (custos.length === 0) {
-    return <Card className="card-vivid"><CardContent><EmptyState icon={DollarSign} title="Sem custos de mão de obra" description="Aloque funcionários às obras para ver o custo estimado aqui." /></CardContent></Card>;
+    return <Card><CardContent><EmptyState icon={DollarSign} title="Sem custos de mão de obra" description="Aloque funcionários às obras para ver o custo estimado aqui." /></CardContent></Card>;
   }
 
   return (

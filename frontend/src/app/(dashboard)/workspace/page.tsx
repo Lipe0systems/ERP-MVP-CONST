@@ -64,7 +64,7 @@ export default function WorkspacePage() {
           {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-32 rounded-2xl" />)}
         </div>
       ) : !processos || processos.length === 0 ? (
-        <Card className="card-vivid">
+        <Card>
           <CardContent>
             <EmptyState
               icon={Briefcase}

@@ -146,7 +146,7 @@ export default function WorkspaceProcessoPage() {
       </div>
 
       {/* Conteúdo da etapa */}
-      <Card className="card-vivid">
+      <Card>
         <CardContent className="p-6">
           {p.fase === "cliente" && (
             <div className="space-y-4">

@@ -16,7 +16,7 @@ export function ProjecaoSaldoWidget() {
   const pontos = (data?.pontos ?? []).map((p) => ({ ...p, dataLabel: formatData(p.data) }));
 
   return (
-    <Card className="card-vivid">
+    <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
           <span className="icon-vivid kpi-blue h-7 w-7 shrink-0"><Activity className="h-4 w-4" /></span>
