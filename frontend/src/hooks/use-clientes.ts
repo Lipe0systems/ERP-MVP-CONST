@@ -12,7 +12,7 @@ import {
   removerCliente,
 } from "@/lib/api/clientes";
 import { extractErrorMessage } from "@/lib/api/client";
-import type { ClienteV3Input as ClienteInput } from "@/types";
+import type { Cliente, ClienteV3Input as ClienteInput, PaginatedResponse } from "@/types";
 
 const CLIENTES_KEY = "clientes";
 
@@ -37,10 +37,21 @@ function useInvalidateClientes() {
 }
 
 export function useCriarCliente() {
+  const queryClient = useQueryClient();
   const invalidate = useInvalidateClientes();
   return useMutation({
     mutationFn: (data: ClienteInput) => criarCliente(data),
-    onSuccess: () => {
+    onSuccess: (clienteCriado) => {
+      // Mesma otimização aplicada em useCriarObra: o POST já devolve o
+      // registro criado, então ele entra direto no cache (aparece na
+      // hora) e o invalidate reconcilia com o servidor em segundo plano.
+      queryClient.setQueriesData<PaginatedResponse<Cliente>>(
+        { queryKey: [CLIENTES_KEY] },
+        (antigo) => {
+          if (!antigo || antigo.page !== 1) return antigo;
+          return { ...antigo, items: [clienteCriado, ...antigo.items], total: antigo.total + 1 };
+        }
+      );
       invalidate();
       toast.success("Cliente cadastrado com sucesso.");
     },

@@ -20,9 +20,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // mas essa checagem evita a experiência ruim de ver a tela "vazia" e
   // manda direto para o login quando não há sessão.
   useEffect(() => {
+    let ativo = true;
     const supabase = createClient();
 
     supabase.auth.getSession().then(async ({ data }) => {
+      if (!ativo) return;
+
       if (!data.session) {
         router.replace("/login");
         return;
@@ -32,29 +35,59 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       // de Privacidade (ex.: contas criadas antes de este aceite existir).
       // Quem cria conta agora (onboarding/convite) já aceita no próprio
       // formulário de cadastro, então normalmente não passa por aqui.
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/usuarios/me/termos`, {
-          headers: { Authorization: `Bearer ${data.session.access_token}` },
-        });
-        if (res.ok) {
-          const status = await res.json();
-          if (status.precisa_aceitar) {
-            router.replace("/aceitar-termos");
-            return;
+      //
+      // PERFORMANCE: esta checagem roda UMA VEZ POR SESSÃO, não a cada
+      // navegação. Antes, este layout envolve todas as telas do sistema,
+      // então trocar de página disparava getSession() + este fetch em
+      // sequência — e a interface inteira (sidebar, header, conteúdo)
+      // ficava bloqueada esperando as duas terminarem, toda vez.
+      //
+      // Guardar em sessionStorage é seguro aqui porque:
+      //  • O aceite não muda no meio da sessão (só é registrado uma vez,
+      //    e quem não aceitou é redirecionado antes de entrar).
+      //  • sessionStorage é limpo ao fechar a aba, e a chave inclui o id
+      //    do usuário — trocar de conta na mesma aba não reaproveita a
+      //    verificação de outra pessoa.
+      //  • É apenas UX: o backend continua bloqueando de verdade quem não
+      //    tem permissão. Nada de segurança depende deste atalho.
+      const chaveAceite = `termos-ok:${data.session.user.id}`;
+      const jaVerificado = sessionStorage.getItem(chaveAceite) === "1";
+
+      if (!jaVerificado) {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/usuarios/me/termos`, {
+            headers: { Authorization: `Bearer ${data.session.access_token}` },
+          });
+          if (!ativo) return;
+          if (res.ok) {
+            const status = await res.json();
+            if (status.precisa_aceitar) {
+              router.replace("/aceitar-termos");
+              return;
+            }
+            sessionStorage.setItem(chaveAceite, "1");
           }
+        } catch {
+          // Falha ao checar não deve travar o acesso — segue normalmente.
         }
-      } catch {
-        // Falha ao checar não deve travar o acesso — segue normalmente.
       }
 
-      setSessaoVerificada(true);
+      if (ativo) setSessaoVerificada(true);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) router.replace("/login");
+      if (!session) {
+        // Logout/expiração: limpa a marca de verificação para que o
+        // próximo login refaça a checagem do zero.
+        try { sessionStorage.clear(); } catch { /* modo privado pode bloquear */ }
+        router.replace("/login");
+      }
     });
 
-    return () => listener.subscription.unsubscribe();
+    return () => {
+      ativo = false;
+      listener.subscription.unsubscribe();
+    };
   }, [router]);
 
   if (!sessaoVerificada) {

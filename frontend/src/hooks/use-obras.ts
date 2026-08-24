@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import { atualizarObra, criarObra, listarObras, obterObra, obterResultadoObra, removerObra } from "@/lib/api/obras";
 import { extractErrorMessage } from "@/lib/api/client";
-import type { ObraInput, ObraStatus } from "@/types";
+import type { Obra, ObraInput, ObraStatus, PaginatedResponse } from "@/types";
 
 const OBRAS_KEY = "obras";
 // Invalida o resumo do Dashboard também: criar/editar/remover uma obra muda
@@ -37,10 +37,35 @@ function useInvalidateObras() {
 }
 
 export function useCriarObra() {
+  const queryClient = useQueryClient();
   const invalidate = useInvalidateObras();
   return useMutation({
     mutationFn: (data: ObraInput) => criarObra(data),
-    onSuccess: () => {
+    onSuccess: (obraCriada) => {
+      // PERFORMANCE: o POST já devolve a obra criada (response_model=ObraOut
+      // no backend), mas antes essa resposta era descartada e a tela só
+      // atualizava depois de invalidate() disparar uma SEGUNDA ida à rede
+      // — era isso que fazia o registro demorar ~3s para aparecer.
+      //
+      // Agora o item entra direto no cache da lista (aparece
+      // imediatamente) e o invalidate continua acontecendo em segundo
+      // plano, para reconciliar total/ordenação/paginação com o servidor.
+      // Ou seja: a UI fica instantânea SEM abrir mão da fonte da verdade.
+      queryClient.setQueriesData<PaginatedResponse<Obra>>(
+        { queryKey: [OBRAS_KEY] },
+        (antigo) => {
+          if (!antigo) return antigo;
+          // Só insere na primeira página: nas demais, a posição correta
+          // depende da ordenação do servidor — inserir no topo ali daria
+          // a impressão errada de onde o registro ficou.
+          if (antigo.page !== 1) return antigo;
+          return {
+            ...antigo,
+            items: [obraCriada, ...antigo.items],
+            total: antigo.total + 1,
+          };
+        }
+      );
       invalidate();
       toast.success("Obra cadastrada com sucesso.");
     },
