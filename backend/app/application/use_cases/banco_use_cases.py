@@ -19,12 +19,15 @@ class BancoUseCases:
     # --- Contas ---
 
     def listar_contas(self, empresa_id: UUID) -> list[dict]:
+        # OTIMIZAÇÃO N+1: antes chamava saldo_conta() dentro do loop, e cada
+        # chamada fazia 3 queries — com 5 contas eram 16 idas ao banco.
+        # saldos_por_conta() resolve tudo em 2 queries fixas.
         contas = self.contas.list(empresa_id)
-        result = []
-        for c in contas:
-            saldo = self.lancamentos.saldo_conta(empresa_id, c.id)
-            result.append({**c.__dict__, "saldo_atual": saldo})
-        return result
+        saldos = self.lancamentos.saldos_por_conta(empresa_id)
+        return [
+            {**c.__dict__, "saldo_atual": saldos.get(c.id, round(float(getattr(c, "saldo_inicial", 0) or 0), 2))}
+            for c in contas
+        ]
 
     def obter_conta(self, empresa_id: UUID, conta_id: UUID) -> ContaBancaria:
         conta = self.contas.get_by_id(empresa_id, conta_id)

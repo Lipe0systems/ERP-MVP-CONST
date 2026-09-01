@@ -10,7 +10,7 @@ import {
   removerItemEstoque,
 } from "@/lib/api/estoque";
 import { extractErrorMessage } from "@/lib/api/client";
-import type { ItemEstoqueInput } from "@/types";
+import type { ItemEstoque, ItemEstoqueInput, PaginatedResponse } from "@/types";
 
 const ESTOQUE_KEY = "estoque";
 
@@ -28,10 +28,17 @@ function useInvalidateEstoque() {
 }
 
 export function useCriarItemEstoque() {
+  const qc = useQueryClient();
   const invalidate = useInvalidateEstoque();
   return useMutation({
     mutationFn: (data: ItemEstoqueInput) => criarItemEstoque(data),
-    onSuccess: () => {
+    onSuccess: (criado) => {
+      // Item novo entra direto no cache (aparece na hora); o invalidate
+      // continua reconciliando com o servidor em segundo plano.
+      qc.setQueriesData<PaginatedResponse<ItemEstoque>>({ queryKey: [ESTOQUE_KEY] }, (antigo) => {
+        if (!antigo || antigo.page !== 1) return antigo;
+        return { ...antigo, items: [criado, ...antigo.items], total: antigo.total + 1 };
+      });
       invalidate();
       toast.success("Item de estoque cadastrado com sucesso.");
     },

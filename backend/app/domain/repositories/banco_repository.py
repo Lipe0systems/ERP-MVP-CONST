@@ -41,3 +41,8 @@ class LancamentoBancarioRepository(ABC):
 
     @abstractmethod
     def saldo_conta(self, empresa_id: UUID, conta_id: UUID) -> float: ...
+
+    @abstractmethod
+    def saldos_por_conta(self, empresa_id: UUID) -> dict[UUID, float]:
+        """Saldo de todas as contas da empresa em lote (evita N+1)."""
+        ...

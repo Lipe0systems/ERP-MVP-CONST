@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import { aprovarCompra, atualizarCompra, criarCompra, listarCompras, receberCompra, removerCompra } from "@/lib/api/compras";
 import { extractErrorMessage } from "@/lib/api/client";
-import type { CompraInput, StatusCompra } from "@/types";
+import type { Compra, CompraInput, PaginatedResponse, StatusCompra } from "@/types";
 
 const COMPRAS_KEY = "compras";
 
@@ -28,10 +28,19 @@ function useInvalidateCompras() {
 }
 
 export function useCriarCompra() {
+  const qc = useQueryClient();
   const invalidate = useInvalidateCompras();
   return useMutation({
     mutationFn: (data: CompraInput) => criarCompra(data),
-    onSuccess: () => {
+    onSuccess: (criada) => {
+      // Seguro inserir direto: esta mutation invalida APENAS [compras]
+      // (conferido) — as invalidações cruzadas com estoque/financeiro
+      // vivem em outras mutations do arquivo, que mexem em saldo e conta
+      // a pagar. Aqui é só o registro da compra em si.
+      qc.setQueriesData<PaginatedResponse<Compra>>({ queryKey: [COMPRAS_KEY] }, (antigo) => {
+        if (!antigo || antigo.page !== 1) return antigo;
+        return { ...antigo, items: [criada, ...antigo.items], total: antigo.total + 1 };
+      });
       invalidate();
       toast.success("Compra cadastrada com sucesso.");
     },

@@ -138,3 +138,44 @@ class SqlAlchemyLancamentoBancarioRepository(LancamentoBancarioRepository):
         ).scalar() or 0
 
         return round(saldo_inicial + float(entradas) - float(saidas), 2)
+
+    def saldos_por_conta(self, empresa_id: UUID) -> dict[UUID, float]:
+        """
+        Versão em LOTE de saldo_conta: devolve o saldo de TODAS as contas da
+        empresa em 2 queries fixas, em vez de 3 queries POR CONTA.
+
+        Antes (em listar_contas): com 5 contas bancárias eram 1 + (5 x 3) =
+        16 idas ao banco só para montar a listagem. Agora são 2,
+        independentemente da quantidade de contas.
+
+        O isolamento multi-tenant é preservado: as duas queries filtram por
+        empresa_id, exatamente como a versão individual.
+        """
+        contas = self.db.query(
+            ContaBancariaModel.id, ContaBancariaModel.saldo_inicial
+        ).filter(ContaBancariaModel.empresa_id == empresa_id).all()
+
+        # Uma query só, agrupando por conta E por tipo — evita precisar de
+        # duas queries separadas para entrada e saída.
+        movimentos = self.db.query(
+            LancamentoBancarioModel.conta_id,
+            LancamentoBancarioModel.tipo,
+            func.coalesce(func.sum(LancamentoBancarioModel.valor), 0),
+        ).filter(
+            LancamentoBancarioModel.empresa_id == empresa_id,
+        ).group_by(
+            LancamentoBancarioModel.conta_id, LancamentoBancarioModel.tipo
+        ).all()
+
+        totais: dict[UUID, float] = {}
+        for conta_id, tipo, soma in movimentos:
+            valor = float(soma or 0)
+            if tipo == TipoLancamento.ENTRADA.value:
+                totais[conta_id] = totais.get(conta_id, 0.0) + valor
+            elif tipo == TipoLancamento.SAIDA.value:
+                totais[conta_id] = totais.get(conta_id, 0.0) - valor
+
+        return {
+            conta_id: round(float(saldo_inicial or 0) + totais.get(conta_id, 0.0), 2)
+            for conta_id, saldo_inicial in contas
+        }
