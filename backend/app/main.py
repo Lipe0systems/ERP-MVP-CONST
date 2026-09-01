@@ -6,6 +6,7 @@ import time
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Response
 from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -136,6 +137,34 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.options("/{rest_of_path:path}")
+async def preflight_universal(rest_of_path: str) -> Response:
+    """
+    Rede de segurança para requisições CORS preflight (OPTIONS).
+
+    INCIDENTE: em produção, todo OPTIONS estava voltando 400 com corpo
+    vazio, mesmo com o CORSMiddleware configurado corretamente (origem
+    permitida, allow_methods=["*"]). O Uvicorn registrava a requisição
+    chegando (log de acesso confirma), então não era bloqueio de borda —
+    o preflight automático do CORSMiddleware não estava sendo reconhecido
+    por um motivo ainda não isolado com certeza total.
+
+    Este handler garante que TODO OPTIONS, para QUALQUER rota, sempre
+    responde 200 vazio — nunca fica refém dessa peça específica do
+    Starlette. O CORSMiddleware (registrado acima, portanto mais externo)
+    continua adicionando os headers de CORS de verdade a esta resposta,
+    baseado na Origin real da requisição — nenhuma validação de origem é
+    enfraquecida.
+
+    SEGURANÇA: isto NÃO abre nada. OPTIONS nunca executa lógica de
+    negócio nem lê dados — só descreve "quais métodos/headers são aceitos
+    aqui". A requisição real que vem depois (GET/POST/etc.) continua
+    passando por toda a autenticação e autorização normalmente, sem
+    nenhuma alteração.
+    """
+    return Response(status_code=200)
 
 
 @app.exception_handler(Exception)
