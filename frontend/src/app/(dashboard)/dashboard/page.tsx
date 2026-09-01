@@ -1,16 +1,28 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import dynamic from "next/dynamic";
+
+// Lazy loading: o Recharts só entra no bundle quando um destes componentes
+// realmente for renderizado — não no carregamento inicial da página.
+// ssr:false porque Recharts usa medidas do DOM (ResponsiveContainer),
+// então não tem por que tentar renderizar no servidor de qualquer forma.
+const FluxoCaixaChart = dynamic(
+  () => import("@/components/dashboard/fluxo-caixa-chart").then((m) => m.FluxoCaixaChart),
+  { ssr: false, loading: () => <Skeleton className="h-full w-full rounded-lg" /> }
+);
+const ObrasPorStatusChart = dynamic(
+  () => import("@/components/dashboard/obras-por-status-chart").then((m) => m.ObrasPorStatusChart),
+  { ssr: false, loading: () => <Skeleton className="h-full w-full rounded-lg" /> }
+);
+import { PIE_COLORS } from "@/components/dashboard/obras-por-status-chart";
 import { useState, useEffect } from "react";
 import {
   AlertTriangle, ArrowDownCircle, ArrowUpCircle, Boxes, CalendarDays,
   CheckCircle2, HardHat, Landmark, Settings, Users, TrendingUp,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Area, AreaChart, CartesianGrid, Cell, Pie, PieChart,
-  ResponsiveContainer, Tooltip, XAxis, YAxis,
-} from "recharts";
+
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -74,10 +86,8 @@ const FALLBACK: DashboardResumo = {
   estoque_abaixo_minimo: 0,
 };
 
-const PIE_COLORS: Record<string, string> = {
-  planejamento: "#94a3b8", em_andamento: "#f59e0b", pausada: "#fb923c",
-  concluida: "#22c55e", cancelada: "#ef4444",
-};
+// PIE_COLORS agora vem de @/components/dashboard/obras-por-status-chart —
+// fonte única, usada tanto no gráfico quanto na legenda abaixo dele.
 
 type PeriodoFluxo = "7d" | "15d" | "30d" | "60d" | "90d" | "6m" | "12m";
 const OPCOES_PERIODO: { valor: PeriodoFluxo; label: string }[] = [
@@ -340,32 +350,7 @@ export default function DashboardPage() {
                     </p>
                   </div>
                 ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={r.fluxo_de_caixa}>
-                    <defs>
-                      <linearGradient id="gEntrada" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#22c55e" stopOpacity={0.3} />
-                        <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient id="gSaida" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#ef4444" stopOpacity={0.3} />
-                        <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
-                    <XAxis dataKey="mes" fontSize={12} tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--muted-foreground))" }} />
-                    <YAxis fontSize={12} tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--muted-foreground))" }} />
-                    <Tooltip
-                      formatter={(v: number) => formatMoeda(v)}
-                      contentStyle={{
-                        borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))",
-                        boxShadow: "0 4px 20px hsl(var(--shadow-color) / 0.12)",
-                      }}
-                    />
-                    <Area type="monotone" dataKey="entrada" name="Entrada" stroke="#22c55e" strokeWidth={2.5} fill="url(#gEntrada)" />
-                    <Area type="monotone" dataKey="saida" name="Saída" stroke="#ef4444" strokeWidth={2.5} fill="url(#gSaida)" />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <FluxoCaixaChart data={r.fluxo_de_caixa} formatMoeda={formatMoeda} />
                 )}
               </CardContent>
             </Card>
@@ -381,14 +366,7 @@ export default function DashboardPage() {
                 ) : (
                   <>
                     <div className="h-44 w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie data={r.obras_por_status} dataKey="total" nameKey="label" cx="50%" cy="50%" innerRadius={45} outerRadius={70} paddingAngle={3} label={false}>
-                            {r.obras_por_status.map((e) => <Cell key={e.status} fill={PIE_COLORS[e.status] ?? "#94a3b8"} />)}
-                          </Pie>
-                          <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))" }} />
-                        </PieChart>
-                      </ResponsiveContainer>
+                      <ObrasPorStatusChart data={r.obras_por_status} />
                     </div>
                     <div className="mt-2 w-full space-y-1">
                       {r.obras_por_status.map((e) => (
