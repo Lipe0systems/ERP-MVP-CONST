@@ -17,7 +17,7 @@ export function CustoObraTab() {
   }
 
   if (custos.length === 0) {
-    return <Card><CardContent><EmptyState icon={DollarSign} title="Sem custos de mão de obra" description="Aloque funcionários às obras para ver o custo estimado aqui." /></CardContent></Card>;
+    return <Card><CardContent><EmptyState icon={DollarSign} title="Sem custos de mão de obra" description="Aloque funcionários às instalações para ver o custo estimado aqui." /></CardContent></Card>;
   }
 
   return (

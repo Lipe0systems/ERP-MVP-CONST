@@ -9,7 +9,7 @@ import type { Obra, ObraInput, ObraStatus, PaginatedResponse } from "@/types";
 
 const OBRAS_KEY = "obras";
 // Invalida o resumo do Dashboard também: criar/editar/remover uma obra muda
-// os cards de "Obras ativas" / "Obras concluídas".
+// os cards de "Instalações ativas" / "Obras concluídas".
 const DASHBOARD_KEY = "dashboard-resumo";
 
 export function useObras(params: {
@@ -67,7 +67,7 @@ export function useCriarObra() {
         }
       );
       invalidate();
-      toast.success("Obra cadastrada com sucesso.");
+      toast.success("Instalação cadastrada com sucesso.");
     },
     onError: (error) => toast.error(extractErrorMessage(error)),
   });
@@ -79,7 +79,7 @@ export function useAtualizarObra() {
     mutationFn: ({ id, data }: { id: string; data: ObraInput }) => atualizarObra(id, data),
     onSuccess: () => {
       invalidate();
-      toast.success("Obra atualizada com sucesso.");
+      toast.success("Instalação atualizada com sucesso.");
     },
     onError: (error) => toast.error(extractErrorMessage(error)),
   });
@@ -91,7 +91,7 @@ export function useRemoverObra() {
     mutationFn: (id: string) => removerObra(id),
     onSuccess: () => {
       invalidate();
-      toast.success("Obra removida com sucesso.");
+      toast.success("Instalação removida com sucesso.");
     },
     onError: (error) => toast.error(extractErrorMessage(error)),
   });

@@ -28,7 +28,7 @@ import { removerFotoDiario } from "@/lib/supabase/storage";
 import { CLIMA_OBRA, CLIMA_OBRA_LABEL, type RegistroDiarioListItem } from "@/types";
 
 const diarioSchema = z.object({
-  obra_id: z.string().min(1, "Selecione uma obra."),
+  obra_id: z.string().min(1, "Selecione uma instalação."),
   data: z.string().min(1, "Informe a data."),
   clima: z.enum(CLIMA_OBRA).optional().or(z.literal("")),
   observacoes: z.string().trim().min(2, "Descreva as atividades do dia."),
@@ -128,12 +128,12 @@ export function DiarioFormDialog({ open, onOpenChange, registro }: DiarioFormDia
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Obra *</Label>
+              <Label>Instalação *</Label>
               <SearchableSelect
                 value={watch("obra_id") ?? ""}
                 onChange={(id) => setValue("obra_id", id, { shouldValidate: true })}
                 onSearch={buscarObras}
-                placeholder="Buscar obra..."
+                placeholder="Buscar instalação..."
                 currentLabel={registro?.obra_nome ?? ""}
               />
               {errors.obra_id && <p className="text-xs text-destructive">{errors.obra_id.message}</p>}

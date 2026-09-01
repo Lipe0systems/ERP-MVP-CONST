@@ -18,7 +18,7 @@ from app.core.config import get_settings
 logger = logging.getLogger("uvicorn.error")
 
 ASSETS_DIR = os.path.join(os.path.dirname(__file__), "..", "assets")
-LOGO_PLATAFORMA_PATH = os.path.join(ASSETS_DIR, "logo-inovak.png")
+LOGO_PLATAFORMA_PATH = os.path.join(ASSETS_DIR, "logo-onseg.png")
 BUCKET = "documentos"
 
 

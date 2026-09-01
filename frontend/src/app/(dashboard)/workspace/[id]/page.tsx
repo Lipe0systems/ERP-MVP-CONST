@@ -31,7 +31,7 @@ const FASES: { id: FaseProcesso; label: string }[] = [
   { id: "orcamento", label: "Orçamento" },
   { id: "proposta", label: "Proposta" },
   { id: "venda", label: "Venda" },
-  { id: "obra", label: "Obra" },
+  { id: "obra", label: "Instalação" },
   { id: "concluido", label: "Concluído" },
 ];
 

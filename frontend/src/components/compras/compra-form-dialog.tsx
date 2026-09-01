@@ -255,7 +255,7 @@ export function CompraFormDialog({ open, onOpenChange, compra }: CompraFormDialo
             </div>
 
             <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="obra_id">Obra</Label>
+              <Label htmlFor="obra_id">Instalação</Label>
               <Select id="obra_id" disabled={loadingObras} {...register("obra_id")}>
                 <option value="">{loadingObras ? "Carregando..." : "Nenhuma"}</option>
                 {opcoesObras.map((o) => (

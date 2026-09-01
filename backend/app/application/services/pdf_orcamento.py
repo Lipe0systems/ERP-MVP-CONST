@@ -1,5 +1,5 @@
 """
-Gerador de PDF para orçamentos da Inovak Serviços.
+Gerador de PDF para orçamentos da Onseg Gestão.
 Usa reportlab para criar um documento profissional com:
 - Logo e dados reais da empresa emissora no cabeçalho
 - Dados do cliente
@@ -39,7 +39,7 @@ LIGHT_BG = colors.HexColor("#F8FAFC")
 BORDER_COLOR = colors.HexColor("#E2E8F0")
 
 ASSETS_DIR = os.path.join(os.path.dirname(__file__), "..", "assets")
-LOGO_PATH = os.path.join(ASSETS_DIR, "logo-inovak.png")
+LOGO_PATH = os.path.join(ASSETS_DIR, "logo-onseg.png")
 
 
 def _fmt_moeda(valor: float) -> str:
@@ -109,7 +109,7 @@ def gerar_pdf_orcamento(
     logo_path: str | None = None,
 ) -> bytes:
     """
-    empresa: objeto/linha com nome, cnpj, email, telefone da construtora
+    empresa: objeto/linha com nome, cnpj, email, telefone da empresa
              emissora (opcional — sem ele, cai no texto genérico anterior).
     obra_nome: nome da obra vinculada, se o orçamento tiver obra_id.
     logo_path: caminho LOCAL da imagem de logo já resolvida (ver
@@ -166,7 +166,7 @@ def gerar_pdf_orcamento(
     elif empresa is not None:
         logo = Paragraph(f"<b>{empresa.nome}</b>", styles["Title"])
     else:
-        logo = Paragraph("<b>Inovak</b>", styles["Title"])
+        logo = Paragraph("<b>Onseg</b>", styles["Title"])
 
     # Linha de identificação da empresa emissora (CNPJ, e-mail, telefone) —
     # some quando `empresa` não é informado, pra não quebrar chamadas antigas.
@@ -334,7 +334,7 @@ def gerar_pdf_orcamento(
     foot_line.setStyle(TableStyle([("LINEBELOW", (0, 0), (0, 0), 0.5, BORDER_COLOR)]))
     elements.append(foot_line)
     elements.append(Spacer(1, 3 * mm))
-    texto_rodape = empresa.nome if empresa is not None else "Inovak Serviços"
+    texto_rodape = empresa.nome if empresa is not None else "Onseg Gestão"
     elements.append(Paragraph(
         texto_rodape,
         ParagraphStyle("Footer", parent=style_small, alignment=TA_CENTER, textColor=GRAY_TEXT),

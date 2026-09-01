@@ -57,7 +57,7 @@ export default function WorkspaceObraPage() {
   if (!data) {
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-center">
-        <p className="text-sm text-muted-foreground">Obra não encontrada.</p>
+        <p className="text-sm text-muted-foreground">Instalação não encontrada.</p>
         <Button variant="outline" onClick={() => router.push("/obras")}>Voltar</Button>
       </div>
     );
@@ -201,7 +201,7 @@ export default function WorkspaceObraPage() {
           iconeVazio={NotebookPen}
           tituloVazio="Diário vazio"
           descVazio="Registros do diário desta obra aparecerão aqui."
-          acaoLabel="Ir para Diário de Obra"
+          acaoLabel="Ir para Diário de Instalação"
           onAcao={() => router.push("/diario-obra")}
         >
           {data.diario.map((d) => (

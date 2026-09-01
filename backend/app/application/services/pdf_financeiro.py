@@ -1,5 +1,5 @@
 """
-Gerador de PDF para relatório financeiro da Inovak Serviços.
+Gerador de PDF para relatório financeiro da Onseg Gestão.
 Inclui: resumo geral, contas a pagar e contas a receber.
 """
 import io
@@ -29,7 +29,7 @@ GREEN = colors.HexColor("#16A34A")
 RED = colors.HexColor("#DC2626")
 
 ASSETS_DIR = os.path.join(os.path.dirname(__file__), "..", "assets")
-LOGO_PATH = os.path.join(ASSETS_DIR, "logo-inovak.png")
+LOGO_PATH = os.path.join(ASSETS_DIR, "logo-onseg.png")
 
 
 def _fmt_moeda(valor: float) -> str:
@@ -78,7 +78,7 @@ def gerar_pdf_financeiro(
         logo = Image(caminho_logo_final, width=45 * mm, height=13 * mm)
         logo.hAlign = "LEFT"
     else:
-        logo = Paragraph("<b>Inovak</b>", styles["Title"])
+        logo = Paragraph("<b>Onseg</b>", styles["Title"])
 
     title_info = Paragraph(
         f"<b>RELATORIO FINANCEIRO</b><br/>"
@@ -192,7 +192,7 @@ def gerar_pdf_financeiro(
     foot_line.setStyle(TableStyle([("LINEBELOW", (0, 0), (0, 0), 0.5, BORDER_COLOR)]))
     elements.append(foot_line)
     elements.append(Spacer(1, 2 * mm))
-    elements.append(Paragraph("Inovak Serviços", ParagraphStyle("F", parent=style_small, alignment=TA_CENTER)))
+    elements.append(Paragraph("Onseg Gestão", ParagraphStyle("F", parent=style_small, alignment=TA_CENTER)))
 
     doc.build(elements)
     result = buffer.getvalue()

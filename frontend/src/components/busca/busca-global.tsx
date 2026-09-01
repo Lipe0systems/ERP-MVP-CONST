@@ -143,7 +143,7 @@ export function BuscaGlobal() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={onKeyDown}
-              placeholder="Buscar clientes, obras, orçamentos..."
+              placeholder="Buscar clientes, instalações, orçamentos..."
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
             />
             <button onClick={() => setOpen(false)} className="rounded-md p-1 opacity-60 hover:opacity-100 transition-opacity">

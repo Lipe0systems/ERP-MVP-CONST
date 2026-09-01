@@ -208,7 +208,7 @@ export function OrcamentoFormDialog({ open, onOpenChange, orcamentoId, clienteId
               </select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="obra">Obra (opcional)</Label>
+              <Label htmlFor="obra">Instalação (opcional)</Label>
               <select
                 id="obra"
                 value={obraId}

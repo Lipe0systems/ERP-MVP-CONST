@@ -274,7 +274,7 @@ def gerar_backup_com_arquivos(
                     zf.writestr(f"dados/{name}", inner.read(name))
         else:
             excel_bytes = gerar_excel(db, empresa_id, modulos)
-            zf.writestr("dados/inovak-dados.xlsx", excel_bytes)
+            zf.writestr("dados/onseg-dados.xlsx", excel_bytes)
 
         # 2. Documentos do Storage
         docs = _linhas(db, DocumentoModel, empresa_id)
@@ -304,7 +304,7 @@ def gerar_backup_com_arquivos(
             manifesto.append(f"OK: {nome_zip}")
 
         # 3. Manifesto (o que entrou no backup)
-        cab = f"Backup Inovak com arquivos\nGerado em: {datetime.utcnow().isoformat()}\nTotal de documentos: {len(docs)}\n\n"
+        cab = f"Backup Onseg com arquivos\nGerado em: {datetime.utcnow().isoformat()}\nTotal de documentos: {len(docs)}\n\n"
         zf.writestr("documentos/_MANIFESTO.txt", (cab + "\n".join(manifesto)).encode("utf-8"))
 
     return buf.getvalue()

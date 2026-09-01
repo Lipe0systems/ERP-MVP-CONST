@@ -58,7 +58,7 @@ def exportar(
         return StreamingResponse(
             io.BytesIO(conteudo),
             media_type="application/zip",
-            headers={"Content-Disposition": f'attachment; filename="inovak-backup-completo-{hoje}.zip"'},
+            headers={"Content-Disposition": f'attachment; filename="onseg-backup-completo-{hoje}.zip"'},
         )
 
     if body.formato == "csv":
@@ -66,7 +66,7 @@ def exportar(
         return StreamingResponse(
             io.BytesIO(conteudo),
             media_type="application/zip",
-            headers={"Content-Disposition": f'attachment; filename="inovak-export-{hoje}.zip"'},
+            headers={"Content-Disposition": f'attachment; filename="onseg-export-{hoje}.zip"'},
         )
 
     if body.formato == "json":
@@ -74,7 +74,7 @@ def exportar(
         return StreamingResponse(
             io.BytesIO(conteudo),
             media_type="application/json",
-            headers={"Content-Disposition": f'attachment; filename="inovak-backup-{hoje}.json"'},
+            headers={"Content-Disposition": f'attachment; filename="onseg-backup-{hoje}.json"'},
         )
 
     # padrão: excel
@@ -82,7 +82,7 @@ def exportar(
     return StreamingResponse(
         io.BytesIO(conteudo),
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": f'attachment; filename="inovak-export-{hoje}.xlsx"'},
+        headers={"Content-Disposition": f'attachment; filename="onseg-export-{hoje}.xlsx"'},
     )
 
 
@@ -98,5 +98,5 @@ def backup_completo(
     return StreamingResponse(
         io.BytesIO(conteudo),
         media_type="application/json",
-        headers={"Content-Disposition": f'attachment; filename="inovak-backup-completo-{hoje}.json"'},
+        headers={"Content-Disposition": f'attachment; filename="onseg-backup-completo-{hoje}.json"'},
     )

@@ -1,5 +1,5 @@
 /**
- * Upload de fotos do Diário de Obra direto para o Supabase Storage, a
+ * Upload de fotos do Diário de Instalação direto para o Supabase Storage, a
  * partir do navegador — o backend nunca recebe os bytes do arquivo, só a
  * URL pública resultante (ver docs/DEPLOY.md para criar o bucket).
  */

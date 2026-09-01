@@ -32,12 +32,12 @@ const TODOS_WIDGETS = [
 type WidgetId = (typeof TODOS_WIDGETS)[number];
 
 const WIDGET_LABELS: Record<WidgetId, string> = {
-  saldo_bancario: "Saldo bancário", obras_ativas: "Obras ativas",
+  saldo_bancario: "Saldo bancário", obras_ativas: "Instalações ativas",
   obras_concluidas: "Obras concluídas", clientes: "Total de clientes",
   contas_pagar: "A pagar", contas_receber: "A receber",
   alerta_estoque: "Alerta de estoque", alerta_vencimentos: "Alertas de vencimento",
-  grafico_fluxo: "Fluxo de caixa", grafico_obras: "Obras por status",
-  orcamentos: "Orçamentos por status", saude_obras: "Saúde das obras",
+  grafico_fluxo: "Fluxo de caixa", grafico_obras: "Instalações por status",
+  orcamentos: "Orçamentos por status", saude_obras: "Saúde das instalações",
   lucro: "Lucro realizado", analise_categoria: "Despesas por categoria",
   projecao_saldo: "Projeção de saldo",
 };
@@ -206,7 +206,7 @@ export default function DashboardPage() {
           )}
           {show("obras_ativas") && (
             <KpiCard
-              label="Obras ativas" icon={HardHat} tint="blue" loading={isLoading}
+              label="Instalações ativas" icon={HardHat} tint="blue" loading={isLoading}
               valor={isLoading ? "—" : String(r.obras_ativas)}
             />
           )}
@@ -373,11 +373,11 @@ export default function DashboardPage() {
           {show("grafico_obras") && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base font-semibold text-foreground">Obras por status</CardTitle>
+                <CardTitle className="text-base font-semibold text-foreground">Instalações por status</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col items-center">
                 {r.obras_por_status.length === 0 ? (
-                  <p className="py-10 text-sm text-muted-foreground">Nenhuma obra.</p>
+                  <p className="py-10 text-sm text-muted-foreground">Nenhuma instalação.</p>
                 ) : (
                   <>
                     <div className="h-44 w-full">

@@ -51,7 +51,7 @@ export default function AtendimentosPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader icon={ClipboardList} title="Atendimentos" subtitle="Visitas, inspeções e entregas de obra" cor="blue">
+      <PageHeader icon={ClipboardList} title="Atendimentos" subtitle="Visitas, inspeções e entregas de instalação" cor="blue">
         <Button onClick={handleNovo}>
           <Plus className="mr-2 h-4 w-4" />
           Novo Atendimento
@@ -91,7 +91,7 @@ export default function AtendimentosPage() {
                 <TableRow>
                   <TableHead>Data</TableHead>
                   <TableHead>Cliente</TableHead>
-                  <TableHead className="hidden sm:table-cell">Obra</TableHead>
+                  <TableHead className="hidden sm:table-cell">Instalação</TableHead>
                   <TableHead className="hidden sm:table-cell">Tipo</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="hidden md:table-cell">Responsável</TableHead>

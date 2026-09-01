@@ -52,7 +52,7 @@ export default function WorkspacePage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader icon={Briefcase} title="Workspace comercial" subtitle="Do cliente à obra, num fluxo só" cor="purple">
+      <PageHeader icon={Briefcase} title="Workspace comercial" subtitle="Do cliente à instalação, num fluxo só" cor="purple">
         <Button onClick={handleNovoProcesso} disabled={criando} className="bg-grad-brand text-white glow-sm">
           {criando ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
           Novo projeto
@@ -69,7 +69,7 @@ export default function WorkspacePage() {
             <EmptyState
               icon={Briefcase}
               title="Nenhum projeto em andamento"
-              description="Comece um novo projeto para guiar o processo desde o cliente até a criação da obra."
+              description="Comece um novo projeto para guiar o processo desde o cliente até a criação da instalação."
               actionLabel="Novo projeto"
               onAction={handleNovoProcesso}
             />

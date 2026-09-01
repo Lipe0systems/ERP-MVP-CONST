@@ -11,8 +11,8 @@ const ibmPlexSans = IBM_Plex_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Inovak",
-  description: "ERP SaaS multiempresa para construtoras",
+  title: "Onseg",
+  description: "ERP SaaS multiempresa para empresas de segurança eletrônica",
 };
 
 // Executa antes da hidratação para aplicar o tema correto de imediato,

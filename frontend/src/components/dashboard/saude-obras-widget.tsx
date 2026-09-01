@@ -42,7 +42,7 @@ export function SaudeObrasWidget() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base font-semibold text-foreground">
           <span className="icon-vivid kpi-amber h-7 w-7 shrink-0"><HardHat className="h-4 w-4" /></span>
-          Saúde das obras
+          Saúde das instalações
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -53,7 +53,7 @@ export function SaudeObrasWidget() {
         ) : obras.length === 0 ? (
           <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
             <CheckCircle2 className="h-4 w-4 text-green-500" />
-            Nenhuma obra em andamento no momento.
+            Nenhuma instalação em andamento no momento.
           </div>
         ) : (
           <div className="space-y-2">

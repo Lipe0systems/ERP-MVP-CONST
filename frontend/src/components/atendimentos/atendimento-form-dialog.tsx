@@ -144,12 +144,12 @@ export function AtendimentoFormDialog({ open, onOpenChange, atendimento }: Props
               {errors.cliente_id && <p className="text-xs text-destructive">{errors.cliente_id.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label>Obra (opcional)</Label>
+              <Label>Instalação (opcional)</Label>
               <SearchableSelect
                 value={watch("obra_id") ?? ""}
                 onChange={(id) => setValue("obra_id", id)}
                 onSearch={buscarObras}
-                placeholder="Buscar obra..."
+                placeholder="Buscar instalação..."
                 currentLabel={atendimento?.obra_nome ?? ""}
               />
             </div>

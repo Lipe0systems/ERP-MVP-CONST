@@ -1,4 +1,4 @@
-"""Gerador de PDF para relatório de compras da Inovak Serviços."""
+"""Gerador de PDF para relatório de compras da Onseg Gestão."""
 import io, os
 from datetime import date
 
@@ -16,7 +16,7 @@ LIGHT_BG = colors.HexColor("#F8FAFC")
 BORDER_COLOR = colors.HexColor("#E2E8F0")
 
 ASSETS_DIR = os.path.join(os.path.dirname(__file__), "..", "assets")
-LOGO_PATH = os.path.join(ASSETS_DIR, "logo-inovak.png")
+LOGO_PATH = os.path.join(ASSETS_DIR, "logo-onseg.png")
 
 STATUS_LABEL = {"pendente": "Pendente", "aprovada": "Aprovada",
                 "recebida": "Recebida", "cancelada": "Cancelada"}
@@ -43,7 +43,7 @@ def gerar_pdf_compras(compras: list, logo_path: str | None = None) -> bytes:
     page_w = A4[0] - 30*mm
 
     caminho_logo_final = logo_path if logo_path else (LOGO_PATH if os.path.exists(LOGO_PATH) else None)
-    logo = Image(caminho_logo_final, width=45*mm, height=13*mm) if caminho_logo_final else Paragraph("<b>Inovak</b>", styles["Title"])
+    logo = Image(caminho_logo_final, width=45*mm, height=13*mm) if caminho_logo_final else Paragraph("<b>Onseg</b>", styles["Title"])
     title = Paragraph(f"<b>RELATORIO DE COMPRAS</b><br/><font size=7 color='#64748B'>Gerado em {_fmt_data(date.today())}</font>",
         ParagraphStyle("T", parent=style_n, alignment=TA_RIGHT, fontSize=13))
     h = Table([[logo, title]], colWidths=[page_w*0.5, page_w*0.5])
@@ -89,7 +89,7 @@ def gerar_pdf_compras(compras: list, logo_path: str | None = None) -> bytes:
     fl = Table([[""]], colWidths=[page_w])
     fl.setStyle(TableStyle([("LINEBELOW",(0,0),(0,0),0.5,BORDER_COLOR)]))
     elements.append(fl); elements.append(Spacer(1,2*mm))
-    elements.append(Paragraph("Inovak Serviços",
+    elements.append(Paragraph("Onseg Gestão",
         ParagraphStyle("F", parent=style_s, alignment=TA_CENTER)))
 
     doc.build(elements)

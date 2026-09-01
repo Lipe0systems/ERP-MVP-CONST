@@ -66,10 +66,10 @@ export default function ObrasPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader icon={HardHat} title="Obras" subtitle="Acompanhe as obras da sua empresa" cor="brand">
+      <PageHeader icon={HardHat} title="Instalações" subtitle="Acompanhe as instalações da sua empresa" cor="brand">
         <Button onClick={handleNovo}>
           <Plus className="mr-2 h-4 w-4" />
-          Nova obra
+          Nova instalação
         </Button>
       </PageHeader>
 
@@ -79,7 +79,7 @@ export default function ObrasPage() {
           <Input
             value={searchInput}
             onChange={handleSearchChange}
-            placeholder="Buscar por obra ou cliente..."
+            placeholder="Buscar por instalação ou cliente..."
             className="pl-9"
           />
         </div>
@@ -106,7 +106,7 @@ export default function ObrasPage() {
       ) : emptyState ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
           <HardHat className="mb-3 h-8 w-8 text-muted-foreground" />
-          <p className="font-medium">Nenhuma obra encontrada</p>
+          <p className="font-medium">Nenhuma instalação encontrada</p>
           <p className="mb-4 text-sm text-muted-foreground">
             {search || status !== "todos"
               ? "Tente ajustar os filtros."
@@ -115,7 +115,7 @@ export default function ObrasPage() {
           {!search && status === "todos" && (
             <Button onClick={handleNovo} variant="outline">
               <Plus className="mr-2 h-4 w-4" />
-              Nova obra
+              Nova instalação
             </Button>
           )}
         </div>
@@ -124,7 +124,7 @@ export default function ObrasPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Obra</TableHead>
+                <TableHead>Instalação</TableHead>
                 <TableHead className="hidden sm:table-cell">Cliente</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="hidden md:table-cell">Início</TableHead>

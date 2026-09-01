@@ -117,7 +117,7 @@ export function OrdemServicoFormDialog({ open, onOpenChange, ordem }: Props) {
               </select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="obra">Obra</Label>
+              <Label htmlFor="obra">Instalação</Label>
               <select
                 id="obra"
                 value={obraId}

@@ -38,7 +38,7 @@ export function AlocacaoDialog({ open, onOpenChange, funcionario }: Props) {
 
   async function adicionar() {
     if (!funcionario || !obraId) {
-      toast.error("Selecione uma obra.");
+      toast.error("Selecione uma instalação.");
       return;
     }
     try {
@@ -65,7 +65,7 @@ export function AlocacaoDialog({ open, onOpenChange, funcionario }: Props) {
           <div className="rounded-xl border bg-muted/30 p-4 space-y-3">
             <p className="text-sm font-medium">Alocar em uma obra</p>
             <div className="space-y-2">
-              <Label>Obra</Label>
+              <Label>Instalação</Label>
               <select
                 value={obraId}
                 onChange={(e) => setObraId(e.target.value)}
@@ -93,7 +93,7 @@ export function AlocacaoDialog({ open, onOpenChange, funcionario }: Props) {
 
           {/* Alocações existentes */}
           <div>
-            <p className="mb-2 text-sm font-medium">Obras atuais</p>
+            <p className="mb-2 text-sm font-medium">Instalações atuais</p>
             {isLoading ? (
               <div className="space-y-2">{Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
             ) : alocacoesFunc.length === 0 ? (

@@ -19,7 +19,7 @@ const PAGE_SIZE = 20;
 
 const MODULO_LABEL: Record<string, string> = {
   orcamentos: "Orçamentos", vendas: "Vendas", financeiro: "Financeiro",
-  clientes: "Clientes", obras: "Obras", compras: "Compras", estoque: "Estoque",
+  clientes: "Clientes", obras: "Instalações", compras: "Compras", estoque: "Estoque",
 };
 
 const ACAO_LABEL: Record<string, string> = {

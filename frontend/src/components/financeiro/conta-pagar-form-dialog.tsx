@@ -198,12 +198,12 @@ export function ContaPagarFormDialog({ open, onOpenChange, conta }: ContaPagarFo
             </div>
 
             <div className="space-y-2">
-              <Label>Obra</Label>
+              <Label>Instalação</Label>
               <SearchableSelect
                 value={watch("obra_id") ?? ""}
                 onChange={(id) => setValue("obra_id", id)}
                 onSearch={buscarObras}
-                placeholder="Buscar obra..."
+                placeholder="Buscar instalação..."
                 currentLabel={conta?.obra_nome ?? ""}
               />
             </div>

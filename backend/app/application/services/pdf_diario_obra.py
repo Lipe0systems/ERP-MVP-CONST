@@ -1,4 +1,4 @@
-"""Gerador de PDF para relatório do Diário de Obra da Inovak Serviços."""
+"""Gerador de PDF para relatório do Diário de Obra da Onseg Gestão."""
 import io, os
 from datetime import date
 
@@ -16,7 +16,7 @@ LIGHT_BG = colors.HexColor("#F8FAFC")
 BORDER_COLOR = colors.HexColor("#E2E8F0")
 
 ASSETS_DIR = os.path.join(os.path.dirname(__file__), "..", "assets")
-LOGO_PATH = os.path.join(ASSETS_DIR, "logo-inovak.png")
+LOGO_PATH = os.path.join(ASSETS_DIR, "logo-onseg.png")
 
 CLIMA_LABEL = {
     "ensolarado": "Ensolarado", "parcialmente_nublado": "Parcialmente nublado",
@@ -42,7 +42,7 @@ def gerar_pdf_diario(registros: list, obra_nome: str, logo_path: str | None = No
     page_w = A4[0] - 30*mm
 
     caminho_logo_final = logo_path if logo_path else (LOGO_PATH if os.path.exists(LOGO_PATH) else None)
-    logo = Image(caminho_logo_final, width=45*mm, height=13*mm) if caminho_logo_final else Paragraph("<b>Inovak</b>", styles["Title"])
+    logo = Image(caminho_logo_final, width=45*mm, height=13*mm) if caminho_logo_final else Paragraph("<b>Onseg</b>", styles["Title"])
     title = Paragraph(
         f"<b>DIARIO DE OBRA</b><br/><font size=8 color='#64748B'>{obra_nome}<br/>Gerado em {_fmt_data(date.today())}</font>",
         ParagraphStyle("T", parent=style_n, alignment=TA_RIGHT, fontSize=13))
@@ -87,7 +87,7 @@ def gerar_pdf_diario(registros: list, obra_nome: str, logo_path: str | None = No
     fl = Table([[""]], colWidths=[page_w])
     fl.setStyle(TableStyle([("LINEBELOW",(0,0),(0,0),0.5,BORDER_COLOR)]))
     elements.append(fl); elements.append(Spacer(1,2*mm))
-    elements.append(Paragraph("Inovak Serviços",
+    elements.append(Paragraph("Onseg Gestão",
         ParagraphStyle("F", parent=style_s, alignment=TA_CENTER)))
 
     doc.build(elements)

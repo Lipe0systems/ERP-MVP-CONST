@@ -1,6 +1,6 @@
 /**
  * Upload de documentos diretamente para o Supabase Storage, a partir do
- * navegador (mesmo padrão do Diário de Obra). O backend nunca recebe os bytes
+ * navegador (mesmo padrão do Diário de Instalação). O backend nunca recebe os bytes
  * do arquivo — só a URL resultante.
  *
  * Antes de usar: crie o bucket "documentos" como bucket PRIVADO no Supabase

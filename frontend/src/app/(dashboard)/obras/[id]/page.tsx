@@ -39,7 +39,7 @@ export default function ObraDetalhePage() {
   if (!obra) {
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-center">
-        <p className="text-sm text-muted-foreground">Obra não encontrada.</p>
+        <p className="text-sm text-muted-foreground">Instalação não encontrada.</p>
         <Button variant="outline" onClick={() => router.push("/obras")}>Voltar</Button>
       </div>
     );

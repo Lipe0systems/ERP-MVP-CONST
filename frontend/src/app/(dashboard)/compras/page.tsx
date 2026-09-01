@@ -75,7 +75,7 @@ export default function ComprasPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader icon={ShoppingCart} title="Compras" subtitle="Materiais e insumos comprados para as obras" cor="purple">
+      <PageHeader icon={ShoppingCart} title="Compras" subtitle="Materiais e insumos usados nas instalações" cor="purple">
         <Button onClick={handleNovo}>
           <Plus className="mr-2 h-4 w-4" />
           Nova compra
@@ -127,7 +127,7 @@ export default function ComprasPage() {
               <TableRow>
                 <TableHead>Produto</TableHead>
                 <TableHead className="hidden sm:table-cell">Fornecedor</TableHead>
-                <TableHead className="hidden md:table-cell">Obra</TableHead>
+                <TableHead className="hidden md:table-cell">Instalação</TableHead>
                 <TableHead>Data</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Valor total</TableHead>

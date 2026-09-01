@@ -111,7 +111,7 @@ export function FotoUploader({ obraId, fotos, onChange, disabled }: FotoUploader
         </button>
       </div>
 
-      {!obraId && <p className="text-xs text-muted-foreground">Selecione uma obra para poder anexar fotos.</p>}
+      {!obraId && <p className="text-xs text-muted-foreground">Selecione uma instalação para poder anexar fotos.</p>}
 
       <input
         ref={inputRef}

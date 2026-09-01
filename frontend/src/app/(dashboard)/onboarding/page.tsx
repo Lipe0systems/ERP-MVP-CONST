@@ -134,7 +134,7 @@ export default function OnboardingPage() {
               <Building2 className="h-4 w-4" />
               Dados da Empresa
             </CardTitle>
-            <CardDescription>Informações da construtora que será cadastrada</CardDescription>
+            <CardDescription>Informações da empresa que será cadastrada</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">

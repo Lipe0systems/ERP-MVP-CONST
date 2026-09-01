@@ -56,7 +56,7 @@ export function ErrorPage({ status, title, description, icon: Icon, cor = "brand
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6 py-16 text-center">
       <Image
         src="/images/logo-completa.png"
-        alt="Inovak Serviços"
+        alt="Onseg Gestão"
         width={779}
         height={227}
         className="mb-10 h-9 w-auto object-contain"
@@ -95,7 +95,7 @@ export function ErrorPage({ status, title, description, icon: Icon, cor = "brand
         )}
       </div>
 
-      <p className="mt-14 text-xs text-muted-foreground/60">Inovak Serviços</p>
+      <p className="mt-14 text-xs text-muted-foreground/60">Onseg Gestão</p>
     </div>
   );
 }

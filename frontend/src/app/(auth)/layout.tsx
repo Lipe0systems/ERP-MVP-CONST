@@ -35,7 +35,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="relative hidden overflow-hidden md:block md:w-1/2 lg:w-2/5">
           <Image
             src="/images/login-hero-light.png"
-            alt="Inovak Serviços — soluções inteligentes para o seu negócio. Mais eficiência, controle e resultados para a sua empresa."
+            alt="Onseg Gestão — soluções inteligentes para o seu negócio. Mais eficiência, controle e resultados para a sua empresa."
             fill
             priority
             quality={92}
@@ -44,7 +44,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           />
           <Image
             src="/images/login-hero-dark.png"
-            alt="Inovak Serviços — soluções inteligentes para o seu negócio. Mais eficiência, controle e resultados para a sua empresa."
+            alt="Onseg Gestão — soluções inteligentes para o seu negócio. Mais eficiência, controle e resultados para a sua empresa."
             fill
             priority
             quality={92}

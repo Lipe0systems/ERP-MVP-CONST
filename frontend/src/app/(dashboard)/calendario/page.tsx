@@ -107,7 +107,7 @@ export default function CalendarioPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader icon={CalendarDays} title="Calendário" subtitle="Atendimentos, vencimentos e obras" cor="cyan">
+      <PageHeader icon={CalendarDays} title="Calendário" subtitle="Atendimentos, vencimentos e instalações" cor="cyan">
         <Button variant="outline" size="sm" onClick={() => { setAno(hoje.getFullYear()); setMes(hoje.getMonth()); }}>
           Hoje
         </Button>
@@ -196,7 +196,7 @@ export default function CalendarioPage() {
                 { cor: "#f97316", label: "A pagar" },
                 { cor: "#22c55e", label: "A receber" },
                 { cor: "#ef4444", label: "Vencido" },
-                { cor: "#6366f1", label: "Obra" },
+                { cor: "#6366f1", label: "Instalação" },
               ].map((l) => (
                 <div key={l.label} className="flex items-center gap-1.5">
                   <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: l.cor }} />

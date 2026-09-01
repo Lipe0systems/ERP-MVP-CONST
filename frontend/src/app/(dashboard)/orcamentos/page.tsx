@@ -210,7 +210,7 @@ export default function OrcamentosPage() {
               </TableHead>
               <TableHead scope="col">Nº</TableHead>
               <TableHead scope="col">Cliente</TableHead>
-              <TableHead scope="col" className="hidden sm:table-cell">Obra</TableHead>
+              <TableHead scope="col" className="hidden sm:table-cell">Instalação</TableHead>
               <TableHead scope="col">Status</TableHead>
               <TableHead scope="col" className="text-right">Valor</TableHead>
               <TableHead scope="col" className="hidden md:table-cell">Itens</TableHead>

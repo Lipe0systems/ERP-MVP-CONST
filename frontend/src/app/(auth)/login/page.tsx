@@ -60,7 +60,7 @@ export default function LoginPage() {
       <div className="mb-8">
         <Image
           src="/images/logo-completa.png"
-          alt="Inovak Serviços"
+          alt="Onseg Gestão"
           width={779}
           height={227}
           className="h-11 w-auto object-contain"
@@ -70,7 +70,7 @@ export default function LoginPage() {
 
       <h1 className="t-page-title">Bem-vindo de volta</h1>
       <p className="mb-7 mt-1 text-sm text-muted-foreground">
-        Faça login na sua conta da Inovak Serviços
+        Faça login na sua conta da Onseg Gestão
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -152,7 +152,7 @@ export default function LoginPage() {
       </p>
 
       <p className="mt-8 text-center text-xs text-muted-foreground/60">
-        © {new Date().getFullYear()} Inovak Serviços. Todos os direitos reservados.
+        © {new Date().getFullYear()} Onseg Gestão. Todos os direitos reservados.
       </p>
     </div>
   );

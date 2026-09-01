@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-export const metadata = { title: "Política de Privacidade — Inovak" };
+export const metadata = { title: "Política de Privacidade — Onseg" };
 
 export default function PrivacidadePage() {
   return (
@@ -11,15 +11,15 @@ export default function PrivacidadePage() {
       </Link>
 
       <article className="prose prose-sm max-w-none dark:prose-invert">
-        <h1>Política de Privacidade e Cookies — Inovak</h1>
+        <h1>Política de Privacidade e Cookies — Onseg</h1>
         <p className="text-sm text-muted-foreground">Última atualização: 14/08/2026</p>
 
         <h2>1. Quem somos e nosso papel</h2>
         <p>
           Quando você (empresa Cliente) insere dados de seus próprios clientes, funcionários ou fornecedores
-          no Sistema, o Inovak atua como <strong>Operador</strong> — você é o <strong>Controlador</strong>,
+          no Sistema, o Onseg atua como <strong>Operador</strong> — você é o <strong>Controlador</strong>,
           responsável por ter base legal para coletar esses dados. Quando tratamos dados da própria empresa
-          Cliente e de seus usuários, o Inovak atua como Controlador.
+          Cliente e de seus usuários, o Onseg atua como Controlador.
         </p>
 
         <h2>2. Quais dados coletamos</h2>
@@ -32,7 +32,7 @@ export default function PrivacidadePage() {
 
         <h2>3. Cookies e armazenamento local</h2>
         <p>
-          O Inovak <strong>não usa cookies de publicidade, rastreamento de terceiros ou analytics de
+          O Onseg <strong>não usa cookies de publicidade, rastreamento de terceiros ou analytics de
           marketing</strong>. Usamos apenas:
         </p>
         <ul>
@@ -79,10 +79,10 @@ export default function PrivacidadePage() {
         <p>
           Nos termos da Lei 13.709/2018, você tem direito a: confirmação do tratamento, acesso, correção,
           anonimização/eliminação, portabilidade, informação sobre compartilhamento e revogação de
-          consentimento. Para exercer esses direitos: contato@inovak.com.br
+          consentimento. Para exercer esses direitos: contato@onseg.com.br
         </p>
         <p>
-          Quando o Inovak atua como Operador, solicitações devem ser direcionadas primeiro à empresa
+          Quando o Onseg atua como Operador, solicitações devem ser direcionadas primeiro à empresa
           Cliente responsável pelo dado (Controladora).
         </p>
 
@@ -90,7 +90,7 @@ export default function PrivacidadePage() {
         <p>Podemos atualizar esta Política periodicamente, comunicando alterações relevantes com antecedência.</p>
 
         <h2>11. Contato</h2>
-        <p>Dúvidas sobre esta Política: contato@inovak.com.br</p>
+        <p>Dúvidas sobre esta Política: contato@onseg.com.br</p>
       </article>
     </div>
   );

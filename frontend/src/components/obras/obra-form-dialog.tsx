@@ -137,7 +137,7 @@ export function ObraFormDialog({ open, onOpenChange, obra }: ObraFormDialogProps
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Editar obra" : "Nova obra"}</DialogTitle>
+          <DialogTitle>{isEditing ? "Editar obra" : "Nova instalação"}</DialogTitle>
           <DialogDescription>
             {isEditing ? "Atualize os dados da obra." : "Preencha os dados para cadastrar uma nova obra."}
           </DialogDescription>

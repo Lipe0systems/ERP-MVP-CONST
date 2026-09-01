@@ -67,9 +67,9 @@ const navGrupos: NavGrupo[] = [
   {
     titulo: "Operação",
     itens: [
-      { href: "/obras", label: "Obras", icon: HardHat , cor: "amber" },
+      { href: "/obras", label: "Instalações", icon: HardHat , cor: "amber" },
       { href: "/clientes", label: "Clientes", icon: Users , cor: "blue" },
-      { href: "/diario-obra", label: "Diário de Obra", icon: NotebookPen , cor: "amber" },
+      { href: "/diario-obra", label: "Diário de Instalação", icon: NotebookPen , cor: "amber" },
       { href: "/ordens-servico", label: "Ordens de Serviço", icon: Wrench , cor: "amber" },
       { href: "/atendimentos", label: "Atendimentos", icon: ClipboardList , cor: "blue" },
     ],
@@ -300,7 +300,7 @@ function SidebarRodape({ recolhida }: { recolhida?: boolean }) {
           V4
         </span>
         {!recolhida && (
-          <span className="text-[11px] tracking-wide text-muted-foreground/60">Inovak Serviços</span>
+          <span className="text-[11px] tracking-wide text-muted-foreground/60">Onseg Gestão</span>
         )}
       </div>
     </div>
@@ -313,7 +313,7 @@ function SidebarBrand({ recolhida }: { recolhida?: boolean }) {
       <Image src="/images/logo-icone.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />
       {!recolhida && (
         <div className="leading-tight">
-          <p className="text-[15px] font-semibold tracking-tight">Inovak</p>
+          <p className="text-[15px] font-semibold tracking-tight">Onseg</p>
           <p className="text-[10px] tracking-wide text-muted-foreground">ERP</p>
         </div>
       )}
@@ -387,7 +387,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
               <div className="flex items-center gap-2.5">
                 <Image src="/images/logo-icone.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />
                 <div className="leading-tight">
-                  <p className="text-[15px] font-semibold tracking-tight">Inovak</p>
+                  <p className="text-[15px] font-semibold tracking-tight">Onseg</p>
                   <p className="text-[10px] tracking-wide text-muted-foreground">ERP</p>
                 </div>
               </div>
