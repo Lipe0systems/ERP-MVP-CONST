@@ -18,8 +18,8 @@ const ObrasPorStatusChart = dynamic(
 import { PIE_COLORS } from "@/components/dashboard/obras-por-status-chart";
 import { useState, useEffect } from "react";
 import {
-  AlertTriangle, ArrowDownCircle, ArrowUpCircle, Boxes, CalendarDays,
-  CheckCircle2, HardHat, Landmark, Settings, Users, TrendingUp,
+  AlertTriangle, ArrowDownCircle, ArrowUpCircle, Ban, Boxes, CalendarDays,
+  CheckCircle2, FileText, HardHat, Landmark, Settings, Users, TrendingUp, XCircle,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -304,7 +304,11 @@ export default function DashboardPage() {
           {show("grafico_fluxo") && (
             <Card className={cn("card-vivid overflow-hidden", show("grafico_obras") ? "lg:col-span-2" : "lg:col-span-3")}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                <div>
+                <div className="flex items-center gap-3">
+                  <span className="icon-vivid kpi-green h-9 w-9 shrink-0">
+                    <TrendingUp className="h-[18px] w-[18px]" />
+                  </span>
+                  <div>
                   <CardTitle className="text-base font-semibold text-foreground">Fluxo de caixa</CardTitle>
                   {/* Resumo de tendência do período — entradas x saídas somadas,
                       dá contexto antes mesmo de olhar o gráfico. */}
@@ -320,6 +324,7 @@ export default function DashboardPage() {
                       {" no período"}
                     </p>
                   )}
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-0.5 rounded-lg border border-border bg-muted/60 p-0.5">
                   {OPCOES_PERIODO.map((op) => (
@@ -357,7 +362,10 @@ export default function DashboardPage() {
           )}
           {show("grafico_obras") && (
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+                <span className="icon-vivid kpi-blue h-9 w-9 shrink-0">
+                  <HardHat className="h-[18px] w-[18px]" />
+                </span>
                 <CardTitle className="text-base font-semibold text-foreground">Instalações por status</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col items-center">
@@ -391,16 +399,27 @@ export default function DashboardPage() {
       {show("orcamentos") && (
         <div className="grid gap-4 sm:grid-cols-4 stagger-children">
           {[
-            { key: "rascunho" as const, label: "Rascunhos", grad: "from-slate-400 to-slate-500" },
-            { key: "aprovado" as const, label: "Aprovados", grad: "from-green-500 to-emerald-600" },
-            { key: "recusado" as const, label: "Recusados", grad: "from-red-500 to-rose-600" },
-            { key: "cancelado" as const, label: "Cancelados", grad: "from-amber-500 to-orange-600" },
+            { key: "rascunho" as const, label: "Rascunhos", cor: "kpi-blue", Icon: FileText },
+            { key: "aprovado" as const, label: "Aprovados", cor: "kpi-green", Icon: CheckCircle2 },
+            { key: "recusado" as const, label: "Recusados", cor: "kpi-red", Icon: XCircle },
+            { key: "cancelado" as const, label: "Cancelados", cor: "kpi-amber", Icon: Ban },
           ].map((item) => (
-            <div key={item.key} className="card-vivid rounded-2xl p-4">
-              <p className="text-xs font-medium text-muted-foreground">Orç. {item.label}</p>
-              <p className={cn("mt-1 text-3xl font-bold tabular-nums tracking-tight")}>
-                {isLoading ? "—" : r.orcamentos[item.key]}
-              </p>
+            // Antes: card-vivid puro, sem ícone nem cor — a caixa existia,
+            // mas ficava "apagada" perto dos KPIs do topo, que já eram
+            // Vivid. Mesmo padrão de ícone tingido (icon-vivid) usado em
+            // todo o resto do sistema, não uma cor nova inventada aqui.
+            <div key={item.key} className={cn("kpi-vivid rounded-2xl p-4", item.cor)}>
+              <div className="flex items-center gap-3">
+                <span className="icon-vivid h-9 w-9 shrink-0">
+                  <item.Icon className="h-[18px] w-[18px]" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-muted-foreground">Orç. {item.label}</p>
+                  <p className="text-2xl font-bold tabular-nums tracking-tight">
+                    {isLoading ? "—" : r.orcamentos[item.key]}
+                  </p>
+                </div>
+              </div>
             </div>
           ))}
         </div>
