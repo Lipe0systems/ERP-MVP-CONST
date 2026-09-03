@@ -1,0 +1,45 @@
+# ══════════════════════════════════════════════════════════════════════
+# SEGREDOS — a razão nº 1 deste arquivo existir.
+# Qualquer .env, seja qual for o nome/sufixo, nunca deve ser commitado.
+# ══════════════════════════════════════════════════════════════════════
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*credentials*.json
+
+# ══════════════════════════════════════════════════════════════════════
+# BACKEND — Python / FastAPI
+# ══════════════════════════════════════════════════════════════════════
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+*.db
+*.sqlite3
+
+# ══════════════════════════════════════════════════════════════════════
+# FRONTEND — Next.js / Node
+# ══════════════════════════════════════════════════════════════════════
+node_modules/
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+.vercel/
+
+# ══════════════════════════════════════════════════════════════════════
+# GERAL
+# ══════════════════════════════════════════════════════════════════════
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+.idea/
+.vscode/
+*.swp
