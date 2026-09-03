@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { isValidCpfCnpj, onlyDigits } from "@/lib/validators";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +16,14 @@ import type { Fornecedor } from "@/types";
 
 const schema = z.object({
   nome: z.string().min(1, "Nome é obrigatório"),
-  documento: z.string().optional(),
+  // Documento é OPCIONAL em Fornecedores (diferente de Clientes, onde é
+  // obrigatório) — só valida de verdade (CPF/CNPJ com dígito verificador)
+  // quando algo for preenchido. Mesmo validador usado em Clientes
+  // (lib/validators.ts) — não duplica a lógica, só reaproveita.
+  documento: z.string().optional().refine(
+    (v) => !v || !v.trim() || isValidCpfCnpj(v) === true,
+    (v) => ({ message: typeof isValidCpfCnpj(v ?? "") === "string" ? (isValidCpfCnpj(v ?? "") as string) : "Documento inválido" })
+  ),
   email: z.string().email("E-mail inválido").optional().or(z.literal("")),
   telefone: z.string().optional(),
   endereco: z.string().optional(),
@@ -55,7 +63,7 @@ export function FornecedorFormDialog({ open, onOpenChange, fornecedor }: Props) 
   async function onSubmit(values: FormValues) {
     const payload = {
       nome: values.nome,
-      documento: values.documento || null,
+      documento: values.documento ? onlyDigits(values.documento) : null,
       email: values.email || null,
       telefone: values.telefone || null,
       endereco: values.endereco || null,
@@ -88,7 +96,8 @@ export function FornecedorFormDialog({ open, onOpenChange, fornecedor }: Props) 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="documento">CNPJ/CPF</Label>
-              <Input id="documento" {...register("documento")} placeholder="Apenas dígitos" />
+              <Input id="documento" {...register("documento")} placeholder="CPF ou CNPJ (com ou sem pontuação)" aria-invalid={Boolean(errors.documento)} />
+              {errors.documento && <p className="text-xs text-red-500">{errors.documento.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="telefone">Telefone</Label>
