@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/client";
+import { obterAccessToken } from "@/lib/supabase/session";
 import { apiFetch } from "@/lib/api/client";
 
 export interface ModuloBackup {
@@ -17,15 +17,14 @@ export async function exportarBackup(
   modulos: string[],
   incluirArquivos = false,
 ): Promise<void> {
-  const supabase = createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) throw new Error("Sessão expirada.");
+  const token = await obterAccessToken();
+  if (!token) throw new Error("Sessão expirada.");
 
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/backup/exportar`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${session.access_token}`,
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ formato, modulos, incluir_arquivos: incluirArquivos }),
   });
@@ -36,12 +35,11 @@ export async function exportarBackup(
 }
 
 export async function baixarBackupCompleto(): Promise<void> {
-  const supabase = createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) throw new Error("Sessão expirada.");
+  const token = await obterAccessToken();
+  if (!token) throw new Error("Sessão expirada.");
 
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/backup/completo`, {
-    headers: { Authorization: `Bearer ${session.access_token}` },
+    headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error("Falha ao gerar backup.");
   await baixarBlob(res);

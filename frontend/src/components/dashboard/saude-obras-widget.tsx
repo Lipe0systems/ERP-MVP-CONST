@@ -5,7 +5,7 @@ import Link from "next/link";
 import { AlertTriangle, CheckCircle2, HardHat } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { createClient } from "@/lib/supabase/client";
+import { obterAccessToken } from "@/lib/supabase/session";
 import { cn } from "@/lib/utils";
 
 interface SaudeObra {
@@ -24,10 +24,10 @@ const SAUDE_DOT: Record<SaudeObra["saude"], string> = {
 };
 
 async function fetchSaudeObras(): Promise<SaudeObra[]> {
-  const supabase = createClient();
-  const { data: { session } } = await supabase.auth.getSession();
+  // Sessão vem do gerenciador central — sem getSession() próprio.
+  const token = await obterAccessToken();
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/dashboard/saude-obras`, {
-    headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+    headers: { Authorization: `Bearer ${token ?? ""}` },
   });
   if (!res.ok) throw new Error("Falha ao carregar saúde das obras");
   return res.json();

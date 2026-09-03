@@ -2,7 +2,7 @@
 import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
+import { obterAccessToken } from "@/lib/supabase/session";
 
 interface Notificacao {
   tipo: string;
@@ -20,12 +20,11 @@ interface NotificacoesResponse {
 }
 
 async function fetchNotificacoes(): Promise<NotificacoesResponse> {
-  const supabase = createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.access_token) return { notificacoes: [], total: 0, urgentes: 0 };
+  const token = await obterAccessToken();
+  if (!token) return { notificacoes: [], total: 0, urgentes: 0 };
 
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notificacoes`, {
-    headers: { Authorization: `Bearer ${session.access_token}` },
+    headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) return { notificacoes: [], total: 0, urgentes: 0 };
   return res.json();

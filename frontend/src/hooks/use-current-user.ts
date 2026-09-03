@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { obterAccessToken } from "@/lib/supabase/session";
 import type { PapelUsuario } from "@/types";
 
 interface MeInfo {
@@ -18,12 +18,11 @@ export function useCurrentUser() {
   useEffect(() => {
     let ativo = true;
     (async () => {
-      const supabase = createClient();
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) { setCarregando(false); return; }
+      const token = await obterAccessToken();
+      if (!token) { setCarregando(false); return; }
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
-          headers: { Authorization: `Bearer ${data.session.access_token}` },
+          headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok && ativo) setMe(await res.json());
       } finally {

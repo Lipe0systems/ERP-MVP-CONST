@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { createClient } from "@/lib/supabase/client";
+import { obterAccessToken } from "@/lib/supabase/session";
 import { cn } from "@/lib/utils";
 
 interface Evento {
@@ -35,9 +35,8 @@ const TIPO_ICONE: Record<string, React.ElementType> = {
 };
 
 async function fetchEventos(ano: number, mes: number): Promise<Evento[]> {
-  const supabase = createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return [];
+  const token = await obterAccessToken();
+  if (!token) return [];
 
   const inicio = new Date(ano, mes, 1);
   const fim = new Date(ano, mes + 1, 0);
@@ -45,7 +44,7 @@ async function fetchEventos(ano: number, mes: number): Promise<Evento[]> {
 
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/calendario/eventos?data_inicio=${fmt(inicio)}&data_fim=${fmt(fim)}`,
-    { headers: { Authorization: `Bearer ${session.access_token}` } }
+    { headers: { Authorization: `Bearer ${token}` } }
   );
   if (!res.ok) return [];
   const data = await res.json();

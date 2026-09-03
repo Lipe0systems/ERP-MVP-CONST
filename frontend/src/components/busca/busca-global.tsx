@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Search, Building2, HardHat, FileText, Truck, X } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { obterAccessToken } from "@/lib/supabase/session";
 import { cn } from "@/lib/utils";
 
 interface Resultado {
@@ -25,12 +25,11 @@ const TIPO_COLOR: Record<string, string> = {
 
 async function buscar(q: string): Promise<Resultado[]> {
   if (q.length < 2) return [];
-  const supabase = createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return [];
+  const token = await obterAccessToken();
+  if (!token) return [];
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/busca?q=${encodeURIComponent(q)}`,
-    { headers: { Authorization: `Bearer ${session.access_token}` } }
+    { headers: { Authorization: `Bearer ${token}` } }
   );
   if (!res.ok) return [];
   return (await res.json()).resultados ?? [];

@@ -3,6 +3,7 @@
 import { Moon, Sun, LogOut, Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { limparSessao } from "@/lib/supabase/session";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/components/theme-provider";
 import { NotificacoesPopover } from "@/components/notificacoes/notificacoes-popover";
@@ -37,6 +38,10 @@ export function Header({ onMenuClick }: HeaderProps) {
     // Isolamento multi-tenant precisa valer no cache do cliente também,
     // não só no backend.
     queryClient.clear();
+    // Descarta o token em memória junto do cache de dados — o listener
+    // do session manager também limparia, mas fazer explicitamente fecha
+    // qualquer janela entre o clique e o evento chegar.
+    limparSessao();
     router.push("/login");
     router.refresh();
   }

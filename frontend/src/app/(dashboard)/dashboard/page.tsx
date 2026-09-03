@@ -31,7 +31,7 @@ import { SaudeObrasWidget } from "@/components/dashboard/saude-obras-widget";
 import { LucroWidget } from "@/components/dashboard/lucro-widget";
 import { AnaliseCategoriaWidget } from "@/components/dashboard/analise-categoria-widget";
 import { ProjecaoSaldoWidget } from "@/components/dashboard/projecao-saldo-widget";
-import { createClient } from "@/lib/supabase/client";
+import { apiFetch } from "@/lib/api/client";
 import { formatMoeda, formatData } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -96,15 +96,11 @@ const OPCOES_PERIODO: { valor: PeriodoFluxo; label: string }[] = [
   { valor: "6m", label: "6M" }, { valor: "12m", label: "12M" },
 ];
 
-async function fetchResumo(periodoFluxo: string): Promise<DashboardResumo> {
-  const supabase = createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/dashboard/resumo?periodo_fluxo=${periodoFluxo}`, {
-    headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
-  });
-  if (!res.ok) throw new Error("Falha ao carregar dashboard");
-  return res.json();
-}
+// Usa o cliente central (apiFetch): herda sessão compartilhada, timeout,
+// e o tratamento de erro padronizado — antes esta função duplicava tudo
+// isso com fetch próprio, inclusive um getSession() a cada chamada.
+const fetchResumo = (periodoFluxo: string) =>
+  apiFetch<DashboardResumo>(`/dashboard/resumo?periodo_fluxo=${periodoFluxo}`);
 
 export default function DashboardPage() {
   const [periodoFluxo, setPeriodoFluxo] = useState<PeriodoFluxo>("6m");

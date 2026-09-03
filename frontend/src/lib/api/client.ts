@@ -2,7 +2,7 @@
  * Wrapper de fetch para a API do backend: anexa o token de sessão do
  * Supabase automaticamente e centraliza o tratamento de erros HTTP.
  */
-import { createClient } from "@/lib/supabase/client";
+import { obterAccessToken } from "@/lib/supabase/session";
 
 export class ApiError extends Error {
   status: number;
@@ -31,16 +31,16 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const TIMEOUT_PADRAO_MS = 15_000;
 
 async function getAuthHeader(): Promise<Record<string, string>> {
-  const supabase = createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  // Sessão vem do gerenciador central (lib/supabase/session.ts): o token
+  // fica em memória e é compartilhado entre requests simultâneos, em vez
+  // de cada chamada disparar seu próprio getSession().
+  const token = await obterAccessToken();
 
-  if (!session?.access_token) {
+  if (!token) {
     throw new ApiError("Sessão expirada. Faça login novamente.", 401);
   }
 
-  return { Authorization: `Bearer ${session.access_token}` };
+  return { Authorization: `Bearer ${token}` };
 }
 
 // Mensagens amigáveis para status que indicam problema de INFRAESTRUTURA

@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/pagination";
 import { EmptyState } from "@/components/empty-state";
-import { createClient } from "@/lib/supabase/client";
+import { obterAccessToken } from "@/lib/supabase/session";
 import { formatData } from "@/lib/format";
 
 const PAGE_SIZE = 20;
@@ -34,14 +34,13 @@ const ACAO_COLOR: Record<string, string> = {
 };
 
 async function fetchAuditoria(params: { modulo: string; dataInicio: string; dataFim: string; page: number }) {
-  const supabase = createClient();
-  const { data: { session } } = await supabase.auth.getSession();
+  const token = await obterAccessToken();
   const q = new URLSearchParams({ page: String(params.page), page_size: String(PAGE_SIZE) });
   if (params.modulo) q.set("modulo", params.modulo);
   if (params.dataInicio) q.set("data_inicio", params.dataInicio);
   if (params.dataFim) q.set("data_fim", params.dataFim);
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auditoria?${q}`, {
-    headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+    headers: { Authorization: `Bearer ${token ?? ""}` },
   });
   if (!res.ok) throw new Error("Falha ao carregar auditoria");
   return res.json();
