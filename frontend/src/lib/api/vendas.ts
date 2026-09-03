@@ -1,6 +1,6 @@
 import { apiFetch } from "@/lib/api/client";
 import type { PaginatedResponse, StatusVenda, Venda, VendaDeOrcamentoInput, VendaListItem } from "@/types";
-import { createClient } from "@/lib/supabase/client";
+import { obterAccessToken } from "@/lib/supabase/session";
 
 export const listarVendas = (p: { status?: StatusVenda; page: number; pageSize: number }) => {
   const q = new URLSearchParams({ page: String(p.page), page_size: String(p.pageSize) });
@@ -15,9 +15,9 @@ export const cancelarVenda = (id: string) =>
   apiFetch<Venda>(`/vendas/${id}/cancelar`, { method: "POST" });
 
 export async function baixarPdfVenda(id: string): Promise<void> {
-  const supabase = createClient();
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
+  // Sessão compartilhada (ver lib/supabase/session.ts) — sem getSession()
+  // próprio a cada download.
+  const token = await obterAccessToken();
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vendas/${id}/pdf`, {
     headers: { Authorization: `Bearer ${token}` },
   });

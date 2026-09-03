@@ -53,10 +53,8 @@ export function removerOrcamento(id: string) {
 
 export async function baixarPdfOrcamento(id: string): Promise<void> {
   // Usa fetch direto (não apiFetch) porque a resposta é um blob, não JSON
-  const { createClient } = await import("@/lib/supabase/client");
-  const supabase = createClient();
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
+  const { obterAccessToken } = await import("@/lib/supabase/session");
+  const token = await obterAccessToken();
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const response = await fetch(`${apiUrl}/orcamentos/${id}/pdf`, {

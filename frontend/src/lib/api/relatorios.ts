@@ -1,9 +1,9 @@
-import { createClient } from "@/lib/supabase/client";
+import { obterAccessToken } from "@/lib/supabase/session";
 
 async function baixarPdf(endpoint: string, filename: string): Promise<void> {
-  const supabase = createClient();
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
+  // Sessão compartilhada (ver lib/supabase/session.ts) — sem getSession()
+  // próprio a cada download.
+  const token = await obterAccessToken();
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const response = await fetch(`${apiUrl}${endpoint}`, {

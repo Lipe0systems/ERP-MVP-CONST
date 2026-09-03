@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { PageTransition } from "@/components/page-transition";
 import { createClient } from "@/lib/supabase/client";
+import { obterSessao } from "@/lib/supabase/session";
 import { Loader2 } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -23,10 +24,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     let ativo = true;
     const supabase = createClient();
 
-    supabase.auth.getSession().then(async ({ data }) => {
+    // Sessão vem do gerenciador central (lib/supabase/session.ts): se o
+    // middleware ou outra tela já leram a sessão, esta chamada reaproveita
+    // o token em memória em vez de abrir outra leitura.
+    obterSessao().then(async (sessao) => {
       if (!ativo) return;
 
-      if (!data.session) {
+      if (!sessao) {
         router.replace("/login");
         return;
       }
@@ -50,13 +54,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       //    verificação de outra pessoa.
       //  • É apenas UX: o backend continua bloqueando de verdade quem não
       //    tem permissão. Nada de segurança depende deste atalho.
-      const chaveAceite = `termos-ok:${data.session.user.id}`;
+      const chaveAceite = `termos-ok:${sessao.user.id}`;
       const jaVerificado = sessionStorage.getItem(chaveAceite) === "1";
 
       if (!jaVerificado) {
         try {
           const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/usuarios/me/termos`, {
-            headers: { Authorization: `Bearer ${data.session.access_token}` },
+            headers: { Authorization: `Bearer ${sessao.access_token}` },
           });
           if (!ativo) return;
           if (res.ok) {

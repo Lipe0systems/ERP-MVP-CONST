@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
+import { limparSessao, obterAccessToken } from "@/lib/supabase/session";
 
 export default function AceitarTermosPage() {
   const router = useRouter();
@@ -22,11 +23,10 @@ export default function AceitarTermosPage() {
     }
     setEnviando(true);
     try {
-      const supabase = createClient();
-      const { data } = await supabase.auth.getSession();
+      const token = await obterAccessToken();
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/usuarios/me/aceitar-termos`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${data.session?.access_token ?? ""}` },
+        headers: { Authorization: `Bearer ${token ?? ""}` },
       });
       if (!res.ok) throw new Error();
       router.replace("/dashboard");
@@ -40,6 +40,7 @@ export default function AceitarTermosPage() {
   async function handleSair() {
     const supabase = createClient();
     await supabase.auth.signOut();
+    limparSessao();
     router.replace("/login");
   }
 
