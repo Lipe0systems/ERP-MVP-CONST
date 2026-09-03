@@ -349,7 +349,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
       {/* Desktop — fundo com gradiente vertical sutil + mesh no topo */}
       <aside
         className={cn(
-          "relative hidden shrink-0 flex-col border-r border-border/60 md:flex bg-background",
+          "relative hidden shrink-0 flex-col md:flex bg-background",
           "transition-[width] duration-200 [transition-timing-function:cubic-bezier(0.23,1,0.32,1)]",
           recolhida ? "w-[68px]" : "w-60",
           // Evita a transição de largura rodar no primeiro render (antes de
@@ -382,7 +382,7 @@ export function Sidebar({ mobileOpen = false, onCloseMobile }: SidebarProps) {
             onClick={onCloseMobile}
             aria-hidden="true"
           />
-          <aside className="absolute inset-y-0 left-0 flex w-60 flex-col border-r border-border/60 bg-background animate-in slide-in-from-left duration-300 [animation-timing-function:cubic-bezier(0.32,0.72,0,1)]">
+          <aside className="absolute inset-y-0 left-0 flex w-60 flex-col bg-background animate-in slide-in-from-left duration-300 [animation-timing-function:cubic-bezier(0.32,0.72,0,1)]">
                         <div className="relative flex h-14 items-center justify-between gap-2 border-b border-border/60 px-5">
               <div className="flex items-center gap-2.5">
                 <Image src="/images/logo-icone.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />

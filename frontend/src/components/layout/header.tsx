@@ -48,7 +48,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const nomeExibicao = identificador.split("@")[0] || "Usuário";
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border/60 bg-background/85 px-5 backdrop-blur-md">
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between bg-background/85 px-5 backdrop-blur-md">
       <div className="flex items-center gap-3">
         <Button
           variant="ghost"
