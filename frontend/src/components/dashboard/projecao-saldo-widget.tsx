@@ -5,13 +5,14 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianG
 import { Activity } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { WidgetErro } from "@/components/dashboard/widget-erro";
 import { PeriodoSelect } from "@/components/ui/periodo-select";
 import { useProjecaoSaldo } from "@/hooks/use-financeiro-v2";
 import { formatMoeda, formatData } from "@/lib/format";
 
 export function ProjecaoSaldoWidget() {
   const [dias, setDias] = useState(30);
-  const { data, isLoading } = useProjecaoSaldo(dias);
+  const { data, isLoading, isError, refetch } = useProjecaoSaldo(dias);
 
   const pontos = (data?.pontos ?? []).map((p) => ({ ...p, dataLabel: formatData(p.data) }));
 
@@ -25,7 +26,9 @@ export function ProjecaoSaldoWidget() {
         <PeriodoSelect value={dias} onChange={setDias} />
       </CardHeader>
       <CardContent>
-        {isLoading ? (
+        {isError ? (
+          <WidgetErro onRetry={() => refetch()} />
+        ) : isLoading ? (
           <Skeleton className="h-48 w-full" />
         ) : (
           <>

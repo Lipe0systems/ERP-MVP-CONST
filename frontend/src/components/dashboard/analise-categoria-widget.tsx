@@ -4,6 +4,7 @@ import { useState } from "react";
 import { PieChart } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { WidgetErro } from "@/components/dashboard/widget-erro";
 import { PeriodoSelect } from "@/components/ui/periodo-select";
 import { useAnaliseCategoria } from "@/hooks/use-financeiro-v2";
 import { formatMoeda } from "@/lib/format";
@@ -13,7 +14,7 @@ const CORES = ["bg-purple-500", "bg-blue-500", "bg-amber-500", "bg-green-500", "
 
 export function AnaliseCategoriaWidget() {
   const [dias, setDias] = useState(30);
-  const { data, isLoading } = useAnaliseCategoria(dias);
+  const { data, isLoading, isError, refetch } = useAnaliseCategoria(dias);
 
   const despesas = data?.despesas ?? [];
   const totalDespesas = despesas.reduce((s, d) => s + d.total, 0);
@@ -28,7 +29,9 @@ export function AnaliseCategoriaWidget() {
         <PeriodoSelect value={dias} onChange={setDias} />
       </CardHeader>
       <CardContent>
-        {isLoading ? (
+        {isError ? (
+          <WidgetErro onRetry={() => refetch()} />
+        ) : isLoading ? (
           <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)}</div>
         ) : despesas.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">Nenhuma despesa paga neste período.</p>

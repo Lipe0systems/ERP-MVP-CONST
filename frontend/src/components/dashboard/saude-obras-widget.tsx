@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AlertTriangle, CheckCircle2, HardHat } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { WidgetErro } from "@/components/dashboard/widget-erro";
 import { obterAccessToken } from "@/lib/supabase/session";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +35,7 @@ async function fetchSaudeObras(): Promise<SaudeObra[]> {
 }
 
 export function SaudeObrasWidget() {
-  const { data, isLoading } = useQuery({ queryKey: ["saude-obras"], queryFn: fetchSaudeObras, retry: 1 });
+  const { data, isLoading, isError, refetch } = useQuery({ queryKey: ["saude-obras"], queryFn: fetchSaudeObras, retry: 1 });
   const obras = data ?? [];
 
   return (
@@ -46,7 +47,9 @@ export function SaudeObrasWidget() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
+        {isError ? (
+          <WidgetErro onRetry={() => refetch()} />
+        ) : isLoading ? (
           <div className="space-y-2">
             {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
           </div>

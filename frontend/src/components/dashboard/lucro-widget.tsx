@@ -4,6 +4,7 @@ import { useState } from "react";
 import { TrendingUp, TrendingDown, DollarSign } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { WidgetErro } from "@/components/dashboard/widget-erro";
 import { PeriodoSelect } from "@/components/ui/periodo-select";
 import { useLucro } from "@/hooks/use-financeiro-v2";
 import { formatMoeda } from "@/lib/format";
@@ -11,7 +12,7 @@ import { cn } from "@/lib/utils";
 
 export function LucroWidget() {
   const [dias, setDias] = useState(30);
-  const { data, isLoading } = useLucro(dias);
+  const { data, isLoading, isError, refetch } = useLucro(dias);
 
   const positivo = (data?.lucro ?? 0) >= 0;
 
@@ -25,7 +26,9 @@ export function LucroWidget() {
         <PeriodoSelect value={dias} onChange={setDias} />
       </CardHeader>
       <CardContent>
-        {isLoading ? (
+        {isError ? (
+          <WidgetErro onRetry={() => refetch()} />
+        ) : isLoading ? (
           <Skeleton className="h-16 w-full" />
         ) : (
           <div className="space-y-3">
