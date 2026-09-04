@@ -180,7 +180,7 @@ export function ContasReceberTable() {
                   <Checkbox checked={todasSelecionadas} onCheckedChange={toggleTodas} aria-label="Selecionar todas" />
                 </TableHead>
                 <TableHead>Descrição</TableHead>
-                <TableHead>Vencimento</TableHead>
+                <TableHead className="hidden sm:table-cell">Vencimento</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Valor</TableHead>
                 <TableHead className="w-24 text-right">Ações</TableHead>
@@ -191,7 +191,10 @@ export function ContasReceberTable() {
                 <React.Fragment key={nomeGrupo || "default"}>
                   {agrupado && (
                     <TableRow key={`grupo-${nomeGrupo}`} className="bg-muted/40 hover:bg-muted/40">
-                      <TableCell colSpan={6} className="py-2 text-xs font-semibold text-muted-foreground">
+                      <TableCell colSpan={5} className="py-2 text-xs font-semibold text-muted-foreground sm:hidden">
+                        {nomeGrupo} · {formatMoeda(itensGrupo.reduce((s, c) => s + c.valor, 0))}
+                      </TableCell>
+                      <TableCell colSpan={6} className="hidden py-2 text-xs font-semibold text-muted-foreground sm:table-cell">
                         {nomeGrupo} · {formatMoeda(itensGrupo.reduce((s, c) => s + c.valor, 0))}
                       </TableCell>
                     </TableRow>
@@ -204,7 +207,7 @@ export function ContasReceberTable() {
                     )}
                   </TableCell>
                   <TableCell className="font-medium">{conta.descricao}</TableCell>
-                  <TableCell className="text-muted-foreground">{formatData(conta.data_vencimento)}</TableCell>
+                  <TableCell className="hidden text-muted-foreground sm:table-cell">{formatData(conta.data_vencimento)}</TableCell>
                   <TableCell>
                     <StatusContaBadge
                       status={conta.status}

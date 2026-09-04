@@ -3,8 +3,20 @@ import { cn } from "@/lib/utils";
 
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => (
-    <div className="relative w-full overflow-auto">
-      <table ref={ref} className={cn("w-full caption-bottom text-sm", className)} {...props} />
+    // MOBILE: overflow-auto sozinho rola, mas no celular a experiência
+    // depende de dois detalhes a mais:
+    //  • -webkit-overflow-scrolling:touch → rolagem com inércia no iOS
+    //    (sem isso, o movimento "trava" ao soltar o dedo)
+    //  • overscroll-x-contain → impede que rolar a tabela até o fim
+    //    acione o "voltar página" por gesto lateral do navegador/app,
+    //    que é um jeito clássico de perder o que estava preenchendo.
+    // min-w-full garante que a tabela ocupe ao menos a largura visível
+    // em vez de encolher demais e ficar ilegível.
+    <div
+      className="relative w-full overflow-x-auto overscroll-x-contain"
+      style={{ WebkitOverflowScrolling: "touch" }}
+    >
+      <table ref={ref} className={cn("w-full min-w-full caption-bottom text-sm", className)} {...props} />
     </div>
   )
 );

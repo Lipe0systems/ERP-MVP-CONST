@@ -137,7 +137,7 @@ export default function ObrasPage() {
               {obras.map((obra) => (
                 <TableRow key={obra.id}>
                   <TableCell className="font-medium">{obra.nome}</TableCell>
-                  <TableCell className="text-muted-foreground">{obra.cliente_nome}</TableCell>
+                  <TableCell className="hidden text-muted-foreground sm:table-cell">{obra.cliente_nome}</TableCell>
                   <TableCell>
                     <ObraStatusBadge status={obra.status} />
                   </TableCell>
