@@ -43,3 +43,22 @@ npm-debug.log*
 .idea/
 .vscode/
 *.swp
+
+# ══════════════════════════════════════════════════════════════════════
+# APP MOBILE — Capacitor (iOS / Android)
+# As pastas ios/ e android/ SÃO versionadas (contêm configuração real do
+# app), mas os artefatos de build dentro delas, não.
+# ══════════════════════════════════════════════════════════════════════
+ios/App/Pods/
+ios/App/build/
+ios/App/App/public/
+ios/DerivedData/
+*.xcuserstate
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+android/app/src/main/assets/public/
+android/app/release/
+*.keystore
+!debug.keystore
