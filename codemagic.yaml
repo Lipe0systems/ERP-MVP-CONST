@@ -1,0 +1,138 @@
+workflows:
+  # ═══════════════════════════════════════════════════════════════════════
+  # ANDROID — funciona HOJE, sem nenhuma credencial extra.
+  # Gera um APK de debug (instalável em qualquer aparelho pra teste),
+  # mas SEM assinatura de release — não serve pra publicar na Play Store
+  # ainda. Ver seção "Para publicar de verdade" no fim deste arquivo.
+  # ═══════════════════════════════════════════════════════════════════════
+  android-debug:
+    name: Android (APK de teste)
+    max_build_duration: 30
+    instance_type: linux_x2
+    environment:
+      node: 20
+      vars:
+        # Ajuste se o app não estiver na raiz do repositório.
+        PROJETO_FRONTEND: frontend
+    scripts:
+      - name: Instalar dependências do frontend
+        script: |
+          cd $PROJETO_FRONTEND
+          npm ci
+
+      - name: Sincronizar Capacitor
+        script: |
+          cd $PROJETO_FRONTEND
+          npx cap sync android
+
+      - name: Compilar APK de debug
+        script: |
+          cd $PROJETO_FRONTEND/android
+          chmod +x ./gradlew
+          ./gradlew assembleDebug
+
+    artifacts:
+      - frontend/android/app/build/outputs/**/*.apk
+
+    publishing:
+      email:
+        recipients:
+          - SEU_EMAIL_AQUI@exemplo.com
+        notify:
+          success: true
+          failure: true
+
+  # ═══════════════════════════════════════════════════════════════════════
+  # iOS — precisa de configuração prévia no painel do Codemagic antes de
+  # rodar (não tem como contornar isso: é exigência da própria Apple).
+  #
+  # Antes de disparar este workflow:
+  #   1. Ter uma conta Apple Developer Program ativa (US$ 99/ano).
+  #   2. No Codemagic: Teams → Integrations → Apple Developer Portal
+  #      → conectar via App Store Connect API Key.
+  #   3. Codemagic → seu app → Code signing identities → deixar o
+  #      "iOS code signing" no modo automático (ele gera o certificado
+  #      e o provisioning profile sozinho a partir da conta conectada).
+  # Sem isso, este workflow falha na etapa de assinatura — não é bug
+  # deste arquivo, é a Apple exigindo identidade verificada pra instalar
+  # em qualquer aparelho real ou publicar na loja.
+  # ═══════════════════════════════════════════════════════════════════════
+  ios-release:
+    name: iOS (IPA assinado)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      node: 20
+      xcode: latest
+      cocoapods: default
+      vars:
+        PROJETO_FRONTEND: frontend
+        BUNDLE_ID: br.com.onseg.gestao
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: br.com.onseg.gestao
+
+    scripts:
+      - name: Instalar dependências do frontend
+        script: |
+          cd $PROJETO_FRONTEND
+          npm ci
+
+      - name: Sincronizar Capacitor
+        script: |
+          cd $PROJETO_FRONTEND
+          npx cap sync ios
+
+      - name: Instalar CocoaPods
+        script: |
+          cd $PROJETO_FRONTEND/ios/App
+          pod install
+
+      - name: Assinatura automática
+        script: |
+          xcode-project use-profiles
+
+      - name: Compilar e gerar IPA
+        script: |
+          cd $PROJETO_FRONTEND
+          xcode-project build-ipa \
+            --workspace ios/App/App.xcworkspace \
+            --scheme App
+
+    artifacts:
+      - frontend/ios/App/build/ios/ipa/*.ipa
+
+    publishing:
+      email:
+        recipients:
+          - SEU_EMAIL_AQUI@exemplo.com
+        notify:
+          success: true
+          failure: true
+      # Descomente quando quiser publicar direto no TestFlight, depois de
+      # já ter os passos 1-3 acima configurados:
+      # app_store_connect:
+      #   auth: integration
+      #   submit_to_testflight: true
+
+# ═════════════════════════════════════════════════════════════════════════
+# PARA PUBLICAR DE VERDADE (não só testar)
+# ═════════════════════════════════════════════════════════════════════════
+#
+# ANDROID — assinatura de release:
+#   O APK acima é de DEBUG — a Play Store não aceita. Pra gerar um AAB
+#   assinado de release:
+#     1. Gere uma keystore (uma vez só, guarde em local seguro — se
+#        perder, não dá pra atualizar o mesmo app depois):
+#          keytool -genkey -v -keystore release.keystore -alias onseg \
+#            -keyalg RSA -keysize 2048 -validity 10000
+#     2. No Codemagic: Teams → seu app → Code signing identities →
+#        Android → sobe o .keystore e as senhas.
+#     3. Troca "assembleDebug" por "bundleRelease" no script acima.
+#
+# iOS — já sai pronto pra loja neste workflow, contanto que a conta
+#   Apple esteja conectada (ver aviso no início do workflow ios-release).
+#
+# Troque "SEU_EMAIL_AQUI@exemplo.com" pelo seu e-mail real antes do
+# primeiro build, senão as notificações de sucesso/falha não chegam
+# a lugar nenhum.
