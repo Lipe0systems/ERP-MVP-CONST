@@ -49,10 +49,15 @@ workflows:
   # Antes de disparar este workflow:
   #   1. Ter uma conta Apple Developer Program ativa (US$ 99/ano).
   #   2. No Codemagic: Teams → Integrations → Apple Developer Portal
-  #      → conectar via App Store Connect API Key.
-  #   3. Codemagic → seu app → Code signing identities → deixar o
-  #      "iOS code signing" no modo automático (ele gera o certificado
-  #      e o provisioning profile sozinho a partir da conta conectada).
+  #      → conectar via App Store Connect API Key. Dá um NOME a essa
+  #      integração (ex.: "codemagic") — esse nome é o que vai no campo
+  #      "integrations: app_store_connect:" logo abaixo. Se você deu
+  #      outro nome lá, troque aqui também, senão o erro "No matching
+  #      profiles found" volta a acontecer.
+  #   3. A API Key usada nessa conexão precisa ter papel "Admin" ou
+  #      "App Manager" no App Store Connect — com papel menor (ex.:
+  #      "Developer"), a Apple recusa a criação automática do App ID e
+  #      do perfil, e o erro também reaparece.
   # Sem isso, este workflow falha na etapa de assinatura — não é bug
   # deste arquivo, é a Apple exigindo identidade verificada pra instalar
   # em qualquer aparelho real ou publicar na loja.
@@ -61,6 +66,14 @@ workflows:
     name: iOS (IPA assinado)
     max_build_duration: 60
     instance_type: mac_mini_m2
+    # CORREÇÃO do erro "No matching profiles found": faltava esta linha.
+    # Sem ela, o Codemagic não sabe QUAL conexão com a Apple usar pra
+    # buscar/gerar o perfil — mesmo com ios_signing configurado embaixo.
+    # "codemagic" aqui precisa ser EXATAMENTE o nome que você deu à
+    # integração em: Codemagic → Teams → Integrations → Apple Developer
+    # Portal (não é um valor fixo, é o apelido que você escolheu lá).
+    integrations:
+      app_store_connect: codemagic
     environment:
       node: 20
       xcode: latest
@@ -88,9 +101,26 @@ workflows:
           cd $PROJETO_FRONTEND/ios/App
           pod install
 
-      - name: Assinatura automática
+      - name: Preparar keychain para assinatura
+        script: keychain initialize
+
+      # CORREÇÃO principal: antes o arquivo pulava direto pra
+      # "xcode-project use-profiles", que só CONSOME um perfil já
+      # existente — nunca cria um. Sem este passo antes, "use-profiles"
+      # não encontra nada pra usar, e é exatamente essa a mensagem de
+      # erro que você recebeu. --create manda buscar na Apple e, se não
+      # existir ainda, criar o App ID e o perfil automaticamente.
+      - name: Buscar ou criar certificado e perfil de provisionamento
         script: |
-          xcode-project use-profiles
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+
+      - name: Adicionar certificado ao keychain
+        script: keychain add-certificates
+
+      - name: Aplicar o perfil ao projeto Xcode
+        script: xcode-project use-profiles
 
       - name: Compilar e gerar IPA
         script: |
